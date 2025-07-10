@@ -14,4 +14,8 @@ load_dotenv()
 
 # Ollama Configuration
 OLLAMA_MODEL_NAME = os.getenv("OLLAMA_MODEL_NAME", "gemma3n")
+OLLAMA_EMBEDDING_MODEL_NAME = os.getenv(
+    "OLLAMA_EMBEDDING_MODEL_NAME", "mxbai-embed-large"
+)
 OLLAMA_API_URL = os.getenv("OLLAMA_API_URL", "http://localhost:11434")
+

@@ -99,13 +99,13 @@ ClassifAI adoptera une architecture modulaire et découplée pour faciliter le d
 * **Objectif :** Interfacer avec Ollama via LiteLLM pour la classification des documents, en utilisant une approche hybride pour combiner vitesse et précision.
 * **Dépendances :** `litellm`.
 * **Implémentation :**
-    * **Mode 1: Classification par Embedding (Rapide)**
-        * **Fonction `get_embedding(text: str) -> List[float]`**: Appelle `litellm.embedding` avec un modèle d'embedding (ex: `nomic-embed-text`).
-        * **Logique de Similarité**: Calcule la similarité cosinus entre l'embedding d'un document et les embeddings pré-calculés pour chaque catégorie.
-        * **Cas d'utilisation**: Idéal pour le traitement rapide de grands volumes de fichiers.
-    * **Mode 2: Classification par Complétion (Approfondie)**
-        * **Fonction `classify_document_completion(content: str, file_type: str) -> str`**: Construit un prompt détaillé et demande au modèle de chat (ex: `gemma3n`) de choisir une catégorie.
-        * **Cas d'utilisation**: Pour les fichiers où une analyse sémantique plus profonde est nécessaire.
+  * **Mode 1: Classification par Embedding (Rapide)**
+    * **Fonction `get_embedding(text: str) -> List[float]`**: Appelle `litellm.embedding` avec un modèle d'embedding (ex: `nomic-embed-text`).
+    * **Logique de Similarité**: Calcule la similarité cosinus entre l'embedding d'un document et les embeddings pré-calculés pour chaque catégorie.
+    * **Cas d'utilisation**: Idéal pour le traitement rapide de grands volumes de fichiers.
+  * **Mode 2: Classification par Complétion (Approfondie)**
+    * **Fonction `classify_document_completion(content: str, file_type: str) -> str`**: Construit un prompt détaillé et demande au modèle de chat (ex: `gemma3n`) de choisir une catégorie.
+    * **Cas d'utilisation**: Pour les fichiers où une analyse sémantique plus profonde est nécessaire.
 * **Bonnes Pratiques :**
   * Encapsuler la logique de chaque mode dans des fonctions distinctes.
   * Permettre à l'utilisateur de choisir le mode via la CLI (`--classification-mode`).

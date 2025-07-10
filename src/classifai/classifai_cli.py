@@ -9,6 +9,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from classifai.embedding_module import get_embedding, cosine_similarity
 from classifai.file_operations_module import copy_file, move_file
 from classifai.logging_module import logger, setup_logger
 from classifai.ollama_classification_module import classify_content
@@ -45,6 +46,22 @@ def run(
             help="Mode of operation: dry-run, move, or copy.",
         ),
     ] = "dry-run",
+    classification_mode: Annotated[
+        str,
+        typer.Option(
+            "--classification-mode",
+            "-cm",
+            help="Classification mode: completion or embedding.",
+        ),
+    ] = "completion",
+    embedding_model: Annotated[
+        str,
+        typer.Option(
+            "--embedding-model",
+            "-em",
+            help="Name of the Ollama embedding model to use.",
+        ),
+    ] = None,
     ollama_model: Annotated[
         str,
         typer.Option(
@@ -66,11 +83,15 @@ def run(
     ] = False,
     log_file: Annotated[
         Path, typer.Option("--log-file", help="Path to save the log file.")
-    ] = None,
+    ] = Path("logs/main.log"),
 ):
     """
     Organize files in a directory using an Ollama language model.
     """
+    # Create log directory if it doesn't exist
+    if log_file:
+        log_file.parent.mkdir(parents=True, exist_ok=True)
+
     log_level = "DEBUG" if verbose else "INFO"
     logger = setup_logger(log_level, log_file)
 
@@ -81,6 +102,7 @@ def run(
     logger.info(f"Source directory: {source_dir}")
     logger.info(f"Destination directory: {destination_dir}")
     logger.info(f"Ollama model: {ollama_model}")
+    logger.info(f"Classification mode: {classification_mode}")
 
     # Default categories for now, will be configurable later
     categories = [
@@ -92,6 +114,13 @@ def run(
         "Scripts",
         "Misc",
     ]
+
+    category_embeddings = {}
+    if classification_mode == "embedding":
+        for category in categories:
+            category_embeddings[category] = get_embedding(
+                category, model=embedding_model
+            )
 
     table = Table(title="Classification Preview")
     table.add_column("File Name", style="cyan")
@@ -106,7 +135,23 @@ def run(
             if parser:
                 content = parser(str(item.absolute()))
                 if content:
-                    category = classify_content(content, categories, logger)
+                    if classification_mode == "embedding":
+                        content_embedding = get_embedding(
+                            content, model=embedding_model
+                        )
+                        if content_embedding:
+                            similarities = {
+                                category: cosine_similarity(
+                                    content_embedding, cat_embedding
+                                )
+                                for category, cat_embedding in category_embeddings.items()
+                            }
+                            category = max(similarities, key=similarities.get)
+                        else:
+                            category = "Unknown"
+                    else:
+                        category = classify_content(content, categories, logger)
+
                     destination_path = destination_dir / category / item.name
                     table.add_row(item.name, category, str(destination_path))
                     files_to_process.append((item, category, destination_path))

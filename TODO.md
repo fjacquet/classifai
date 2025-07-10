@@ -1,9 +1,9 @@
 ## 5. Architecture Refinement (Post-MVP)
 
-- [ ] **Embeddings Implementation**:
-  - [ ] Create `embedding_module.py` to generate embeddings for text content.
-  - [ ] Implement logic to compare document embeddings with category embeddings.
-  - [ ] Add a new classification mode (`--mode embeddings`) to the CLI.
+- [x] **Embeddings Implementation**:
+  - [x] Create `embedding_module.py` to generate embeddings for text content.
+  - [x] Implement logic to compare document embeddings with category embeddings.
+  - [x] Add a new classification mode (`--mode embeddings`) to the CLI.
 - [ ] **Documentation**:
   - [x] Rename `docs/EMBEDDINGS.md` to `docs/ARCHITECTURE.md`.
   - [x] Update `docs/ARCHITECTURE.md` to reflect the current technology stack and the new hybrid classification strategy.
