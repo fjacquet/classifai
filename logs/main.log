@@ -369,3 +369,25 @@ For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/St
 2025-07-10 22:52:25 | INFO     | classifai.file_operations_module:_transfer_file:70 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpo3hvwxqr/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpo3hvwxqr/destination/test.txt
 2025-07-10 22:52:25 | INFO     | classifai.file_operations_module:_transfer_file:73 - Copied: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpyj_n9j22/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpyj_n9j22/destination/test.txt
 2025-07-10 22:52:25 | INFO     | classifai.file_operations_module:_transfer_file:70 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp0o622fsg/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp0o622fsg/destination/test (1).txt
+2025-07-10 22:56:57 | INFO     | classifai.classifai_cli:run:101 - Starting ClassifAI in dry-run mode.
+2025-07-10 22:56:57 | INFO     | classifai.classifai_cli:run:102 - Source directory: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpqdw0721q/cli_source
+2025-07-10 22:56:57 | INFO     | classifai.classifai_cli:run:103 - Destination directory: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpqdw0721q/cli_source
+2025-07-10 22:56:57 | INFO     | classifai.classifai_cli:run:104 - Ollama model: gemma3n
+2025-07-10 22:56:57 | INFO     | classifai.classifai_cli:run:105 - Classification mode: completion
+2025-07-10 22:56:57 | ERROR    | classifai.parsing_module:parse_pdf:28 - Error parsing PDF file /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpqdw0721q/cli_source/document.pdf: Failed to open file '/var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpqdw0721q/cli_source/document.pdf'.
+2025-07-10 22:56:57 | INFO     | classifai.classifai_cli:run:140 - Content for document.pdf is empty, falling back to filename for classification.
+2025-07-10 22:56:57 | INFO     | classifai.classifai_cli:run:101 - Starting ClassifAI in move mode.
+2025-07-10 22:56:57 | INFO     | classifai.classifai_cli:run:102 - Source directory: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpsegtnjic/cli_source
+2025-07-10 22:56:57 | INFO     | classifai.classifai_cli:run:103 - Destination directory: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpsegtnjic/cli_dest
+2025-07-10 22:56:57 | INFO     | classifai.classifai_cli:run:104 - Ollama model: gemma3n
+2025-07-10 22:56:57 | INFO     | classifai.classifai_cli:run:105 - Classification mode: completion
+2025-07-10 22:56:57 | ERROR    | classifai.parsing_module:parse_pdf:28 - Error parsing PDF file /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpsegtnjic/cli_source/document.pdf: Failed to open file '/var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpsegtnjic/cli_source/document.pdf'.
+2025-07-10 22:56:57 | INFO     | classifai.classifai_cli:run:140 - Content for document.pdf is empty, falling back to filename for classification.
+2025-07-10 22:56:57 | INFO     | classifai.file_operations_module:_transfer_file:70 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpsegtnjic/cli_source/document.pdf -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpsegtnjic/cli_dest/Documents/document.pdf
+2025-07-10 22:56:57 | INFO     | classifai.file_operations_module:_transfer_file:70 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpsegtnjic/cli_source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpsegtnjic/cli_dest/Documents/test.txt
+2025-07-10 22:56:57 | INFO     | classifai.classifai_cli:run:178 - File operations completed.
+2025-07-10 22:56:57 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: API Error
+2025-07-10 22:56:57 | INFO     | classifai.file_operations_module:_transfer_file:70 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpekjdccbn/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpekjdccbn/destination/test.txt
+2025-07-10 22:56:57 | INFO     | classifai.file_operations_module:_transfer_file:73 - Copied: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp3yf0szu7/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp3yf0szu7/destination/test.txt
+2025-07-10 22:56:57 | INFO     | classifai.file_operations_module:_transfer_file:70 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp414e7a63/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp414e7a63/destination/test (1).txt
+2025-07-10 22:56:57 | INFO     | classifai.parsing_module:parse_image:63 - OCR returned no text for image: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpzdrfkaw0/blank.png

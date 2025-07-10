@@ -10,14 +10,14 @@
 
 ## 6. Parsing and Classification Refinement (Post-MVP)
 
-- [ ] **Robust Parsing**:
-  - [ ] Implement hierarchical parsing logic (specific parser -> generic text -> metadata fallback).
-  - [ ] Create a generic text parser for unrecognized but text-like file types.
-  - [ ] Improve image parser to handle OCR failures gracefully (no text found is not an error).
-- [ ] **Classification Fallback**:
-  - [ ] Update classification module to use filename and metadata when text content is empty.
-- [ ] **Configuration**:
-  - [ ] Add configuration for generic text file extensions.
+- [x] **Robust Parsing**:
+  - [x] Implement hierarchical parsing logic (specific parser -> generic text -> metadata fallback).
+  - [x] Create a generic text parser for unrecognized but text-like file types.
+  - [x] Improve image parser to handle OCR failures gracefully (no text found is not an error).
+- [x] **Classification Fallback**:
+  - [x] Update classification module to use filename and metadata when text content is empty.
+- [x] **Configuration**:
+  - [x] Add configuration for generic text file extensions.
   - [ ] Add configuration to enable/disable vision model usage for images.
 
 ## 7. Streamlit UI (Post-MVP)

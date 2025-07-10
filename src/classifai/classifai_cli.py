@@ -134,32 +134,37 @@ def run(
             parser = get_parser(item.suffix)
             if parser:
                 content = parser(str(item.absolute()))
-                if content:
-                    if classification_mode == "embedding":
-                        content_embedding = get_embedding(
-                            content, model=embedding_model
-                        )
-                        if content_embedding:
-                            similarities = {
-                                category: cosine_similarity(
-                                    content_embedding, cat_embedding
-                                )
-                                for category, cat_embedding in category_embeddings.items()
-                            }
-                            category = max(similarities, key=similarities.get)
-                        else:
-                            category = "Unknown"
-                    else:
-                        category = classify_content(content, categories, logger)
+                
+                # Fallback to filename if content is empty
+                if not content.strip():
+                    logger.info(
+                        f"Content for {item.name} is empty, falling back to filename for classification."
+                    )
+                    content = item.name
 
-                    destination_path = destination_dir / category / item.name
-                    table.add_row(item.name, category, str(destination_path))
-                    files_to_process.append((item, category, destination_path))
+                if classification_mode == "embedding":
+                    content_embedding = get_embedding(
+                        content, model=embedding_model
+                    )
+                    if content_embedding:
+                        similarities = {
+                            category: cosine_similarity(
+                                content_embedding, cat_embedding
+                            )
+                            for category, cat_embedding in category_embeddings.items()
+                        }
+                        category = max(similarities, key=similarities.get)
+                    else:
+                        category = "Unknown"
                 else:
-                    logger.warning(f"Could not parse content from {item.name}")
+                    category = classify_content(content, categories, logger)
+
+                destination_path = destination_dir / category / item.name
+                table.add_row(item.name, category, str(destination_path))
+                files_to_process.append((item, category, destination_path))
             else:
                 logger.warning(f"No parser found for file type: {item.suffix}")
-
+    
     console.print(table)
 
     if mode != "dry-run":

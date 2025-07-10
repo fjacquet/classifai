@@ -1,0 +1,22 @@
+# ClassifAI Settings
+
+# List of file extensions to be treated as plain text, even if a specific
+# parser is not available.
+generic_text_extensions:
+  - .log
+  - .sh
+  - .pem
+  - .ppk
+  - .pass
+  - .csv
+  - .xml
+  - .json
+  - .ini
+  - .conf
+  - .cfg
+  - .md
+  - .txt
+  - .rtf
+  - .opml
+  - .vcf
+  - .ics
