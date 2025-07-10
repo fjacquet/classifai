@@ -9,9 +9,13 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from classifai.embedding_module import get_embedding, cosine_similarity
+from classifai.embedding_module import (
+    EmbeddingModelNotFoundError,
+    cosine_similarity,
+    get_embedding,
+)
 from classifai.file_operations_module import copy_file, move_file
-from classifai.logging_module import logger, setup_logger
+from classifai.logging_module import setup_logger
 from classifai.ollama_classification_module import classify_content
 from classifai.parsing_module import get_parser
 
@@ -78,12 +82,10 @@ def run(
             help="URL of the Ollama API.",
         ),
     ] = "http://localhost:11434",
-    verbose: Annotated[
-        bool, typer.Option("--verbose", "-v", help="Enable verbose output.")
-    ] = False,
-    log_file: Annotated[
-        Path, typer.Option("--log-file", help="Path to save the log file.")
-    ] = Path("logs/main.log"),
+    verbose: Annotated[bool, typer.Option("--verbose", "-v", help="Enable verbose output.")] = False,
+    log_file: Annotated[Path, typer.Option("--log-file", help="Path to save the log file.")] = Path(
+        "logs/main.log"
+    ),
 ):
     """
     Organize files in a directory using an Ollama language model.
@@ -115,12 +117,14 @@ def run(
         "Misc",
     ]
 
-    category_embeddings = {}
-    if classification_mode == "embedding":
-        for category in categories:
-            category_embeddings[category] = get_embedding(
-                category, model=embedding_model
-            )
+    try:
+        category_embeddings = {}
+        if classification_mode == "embedding":
+            for category in categories:
+                category_embeddings[category] = get_embedding(category, model=embedding_model)
+    except EmbeddingModelNotFoundError as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")
+        raise typer.Exit(code=1)
 
     table = Table(title="Classification Preview")
     table.add_column("File Name", style="cyan")
@@ -134,7 +138,7 @@ def run(
             parser = get_parser(item.suffix)
             if parser:
                 content = parser(str(item.absolute()))
-                
+
                 # Fallback to filename if content is empty
                 if not content.strip():
                     logger.info(
@@ -143,14 +147,10 @@ def run(
                     content = item.name
 
                 if classification_mode == "embedding":
-                    content_embedding = get_embedding(
-                        content, model=embedding_model
-                    )
+                    content_embedding = get_embedding(content, model=embedding_model)
                     if content_embedding:
                         similarities = {
-                            category: cosine_similarity(
-                                content_embedding, cat_embedding
-                            )
+                            category: cosine_similarity(content_embedding, cat_embedding)
                             for category, cat_embedding in category_embeddings.items()
                         }
                         category = max(similarities, key=similarities.get)
@@ -164,7 +164,7 @@ def run(
                 files_to_process.append((item, category, destination_path))
             else:
                 logger.warning(f"No parser found for file type: {item.suffix}")
-    
+
     console.print(table)
 
     if mode != "dry-run":

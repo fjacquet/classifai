@@ -2,10 +2,9 @@
 Tests for the file_operations_module.
 """
 
+import tempfile
 from contextlib import contextmanager
 from pathlib import Path
-import tempfile
-import shutil
 
 from classifai.file_operations_module import copy_file, move_file
 
@@ -46,9 +45,7 @@ def test_copy_file():
     """
     with create_test_env() as (source_dir, test_file):
         dest_dir = source_dir.parent / "destination"
-        copied_path_str = copy_file(
-            str(test_file.absolute()), str(dest_dir.absolute())
-        )
+        copied_path_str = copy_file(str(test_file.absolute()), str(dest_dir.absolute()))
         copied_path = Path(copied_path_str)
 
         assert copied_path.exists()

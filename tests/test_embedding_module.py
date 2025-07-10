@@ -3,7 +3,8 @@ Tests for the embedding_module.
 """
 
 import pytest
-from classifai.embedding_module import get_embedding, cosine_similarity
+
+from classifai.embedding_module import cosine_similarity, get_embedding
 
 
 def test_get_embedding_success(mocker):
@@ -12,9 +13,7 @@ def test_get_embedding_success(mocker):
     """
     mock_response = mocker.MagicMock()
     mock_response.data = [{"embedding": [0.1, 0.2, 0.3]}]
-    mocker.patch(
-        "classifai.embedding_module.embedding", return_value=mock_response
-    )
+    mocker.patch("classifai.embedding_module.embedding", return_value=mock_response)
 
     embedding = get_embedding("test text")
     assert embedding == [0.1, 0.2, 0.3]

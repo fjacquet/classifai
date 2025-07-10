@@ -1,37 +1,3 @@
-## 5. Architecture Refinement (Post-MVP)
-
-- [x] **Embeddings Implementation**:
-  - [x] Create `embedding_module.py` to generate embeddings for text content.
-  - [x] Implement logic to compare document embeddings with category embeddings.
-  - [x] Add a new classification mode (`--mode embeddings`) to the CLI.
-- [ ] **Documentation**:
-  - [x] Rename `docs/EMBEDDINGS.md` to `docs/ARCHITECTURE.md`.
-  - [x] Update `docs/ARCHITECTURE.md` to reflect the current technology stack and the new hybrid classification strategy.
-
-## 6. Parsing and Classification Refinement (Post-MVP)
-
-- [x] **Robust Parsing**:
-  - [x] Implement hierarchical parsing logic (specific parser -> generic text -> metadata fallback).
-  - [x] Create a generic text parser for unrecognized but text-like file types.
-  - [x] Improve image parser to handle OCR failures gracefully (no text found is not an error).
-- [x] **Classification Fallback**:
-  - [x] Update classification module to use filename and metadata when text content is empty.
-- [x] **Configuration**:
-  - [x] Add configuration for generic text file extensions.
-  - [ ] Add configuration to enable/disable vision model usage for images.
-
-## 7. Streamlit UI (Post-MVP)
-
-- [ ] Create `classifai_app.py`.
-- [ ] Build the main configuration screen.
-- [ ] Implement the "Scan" functionality.
-- [ ] Develop the "Preview & Validation" section.
-  - [ ] Display proposed classifications, language, and new filenames.
-  - [ ] Allow manual override of all suggested attributes.
-- [ ] Add action buttons ("Move", "Copy").
-- [ ] Implement progress bars and a real-time log display.
-- [ ] Write functional tests for the Streamlit app.
-
 ## 8. Advanced Features (Future)
 
 - [ ] **Language-Based Organization**:
@@ -112,3 +78,37 @@
 - [x] Write unit tests for `ollama_classification_module.py` (using `pytest-mock` for `litellm`).
 - [x] Write integration tests for the CLI workflow.
 - [x] Aim for high test coverage (`>80%`).
+
+### 5. Architecture Refinement (Post-MVP)
+
+- [x] **Embeddings Implementation**:
+  - [x] Create `embedding_module.py` to generate embeddings for text content.
+  - [x] Implement logic to compare document embeddings with category embeddings.
+  - [x] Add a new classification mode (`--mode embeddings`) to the CLI.
+- [x] **Documentation**:
+  - [x] Rename `docs/EMBEDDINGS.md` to `docs/ARCHITECTURE.md`.
+  - [x] Update `docs/ARCHITECTURE.md` to reflect the current technology stack and the new hybrid classification strategy.
+
+### 6. Parsing and Classification Refinement (Post-MVP)
+
+- [x] **Robust Parsing**:
+  - [x] Implement hierarchical parsing logic (specific parser -> generic text -> metadata fallback).
+  - [x] Create a generic text parser for unrecognized but text-like file types.
+  - [x] Improve image parser to handle OCR failures gracefully (no text found is not an error).
+- [x] **Classification Fallback**:
+  - [x] Update classification module to use filename and metadata when text content is empty.
+- [x] **Configuration**:
+  - [x] Add configuration for generic text file extensions.
+  - [ ] Add configuration to enable/disable vision model usage for images.
+
+### 7. Streamlit UI (Post-MVP)
+
+- [x] Create `classifai_app.py`.
+- [x] Build the main configuration screen.
+- [x] Implement the "Scan" functionality.
+- [x] Develop the "Preview & Validation" section.
+  - [x] Display proposed classifications, language, and new filenames.
+  - [x] Allow manual override of all suggested attributes.
+- [x] Add action buttons ("Move", "Copy").
+- [x] Implement progress bars and a real-time log display.
+- [x] Write functional tests for the Streamlit app.

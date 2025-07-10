@@ -391,3 +391,639 @@ For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/St
 2025-07-10 22:56:57 | INFO     | classifai.file_operations_module:_transfer_file:73 - Copied: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp3yf0szu7/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp3yf0szu7/destination/test.txt
 2025-07-10 22:56:57 | INFO     | classifai.file_operations_module:_transfer_file:70 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp414e7a63/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp414e7a63/destination/test (1).txt
 2025-07-10 22:56:57 | INFO     | classifai.parsing_module:parse_image:63 - OCR returned no text for image: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpzdrfkaw0/blank.png
+2025-07-10 23:01:19 | INFO     | classifai.classifai_cli:run:99 - Starting ClassifAI in dry-run mode.
+2025-07-10 23:01:19 | INFO     | classifai.classifai_cli:run:100 - Source directory: /Users/fjacquet/Downloads
+2025-07-10 23:01:19 | INFO     | classifai.classifai_cli:run:101 - Destination directory: /Users/fjacquet/sorted
+2025-07-10 23:01:19 | INFO     | classifai.classifai_cli:run:102 - Ollama model: gemma3n
+2025-07-10 23:01:19 | INFO     | classifai.classifai_cli:run:103 - Classification mode: completion
+2025-07-10 23:01:43 | INFO     | classifai.classifai_cli:run:99 - Starting ClassifAI in dry-run mode.
+2025-07-10 23:01:43 | INFO     | classifai.classifai_cli:run:100 - Source directory: /Users/fjacquet/Downloads
+2025-07-10 23:01:43 | INFO     | classifai.classifai_cli:run:101 - Destination directory: /Users/fjacquet/sorted
+2025-07-10 23:01:43 | INFO     | classifai.classifai_cli:run:102 - Ollama model: gemma3n
+2025-07-10 23:01:43 | INFO     | classifai.classifai_cli:run:103 - Classification mode: completion
+2025-07-10 23:01:56 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:01:59 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:18 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:18 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .backup
+2025-07-10 23:02:18 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:18 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:18 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .backup
+2025-07-10 23:02:47 | INFO     | classifai.classifai_cli:run:99 - Starting ClassifAI in dry-run mode.
+2025-07-10 23:02:47 | INFO     | classifai.classifai_cli:run:100 - Source directory: /Users/fjacquet/Downloads
+2025-07-10 23:02:47 | INFO     | classifai.classifai_cli:run:101 - Destination directory: /Users/fjacquet/sorted
+2025-07-10 23:02:47 | INFO     | classifai.classifai_cli:run:102 - Ollama model: gemma3n
+2025-07-10 23:02:47 | INFO     | classifai.classifai_cli:run:103 - Classification mode: embedding
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:47 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .backup
+2025-07-10 23:02:47 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:47 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:47 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .backup
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | INFO     | classifai.parsing_module:parse_image:63 - OCR returned no text for image: /Users/fjacquet/Downloads/e56faa46-18cf-4c8a-b2f1-b44b144fd148.png
+2025-07-10 23:02:47 | INFO     | classifai.classifai_cli:run:136 - Content for e56faa46-18cf-4c8a-b2f1-b44b144fd148.png is empty, falling back to filename for classification.
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:47 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .rdp
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | INFO     | classifai.classifai_cli:run:136 - Content for .localized is empty, falling back to filename for classification.
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .part
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .rtsz
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .xls
+2025-07-10 23:02:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:02:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:04:28 | INFO     | classifai.classifai_cli:run:99 - Starting ClassifAI in dry-run mode.
+2025-07-10 23:04:28 | INFO     | classifai.classifai_cli:run:100 - Source directory: /Users/fjacquet/Downloads
+2025-07-10 23:04:28 | INFO     | classifai.classifai_cli:run:101 - Destination directory: /Users/fjacquet/sorted
+2025-07-10 23:04:28 | INFO     | classifai.classifai_cli:run:102 - Ollama model: gemma3n
+2025-07-10 23:04:28 | INFO     | classifai.classifai_cli:run:103 - Classification mode: embedding
+2025-07-10 23:04:28 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:28 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:28 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:28 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:28 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:28 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:28 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:28 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:28 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:28 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:28 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:04:28 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:28 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:04:28 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:28 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:04:28 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .backup
+2025-07-10 23:04:28 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:04:28 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:04:28 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .backup
+2025-07-10 23:04:28 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:28 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:28 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:28 | INFO     | classifai.parsing_module:parse_image:63 - OCR returned no text for image: /Users/fjacquet/Downloads/e56faa46-18cf-4c8a-b2f1-b44b144fd148.png
+2025-07-10 23:04:28 | INFO     | classifai.classifai_cli:run:136 - Content for e56faa46-18cf-4c8a-b2f1-b44b144fd148.png is empty, falling back to filename for classification.
+2025-07-10 23:04:28 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:28 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .rdp
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | INFO     | classifai.classifai_cli:run:136 - Content for .localized is empty, falling back to filename for classification.
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .part
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:04:29 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .rtsz
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:04:29 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .xls
+2025-07-10 23:04:29 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:04:29 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:04:29 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:09:00 | INFO     | classifai.classifai_cli:run:99 - Starting ClassifAI in dry-run mode.
+2025-07-10 23:09:00 | INFO     | classifai.classifai_cli:run:100 - Source directory: /Users/fjacquet/Downloads
+2025-07-10 23:09:00 | INFO     | classifai.classifai_cli:run:101 - Destination directory: /Users/fjacquet/sorted
+2025-07-10 23:09:00 | INFO     | classifai.classifai_cli:run:102 - Ollama model: gemma3n
+2025-07-10 23:09:00 | INFO     | classifai.classifai_cli:run:103 - Classification mode: embedding
+2025-07-10 23:09:00 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:00 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:09:01 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .backup
+2025-07-10 23:09:01 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:09:01 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:09:01 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .backup
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | INFO     | classifai.parsing_module:parse_image:63 - OCR returned no text for image: /Users/fjacquet/Downloads/e56faa46-18cf-4c8a-b2f1-b44b144fd148.png
+2025-07-10 23:09:01 | INFO     | classifai.classifai_cli:run:136 - Content for e56faa46-18cf-4c8a-b2f1-b44b144fd148.png is empty, falling back to filename for classification.
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .rdp
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | INFO     | classifai.classifai_cli:run:136 - Content for .localized is empty, falling back to filename for classification.
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .part
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:09:01 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .rtsz
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:09:01 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .xls
+2025-07-10 23:09:01 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:09:01 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:01 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:02 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:02 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:02 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:02 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:02 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:09:02 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:02 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:09:02 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:02 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:02 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:09:02 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:02 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:09:02 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:02 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:02 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:02 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:02 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:09:02 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:02 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:09:02 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:10:07 | INFO     | classifai.classifai_cli:run:99 - Starting ClassifAI in dry-run mode.
+2025-07-10 23:10:07 | INFO     | classifai.classifai_cli:run:100 - Source directory: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpdr5vwp1_/cli_source
+2025-07-10 23:10:07 | INFO     | classifai.classifai_cli:run:101 - Destination directory: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpdr5vwp1_/cli_source
+2025-07-10 23:10:07 | INFO     | classifai.classifai_cli:run:102 - Ollama model: gemma3n
+2025-07-10 23:10:07 | INFO     | classifai.classifai_cli:run:103 - Classification mode: completion
+2025-07-10 23:10:07 | ERROR    | classifai.parsing_module:parse_pdf:28 - Error parsing PDF file /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpdr5vwp1_/cli_source/document.pdf: Failed to open file '/var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpdr5vwp1_/cli_source/document.pdf'.
+2025-07-10 23:10:07 | INFO     | classifai.classifai_cli:run:136 - Content for document.pdf is empty, falling back to filename for classification.
+2025-07-10 23:10:07 | INFO     | classifai.classifai_cli:run:99 - Starting ClassifAI in move mode.
+2025-07-10 23:10:07 | INFO     | classifai.classifai_cli:run:100 - Source directory: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpqkxbcchh/cli_source
+2025-07-10 23:10:07 | INFO     | classifai.classifai_cli:run:101 - Destination directory: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpqkxbcchh/cli_dest
+2025-07-10 23:10:07 | INFO     | classifai.classifai_cli:run:102 - Ollama model: gemma3n
+2025-07-10 23:10:07 | INFO     | classifai.classifai_cli:run:103 - Classification mode: completion
+2025-07-10 23:10:07 | ERROR    | classifai.parsing_module:parse_pdf:28 - Error parsing PDF file /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpqkxbcchh/cli_source/document.pdf: Failed to open file '/var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpqkxbcchh/cli_source/document.pdf'.
+2025-07-10 23:10:07 | INFO     | classifai.classifai_cli:run:136 - Content for document.pdf is empty, falling back to filename for classification.
+2025-07-10 23:10:07 | INFO     | classifai.file_operations_module:_transfer_file:70 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpqkxbcchh/cli_source/document.pdf -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpqkxbcchh/cli_dest/Documents/document.pdf
+2025-07-10 23:10:07 | INFO     | classifai.file_operations_module:_transfer_file:70 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpqkxbcchh/cli_source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpqkxbcchh/cli_dest/Documents/test.txt
+2025-07-10 23:10:07 | INFO     | classifai.classifai_cli:run:170 - File operations completed.
+2025-07-10 23:10:07 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: API Error
+2025-07-10 23:10:07 | INFO     | classifai.file_operations_module:_transfer_file:70 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp46ddu6s8/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp46ddu6s8/destination/test.txt
+2025-07-10 23:10:07 | INFO     | classifai.file_operations_module:_transfer_file:73 - Copied: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpfk_hmb01/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpfk_hmb01/destination/test.txt
+2025-07-10 23:10:07 | INFO     | classifai.file_operations_module:_transfer_file:70 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpye9rwpbv/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpye9rwpbv/destination/test (1).txt
+2025-07-10 23:10:07 | INFO     | classifai.parsing_module:parse_image:63 - OCR returned no text for image: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpig9uy5f6/blank.png
+2025-07-10 23:10:48 | INFO     | classifai.classifai_cli:run:99 - Starting ClassifAI in dry-run mode.
+2025-07-10 23:10:48 | INFO     | classifai.classifai_cli:run:100 - Source directory: /Users/fjacquet/Downloads
+2025-07-10 23:10:48 | INFO     | classifai.classifai_cli:run:101 - Destination directory: /Users/fjacquet/sorted
+2025-07-10 23:10:48 | INFO     | classifai.classifai_cli:run:102 - Ollama model: gemma3n
+2025-07-10 23:10:48 | INFO     | classifai.classifai_cli:run:103 - Classification mode: embedding
+2025-07-10 23:10:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:10:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:10:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:10:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .backup
+2025-07-10 23:10:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:10:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:10:48 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .backup
+2025-07-10 23:10:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:48 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | INFO     | classifai.parsing_module:parse_image:63 - OCR returned no text for image: /Users/fjacquet/Downloads/e56faa46-18cf-4c8a-b2f1-b44b144fd148.png
+2025-07-10 23:10:49 | INFO     | classifai.classifai_cli:run:136 - Content for e56faa46-18cf-4c8a-b2f1-b44b144fd148.png is empty, falling back to filename for classification.
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .rdp
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | INFO     | classifai.classifai_cli:run:136 - Content for .localized is empty, falling back to filename for classification.
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .part
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:10:49 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .rtsz
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:10:49 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .xls
+2025-07-10 23:10:49 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:10:49 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | ERROR    | classifai.embedding_module:get_embedding:38 - Error generating embedding: litellm.APIConnectionError: OllamaException - Client error '404 Not Found' for url 'http://localhost:11434/api/embed'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+2025-07-10 23:10:49 | WARNING  | classifai.classifai_cli:run:158 - No parser found for file type: .zip
+2025-07-10 23:12:48 | INFO     | classifai.classifai_cli:run:105 - Starting ClassifAI in dry-run mode.
+2025-07-10 23:12:48 | INFO     | classifai.classifai_cli:run:106 - Source directory: /Users/fjacquet/Downloads
+2025-07-10 23:12:48 | INFO     | classifai.classifai_cli:run:107 - Destination directory: /Users/fjacquet/sorted
+2025-07-10 23:12:48 | INFO     | classifai.classifai_cli:run:108 - Ollama model: gemma3n
+2025-07-10 23:12:48 | INFO     | classifai.classifai_cli:run:109 - Classification mode: embedding
+2025-07-10 23:12:49 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .zip
+2025-07-10 23:12:49 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .zip
+2025-07-10 23:12:50 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .zip
+2025-07-10 23:12:50 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .backup
+2025-07-10 23:12:50 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .zip
+2025-07-10 23:12:50 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .zip
+2025-07-10 23:12:50 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .backup
+2025-07-10 23:12:50 | INFO     | classifai.parsing_module:parse_image:63 - OCR returned no text for image: /Users/fjacquet/Downloads/e56faa46-18cf-4c8a-b2f1-b44b144fd148.png
+2025-07-10 23:12:50 | INFO     | classifai.classifai_cli:run:148 - Content for e56faa46-18cf-4c8a-b2f1-b44b144fd148.png is empty, falling back to filename for classification.
+2025-07-10 23:12:51 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .zip
+2025-07-10 23:12:51 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .rdp
+2025-07-10 23:12:52 | INFO     | classifai.classifai_cli:run:148 - Content for .localized is empty, falling back to filename for classification.
+2025-07-10 23:12:52 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .zip
+2025-07-10 23:12:52 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .part
+2025-07-10 23:12:52 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .zip
+2025-07-10 23:12:52 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .rtsz
+2025-07-10 23:12:53 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .zip
+2025-07-10 23:12:53 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .xls
+2025-07-10 23:12:53 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .zip
+2025-07-10 23:12:53 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .zip
+2025-07-10 23:12:54 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .zip
+2025-07-10 23:12:54 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .zip
+2025-07-10 23:12:55 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .zip
+2025-07-10 23:12:55 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .zip
+2025-07-10 23:12:55 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .zip
+2025-07-10 23:12:56 | WARNING  | classifai.classifai_cli:run:174 - No parser found for file type: .zip
+2025-07-10 23:14:04 | INFO     | classifai.classifai_cli:run:105 - Starting ClassifAI in dry-run mode.
+2025-07-10 23:14:04 | INFO     | classifai.classifai_cli:run:106 - Source directory: .
+2025-07-10 23:14:04 | INFO     | classifai.classifai_cli:run:107 - Destination directory: .
+2025-07-10 23:14:04 | INFO     | classifai.classifai_cli:run:108 - Ollama model: gemma3n
+2025-07-10 23:14:04 | INFO     | classifai.classifai_cli:run:109 - Classification mode: embedding
+2025-07-10 23:14:04 | ERROR    | classifai.embedding_module:get_embedding:53 - Error generating embedding: API Error
+2025-07-10 23:14:04 | INFO     | classifai.file_operations_module:_transfer_file:70 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpam0sl3jf/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpam0sl3jf/destination/test.txt
+2025-07-10 23:14:04 | INFO     | classifai.file_operations_module:_transfer_file:73 - Copied: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp2yjeok92/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp2yjeok92/destination/test.txt
+2025-07-10 23:14:04 | INFO     | classifai.file_operations_module:_transfer_file:70 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp5s0z5_6d/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp5s0z5_6d/destination/test (1).txt
+2025-07-10 23:14:04 | INFO     | classifai.parsing_module:parse_image:63 - OCR returned no text for image: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpacc4f93z/blank.png

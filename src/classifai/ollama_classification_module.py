@@ -6,7 +6,6 @@ to classify the content of documents.
 """
 
 from litellm import completion
-from loguru import logger
 
 from classifai.config import OLLAMA_API_URL, OLLAMA_MODEL_NAME
 
@@ -35,9 +34,7 @@ def classify_content(content: str, categories: list[str], logger) -> str:
     """
 
     try:
-        model_prefix = (
-            "ollama_chat/" if "chat" in OLLAMA_MODEL_NAME.lower() else "ollama/"
-        )
+        model_prefix = "ollama_chat/" if "chat" in OLLAMA_MODEL_NAME.lower() else "ollama/"
         model_to_use = f"{model_prefix}{OLLAMA_MODEL_NAME}"
 
         response = completion(

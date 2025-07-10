@@ -7,9 +7,9 @@ This module encapsulates the logic for extracting content from various file type
 import fitz  # PyMuPDF
 import openpyxl
 import pytesseract
-from PIL import Image, UnidentifiedImageError
 from docx import Document
 from loguru import logger
+from PIL import Image, UnidentifiedImageError
 
 from classifai.config import GENERIC_TEXT_EXTENSIONS
 
@@ -79,13 +79,11 @@ def parse_generic_text(file_path: str) -> str:
     encodings = ["utf-8", "latin-1", "iso-8859-1"]
     for encoding in encodings:
         try:
-            with open(file_path, "r", encoding=encoding) as f:
+            with open(file_path, encoding=encoding) as f:
                 return f.read()
         except UnicodeDecodeError:
             continue
-    logger.warning(
-        f"Could not decode file {file_path} with any of the default encodings."
-    )
+    logger.warning(f"Could not decode file {file_path} with any of the default encodings.")
     return ""
 
 

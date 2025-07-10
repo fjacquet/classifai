@@ -75,7 +75,5 @@ def _transfer_file(source_path: str, destination_dir: str, operation: str) -> st
         return str(new_file_path)
 
     except Exception as e:
-        logger.error(
-            f"Error {operation}ing file {source_path} to {destination_dir}: {e}"
-        )
+        logger.error(f"Error {operation}ing file {source_path} to {destination_dir}: {e}")
         return ""

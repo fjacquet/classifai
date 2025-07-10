@@ -1,5 +1,5 @@
+---
 # ClassifAI Settings
-
 # List of file extensions to be treated as plain text, even if a specific
 # parser is not available.
 generic_text_extensions:

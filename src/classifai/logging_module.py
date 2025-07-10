@@ -17,7 +17,6 @@ def setup_logger(log_level="INFO", log_file=None):
         log_level (str): The logging level (e.g., "INFO", "DEBUG").
         log_file (str, optional): Path to a file to save logs. Defaults to None.
     """
-    from loguru import logger
 
     logger.remove()  # Remove default handler
 
@@ -39,10 +38,7 @@ def setup_logger(log_level="INFO", log_file=None):
         logger.add(
             log_file,
             level=log_level.upper(),
-            format=(
-                "{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | "
-                "{name}:{function}:{line} - {message}"
-            ),
+            format=("{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}"),
             rotation="10 MB",  # Rotates the file when it reaches 10 MB
             retention="7 days",  # Keeps logs for 7 days
             enqueue=True,  # Makes logging thread-safe
@@ -50,4 +46,3 @@ def setup_logger(log_level="INFO", log_file=None):
             diagnose=True,  # Adds exception variable values
         )
     return logger
-

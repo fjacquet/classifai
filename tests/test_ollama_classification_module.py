@@ -2,7 +2,6 @@
 Tests for the ollama_classification_module.
 """
 
-import pytest
 from classifai.ollama_classification_module import classify_content
 
 

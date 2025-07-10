@@ -4,12 +4,18 @@ Embedding module for ClassifAI.
 This module handles the generation of text embeddings using Ollama.
 """
 
-from litellm import embedding
+from litellm import APIConnectionError, embedding
 from loguru import logger
 from numpy import dot
 from numpy.linalg import norm
 
 from classifai.config import OLLAMA_API_URL, OLLAMA_EMBEDDING_MODEL_NAME
+
+
+class EmbeddingModelNotFoundError(Exception):
+    """Custom exception for when the embedding model is not found."""
+
+    pass
 
 
 def get_embedding(text: str, model: str = None) -> list[float]:
@@ -18,7 +24,7 @@ def get_embedding(text: str, model: str = None) -> list[float]:
 
     Args:
         text (str): The text to embed.
-        model (str, optional): The name of the embedding model to use. 
+        model (str, optional): The name of the embedding model to use.
                                Defaults to the one in the config.
 
     Returns:
@@ -34,6 +40,15 @@ def get_embedding(text: str, model: str = None) -> list[float]:
             api_base=OLLAMA_API_URL,
         )
         return response.data[0]["embedding"]
+    except APIConnectionError as e:
+        if "404" in str(e):
+            raise EmbeddingModelNotFoundError(
+                f"Embedding model '{model}' not found on the Ollama server. "
+                f"Please pull the model using: ollama pull {model}"
+            )
+        else:
+            logger.error(f"API connection error: {e}")
+            return []
     except Exception as e:
         logger.error(f"Error generating embedding: {e}")
         return []

@@ -2,23 +2,21 @@
 Tests for the parsing_module.
 """
 
+import tempfile
 from contextlib import contextmanager
 from pathlib import Path
-import tempfile
+
 import openpyxl
-import pytest
 from PIL import Image
 
 from classifai.parsing_module import (
     get_parser,
-    parse_docx,
+    parse_generic_text,
     parse_image,
     parse_pdf,
     parse_txt,
     parse_xlsx,
-    parse_generic_text,
 )
-from classifai.config import GENERIC_TEXT_EXTENSIONS
 
 
 @contextmanager

@@ -32,10 +32,12 @@ license = {text = "MIT"}
 dev-dependencies = []
 
 
+[tool.ruff]
+line-length = 110
+
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP"]
 ignore = []
-line-length = 110
 
 [tool.pytest.ini_options]
 minversion = "6.0"
