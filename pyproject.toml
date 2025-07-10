@@ -1,0 +1,49 @@
+[project]
+name = "classifai"
+version = "0.1.0"
+description = "Classify and organize your files with local AI models."
+authors = [
+    {name = "Your Name", email = "you@example.com"},
+]
+dependencies = [
+    "python-dotenv",
+    "litellm",
+    "pymupdf",
+    "python-docx",
+    "openpyxl",
+    "pillow",
+    "pytesseract",
+    "typer",
+    "loguru",
+    "ruff",
+    "yamlfix",
+    "pytest",
+    "pytest-mock",
+    "pytest-cov",
+    "faker",
+    "streamlit",
+    "ollama",
+]
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "MIT"}
+
+[tool.uv]
+dev-dependencies = []
+
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+ignore = []
+line-length = 110
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-v -rA --cov=src/classifai --cov-report=term-missing"
+testpaths = [
+    "tests",
+]
+pythonpath = ["src"]
+
+[tool.yamlfix]
+line-length = 110

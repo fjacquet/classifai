@@ -1,0 +1,56 @@
+2025-07-10 22:18:19 | INFO     | classifai.classifai_cli:run:80 - Starting ClassifAI in dry-run mode.
+2025-07-10 22:18:19 | INFO     | classifai.classifai_cli:run:81 - Source directory: /Users/fjacquet/Downloads
+2025-07-10 22:18:19 | INFO     | classifai.classifai_cli:run:82 - Destination directory: /Users/fjacquet/sorted
+2025-07-10 22:18:19 | INFO     | classifai.classifai_cli:run:83 - Ollama model: gemma3n
+2025-07-10 22:18:26 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .pem
+2025-07-10 22:18:26 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .xlsx
+2025-07-10 22:18:26 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .zip
+2025-07-10 22:18:26 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .sh
+2025-07-10 22:18:26 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .zip
+2025-07-10 22:18:45 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .zip
+2025-07-10 22:18:45 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .backup
+2025-07-10 22:18:45 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .zip
+2025-07-10 22:18:45 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .zip
+2025-07-10 22:18:45 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .backup
+2025-07-10 22:18:45 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .ppk
+2025-07-10 22:18:45 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .pass
+2025-07-10 22:18:45 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: 
+2025-07-10 22:18:47 | WARNING  | classifai.classifai_cli:run:114 - Could not parse content from e56faa46-18cf-4c8a-b2f1-b44b144fd148.png
+2025-07-10 22:18:47 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .log
+2025-07-10 22:19:09 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .zip
+2025-07-10 22:19:09 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .xlsx
+2025-07-10 22:19:43 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .rdp
+2025-07-10 22:20:01 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .csv
+2025-07-10 22:20:01 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .xlsx
+2025-07-10 22:20:01 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: 
+2025-07-10 22:20:01 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .zip
+2025-07-10 22:20:18 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .part
+2025-07-10 22:20:18 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .pem
+2025-07-10 22:20:18 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .zip
+2025-07-10 22:20:18 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .rtsz
+2025-07-10 22:20:18 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .csv
+2025-07-10 22:20:18 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .opml
+2025-07-10 22:20:18 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .zip
+2025-07-10 22:20:18 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .xls
+2025-07-10 22:20:18 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .zip
+2025-07-10 22:20:18 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .zip
+2025-07-10 22:20:22 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .xlsx
+2025-07-10 22:20:32 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .xlsx
+2025-07-10 22:20:32 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .xlsx
+2025-07-10 22:20:43 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .csv
+2025-07-10 22:20:43 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .csv
+2025-07-10 22:20:43 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .xlsx
+2025-07-10 22:20:43 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .xml
+2025-07-10 22:20:43 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .xml
+2025-07-10 22:20:43 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .zip
+2025-07-10 22:20:47 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .zip
+2025-07-10 22:20:47 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .ics
+2025-07-10 22:20:47 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .xlsx
+2025-07-10 22:20:47 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .zip
+2025-07-10 22:20:47 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .csv
+2025-07-10 22:20:47 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .zip
+2025-07-10 22:21:03 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .ics
+2025-07-10 22:21:03 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .csv
+2025-07-10 22:21:03 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .vcf
+2025-07-10 22:21:03 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .zip
+2025-07-10 22:21:29 | WARNING  | classifai.classifai_cli:run:116 - No parser found for file type: .zip
