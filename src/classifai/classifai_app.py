@@ -10,7 +10,6 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
-from loguru import logger
 
 from classifai.config import (
     OLLAMA_API_URL,
@@ -18,14 +17,8 @@ from classifai.config import (
     OLLAMA_MODEL_NAME,
     USE_VISION_MODEL,
 )
-from classifai.embedding_module import cosine_similarity, get_embedding
+from classifai.core_logic import run_scan
 from classifai.file_operations_module import copy_file, move_file
-from classifai.ollama_classification_module import (
-    classify_content,
-    classify_image_with_vision,
-)
-from classifai.parsing_module import get_parser
-from classifai.utils import detect_language
 
 # --- Page Configuration ---
 st.set_page_config(
@@ -44,149 +37,7 @@ if "destination_dir" not in st.session_state:
     st.session_state.destination_dir = str(Path.home() / "Documents" / "Classified")
 
 
-def process_file(
-    item: Path,
-    destination_dir: Path,
-    classification_mode: str,
-    embedding_model: str,
-    rename_files: bool,
-    use_vision: bool,
-    language_subfolders: bool,
-    logger,
-    categories: list[str],
-    category_embeddings: dict,
-):
-    """
-    Processes a single file: parses, classifies, and determines the destination.
-    """
-    parser = get_parser(item.suffix)
-    if not parser:
-        logger.warning(f"No parser found for file type: {item.suffix}")
-        return None
-
-    content, metadata = parser(str(item.absolute()))
-    if not content.strip():
-        logger.info(
-            f"Content for {item.name} is empty, falling back to filename for classification."
-        )
-        content = item.name
-
-    if use_vision and item.suffix.lower() in [
-        ".png",
-        ".jpg",
-        ".jpeg",
-        ".tiff",
-        ".bmp",
-    ]:
-        vision_content = classify_image_with_vision(str(item.absolute()), logger)
-        if vision_content:
-            content = vision_content
-
-    language = detect_language(content) or "N/A"
-
-    if classification_mode == "embedding":
-        content_embedding = get_embedding(content, model=embedding_model)
-        if content_embedding:
-            similarities = {
-                category: cosine_similarity(content_embedding, cat_embedding)
-                for category, cat_embedding in category_embeddings.items()
-            }
-            category = max(similarities, key=similarities.get)
-            new_filename = None
-        else:
-            category = "Unknown"
-            new_filename = None
-    else:
-        result = classify_content(content, categories, str(item.absolute()), logger)
-        category = result.get("category", "Unknown")
-        new_filename = result.get("new_filename")
-
-    final_filename = new_filename if rename_files and new_filename else item.name
-
-    destination_path = destination_dir / category
-    if language_subfolders and language != "N/A":
-        destination_path = destination_path / language
-    destination_path = destination_path / final_filename
-
-    return item, category, destination_path, language, metadata
-
-
-def run_scan(
-    source_dir_str: str,
-    dest_dir_str: str,
-    class_mode: str,
-    model: str,
-    url: str,
-    language_subfolders: bool,
-    rename_files: bool,
-    use_vision: bool,
-):
-    """
-    Scans the source directory, classifies files, and returns a DataFrame.
-    """
-    source_path = Path(source_dir_str)
-    dest_path = Path(dest_dir_str)
-    results = []
-
-    if not source_path.is_dir():
-        st.error(f"Source directory not found: {source_path}")
-        return pd.DataFrame()
-
-    # Default categories for now, will be configurable later
-    categories = [
-        "Documents",
-        "Images",
-        "Videos",
-        "Audio",
-        "Archives",
-        "Scripts",
-        "Misc",
-    ]
-
-    category_embeddings = {}
-    if class_mode == "embedding":
-        with st.spinner("Generating category embeddings..."):
-            for category in categories:
-                category_embeddings[category] = get_embedding(category, model=model)
-
-    progress_bar = st.progress(0)
-    files = [f for f in source_path.iterdir() if f.is_file()]
-    total_files = len(files)
-
-    for i, item in enumerate(files):
-        progress_bar.progress((i + 1) / total_files, text=f"Processing: {item.name}")
-        result = process_file(
-            item,
-            dest_path,
-            class_mode,
-            model,
-            rename_files,
-            use_vision,
-            language_subfolders,
-            logger,
-            categories,
-            category_embeddings,
-        )
-        if result:
-            file, category, dest_path, language, metadata = result
-            results.append(
-                {
-                    "File Name": file.name,
-                    "Language": language,
-                    "Category": category,
-                    "New Filename": dest_path.name,
-                    "Destination Path": str(dest_path),
-                    "Source Path": str(file.absolute()),
-                    "Metadata": metadata,
-                }
-            )
-    progress_bar.empty()
-    return pd.DataFrame(results)
-
-
-def execute_file_operations(
-    df: pd.DataFrame, operation: str, language_subfolders: bool, rename_files: bool
-):
+def execute_file_operations(df: pd.DataFrame, operation: str, language_subfolders: bool, rename_files: bool):
     """
     Executes the file operations (move or copy) based on the DataFrame.
     """
@@ -205,35 +56,34 @@ def execute_file_operations(
         metadata = row["Metadata"]
         language = row["Language"]
         new_filename = row["New Filename"]
+        issuer = row["Issuer"]
 
-        progress_bar.progress(
-            (i + 1) / total_ops, text=f"{operation.capitalize()}ing: {row['File Name']}"
-        )
+        progress_bar.progress((i + 1) / total_ops, text=f"{operation.capitalize()}ing: {row['File Name']}")
 
         if operation == "move":
             result = move_file(
                 source_path,
-                str(dest_dir.parent),
+                str(dest_dir.parent.parent),
                 metadata,
                 language if language_subfolders else None,
                 new_filename if rename_files else None,
+                issuer,
             )
         else:
             result = copy_file(
                 source_path,
-                str(dest_dir.parent),
+                str(dest_dir.parent.parent),
                 metadata,
                 language if language_subfolders else None,
                 new_filename if rename_files else None,
+                issuer,
             )
 
         if result:
             success_count += 1
 
     progress_bar.empty()
-    st.success(
-        f"Successfully {operation}ed {success_count} out of {total_ops} files."
-    )
+    st.success(f"Successfully {operation}ed {success_count} out of {total_ops} files.")
     st.session_state.scan_results = pd.DataFrame()  # Clear results
 
 
@@ -328,15 +178,11 @@ if not st.session_state.scan_results.empty:
 
     with col2:
         if st.button("Copy Files", use_container_width=True):
-            execute_file_operations(
-                edited_df, "copy", language_subfolders, rename_files
-            )
+            execute_file_operations(edited_df, "copy", language_subfolders, rename_files)
 
     with col3:
         if st.button("Move Files", type="primary", use_container_width=True):
-            execute_file_operations(
-                edited_df, "move", language_subfolders, rename_files
-            )
+            execute_file_operations(edited_df, "move", language_subfolders, rename_files)
 
 else:
     st.info("Click 'Scan Directory' in the sidebar to begin.")

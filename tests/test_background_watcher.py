@@ -1,6 +1,7 @@
 """
 Tests for the background_watcher module.
 """
+
 import time
 from pathlib import Path
 
@@ -26,17 +27,7 @@ def test_new_file_handler(mocker, test_env):
     Tests that the NewFileHandler correctly processes a new file.
     """
     source_dir, dest_dir = test_env
-    mock_process_file = mocker.patch(
-        "classifai.background_watcher.process_file",
-        return_value=(
-            source_dir / "test.txt",
-            "Documents",
-            dest_dir / "Documents" / "test.txt",
-            "en",
-            {},
-        ),
-    )
-    mock_move_file = mocker.patch("classifai.background_watcher.move_file")
+    mock_run_scan = mocker.patch("classifai.background_watcher.run_scan")
 
     handler = NewFileHandler(dest_dir, "move", "completion")
 
@@ -47,12 +38,11 @@ def test_new_file_handler(mocker, test_env):
     # The event object needs a src_path attribute
     class MockEvent:
         is_directory = False
-        src_path = new_file_path
+        src_path = str(new_file_path)
 
     handler.on_created(MockEvent())
 
     # Allow some time for the event to be processed
     time.sleep(0.1)
 
-    mock_process_file.assert_called_once()
-    mock_move_file.assert_called_once()
+    mock_run_scan.assert_called_once()

@@ -31,7 +31,7 @@ def test_log_and_get_history(mock_history_file: Path):
     assert last_op["operation"] == "copy"
     assert last_op["source"] == "/src/image.jpg"
 
-    with open(mock_history_file, "r") as f:
+    with open(mock_history_file) as f:
         history = json.load(f)
     assert len(history) == 2
 

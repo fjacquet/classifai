@@ -1,135 +1,76 @@
-## 8. Contextual Intelligence & Advanced Parsing (Post-MVP)
+# ClassifAI - TODO
 
-- [x] **Knowledge-Based Classification**:
-  - [x] Create `knowledge_base_module.py` to handle `debitors.yaml`.
-  - [x] Create `config/debitors.yaml` with example data.
-  - [x] Update classification module to pre-classify using the knowledge base.
-  - [x] Update UI/CLI to show rule-based classification source.
-- [x] **Advanced Parsing with Pandoc**:
-  - [x] Add new dependencies (`beautifulsoup4`, `striprtf`, `extract-msg`).
-  - [x] Refactor `parsing_module.py` to use a hierarchical approach with Pandoc as a fallback.
-  - [x] Update documentation to include `pandoc` as a system dependency.
-- [x] **EXIF-Based Photo Organization**:
-  - [x] Enhance image parser to extract all relevant EXIF data.
-  - [x] Create `geocoding_module.py` to handle reverse geocoding.
-  - [x] Update file operations to create date/location-based folders for photos.
-  - [x] Enhance classification prompts with EXIF data.
-  - [x] Add configuration for photo organization strategy.
-- [x] **Custom Rules**:
-  - [x] Implement a rules engine for pre-classification based on filename or path.
-- [x] **Language-Based Organization**:
-  - [x] Integrate a language detection library (e.g., `langdetect`).
+This document tracks the remaining tasks and the history of completed work for the ClassifAI project.
+
+---
+
+## Remaining Tasks
+
+### 1. Finalizing Core Functionality
+
+- [x] **Structured Renaming & Organization**:
+  - [x] Implement the full folder structure: `Langue/Émetteur/Catégorie/`.
+  - [x] Ensure the filename format `Date_Titre_Court_Document.ext` is correctly applied.
+  - [ ] Ensure the filename format `Date_Titre_Court_Document.ext` is correctly applied.
 - [ ] **Expanded Format Support**:
-  - [ ] Add support for audio and video transcription.
-  - [x] Add support for parsing archive contents (`.zip`, etc.).
-  - [x] Update file operations to create language-based subfolders (`/en`, `/fr`).
-- [x] **AI-Powered Renaming**:
-  - [x] Enhance Ollama prompts to extract issuer, date, and a short title.
-  - [x] Implement structured file renaming logic.
-
-- [x] **History and Undo**:
-  - [x] Create `history_module.py` to log all file operations.
-  - [x] Implement an `undo` command.
-
-
-## 9. Advanced Features (Future)
-
-
-- [x] **Vision Model Integration**:
-  - [x] Integrate `ollama/llava` for advanced image classification.
-- [x] **Background Watching**:
-  - [x] Implement a background process to watch a folder for new files.
+  - [ ] Add a dedicated parser for `.msg` files using the `extract-msg` library.
+  - [ ] Re-attempt robust integration of audio/video transcription (deferred).
 
 ---
 
 ## Completed Tasks
 
-### 1. Environment Setup
+### 1. Environment & Core Setup
 
-- [x] Install Ollama and pull a base model (e.g., `gemma3n`).
+- [x] Install Ollama and pull a base model.
 - [x] Initialize project structure (source, tests, docs).
 - [x] Set up `uv` for dependency management.
 - [x] Configure `pytest`, `pytest-mock`, `faker`, and `coverage.py`.
 - [x] Configure `ruff` for linting and formatting.
 - [x] Configure `yamlfix` for YAML files.
 - [x] Create `.env.example` and add `.env` to `.gitignore`.
+- [x] Implement core logic modules (`parsing`, `ollama_classification`, `file_operations`, `utils`, `logging`).
 
-### 2. Core Logic Modules (MVP)
+### 2. CLI and UI Implementation
 
-- [x] **`parsing_module.py`**:
-  - [x] Implement PDF parsing (`PyMuPDF`).
-  - [x] Implement basic text file parsing (.txt, .md).
-  - [x] Implement Word document parsing (`python-docx`).
-  - [x] Implement image OCR parsing (`Pillow`, `pytesseract`).
-  - [x] Handle parsing errors gracefully.
-- [x] **`ollama_classification_module.py`**:
-  - [x] Load Ollama configuration from `.env` (`python-dotenv`).
-  - [x] Interface with Ollama via `litellm`.
-  - [x] Implement prompt engineering for classification.
-  - [x] Handle API errors (server down, model not found).
-- [x] **`file_operations_module.py`**:
-  - [x] Implement file `move` logic.
-  - [x] Implement file `copy` logic.
-  - [x] Implement name conflict resolution (e.g., `file (1).txt`).
-  - [x] Ensure all operations use absolute paths.
-- [x] **`utils.py`**:
-  - [x] Add any shared utility functions.
-- [x] **`logging_module.py`**:
-  - [x] Set up basic logging for operations and errors using `loguru`.
+- [x] Implement the command-line interface (CLI) with all options.
+- [x] Implement the Streamlit web application (UI).
+- [x] Implement "dry-run" mode and user confirmation.
+- [x] Implement progress bars and real-time logging in the UI.
 
-### 3. CLI Implementation (MVP)
+### 3. Advanced Parsing & Classification
 
-- [x] Create `classifai_cli.py` (or similar).
-- [x] Implement argument parsing (using `argparse` or `typer`).
-  - [x] `-s, --source-dir`
-  - [x] `-d, --destination-dir`
-  - [x] `-m, --mode` (dry-run, move, copy)
-  - [x] `-ai, --ollama-model`
-  - [x] `-url, --ollama-url`
-  - [x] `-v, --verbose`
-  - [x] `--log-file`
-- [x] Implement `dry-run` mode to display proposed changes.
-- [x] Implement `move` and `copy` modes with user confirmation.
-- [x] Display a post-execution summary.
+- [x] **Knowledge-Based Classification**:
+  - [x] Create `knowledge_base_module.py` to handle `debitors.yaml`.
+- [x] **Advanced Parsing with Pandoc**:
+  - [x] Refactor `parsing_module.py` to use a hierarchical approach with Pandoc as a fallback.
+  - [x] Added parsers for `.html`, `.rtf`, `.eml`.
+- [x] **EXIF-Based Photo Organization**:
+  - [x] Enhance image parser to extract all relevant EXIF data.
+  - [x] Create `geocoding_module.py` to handle reverse geocoding.
+  - [x] Update file operations to create date/location-based folders for photos.
+- [x] **Custom Rules**:
+  - [x] Implement a rules engine for pre-classification based on filename or path.
+- [x] **Language-Based Organization**:
+  - [x] Integrate a language detection library (`langdetect`).
+  - [x] Update file operations to create language-based subfolders.
+- [x] **Archive Support**:
+  - [x] Add support for parsing archive contents (`.zip`, etc.).
+- [x] **AI-Powered Renaming (Initial)**:
+  - [x] Enhance Ollama prompts to extract issuer, date, and a short title.
 
-### 4. Testing (MVP)
+### 4. Advanced Features
 
-- [x] Write unit tests for `parsing_module.py`.
-- [x] Write unit tests for `file_operations_module.py`.
-- [x] Write unit tests for `ollama_classification_module.py` (using `pytest-mock` for `litellm`).
-- [x] Write integration tests for the CLI workflow.
-- [x] Aim for high test coverage (`>80%`).
+- [x] **History and Undo**:
+  - [x] Create `history_module.py` to log all file operations.
+  - [x] Implement an `undo` command.
+- [x] **Vision Model Integration**:
+  - [x] Integrate `ollama/llava` for advanced image classification.
+- [x] **Background Watching**:
+  - [x] Implement a background process to watch a folder for new files.
 
-### 5. Architecture Refinement (Post-MVP)
+### 5. Testing and Configuration
 
-- [x] **Embeddings Implementation**:
-  - [x] Create `embedding_module.py` to generate embeddings for text content.
-  - [x] Implement logic to compare document embeddings with category embeddings.
-  - [x] Add a new classification mode (`--mode embeddings`) to the CLI.
-- [x] **Documentation**:
-  - [x] Rename `docs/EMBEDDINGS.md` to `docs/ARCHITECTURE.md`.
-  - [x] Update `docs/ARCHITECTURE.md` to reflect the current technology stack and the new hybrid classification strategy.
-
-### 6. Parsing and Classification Refinement (Post-MVP)
-
-- [x] **Robust Parsing**:
-  - [x] Implement hierarchical parsing logic (specific parser -> generic text -> metadata fallback).
-  - [x] Create a generic text parser for unrecognized but text-like file types.
-  - [x] Improve image parser to handle OCR failures gracefully (no text found is not an error).
-- [x] **Classification Fallback**:
-  - [x] Update classification module to use filename and metadata when text content is empty.
-- [x] **Configuration**:
-  - [x] Add configuration for generic text file extensions.
-  - [x] Add configuration to enable/disable vision model usage for images.
-
-### 7. Streamlit UI (Post-MVP)
-
-- [x] Create `classifai_app.py`.
-- [x] Build the main configuration screen.
-- [x] Implement the "Scan" functionality.
-- [x] Develop the "Preview & Validation" section.
-  - [x] Display proposed classifications, language, and new filenames.
-  - [x] Allow manual override of all suggested attributes.
-- [x] Add action buttons ("Move", "Copy").
-- [x] Implement progress bars and a real-time log display.
-- [x] Write functional tests for the Streamlit app.
+- [x] Write comprehensive unit and integration tests for all completed features.
+- [x] Add configuration for generic text file extensions.
+- [x] Add configuration to enable/disable vision model usage.

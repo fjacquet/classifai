@@ -3,6 +3,7 @@ History module for ClassifAI.
 
 This module handles logging and retrieving file operations to support undo functionality.
 """
+
 import json
 from pathlib import Path
 
@@ -30,7 +31,7 @@ def log_operation(operation: str, source_path: str, dest_path: str):
     try:
         history = []
         if HISTORY_FILE.exists() and HISTORY_FILE.stat().st_size > 0:
-            with open(HISTORY_FILE, "r") as f:
+            with open(HISTORY_FILE) as f:
                 history = json.load(f)
 
         history.append(history_entry)
@@ -38,7 +39,7 @@ def log_operation(operation: str, source_path: str, dest_path: str):
         with open(HISTORY_FILE, "w") as f:
             json.dump(history, f, indent=4)
 
-    except (IOError, json.JSONDecodeError) as e:
+    except (OSError, json.JSONDecodeError) as e:
         logger.error(f"Error writing to history file {HISTORY_FILE}: {e}")
 
 
@@ -53,10 +54,10 @@ def get_last_operation() -> dict | None:
         return None
 
     try:
-        with open(HISTORY_FILE, "r") as f:
+        with open(HISTORY_FILE) as f:
             history = json.load(f)
         return history[-1] if history else None
-    except (IOError, json.JSONDecodeError) as e:
+    except (OSError, json.JSONDecodeError) as e:
         logger.error(f"Error reading from history file {HISTORY_FILE}: {e}")
         return None
 
@@ -69,7 +70,7 @@ def remove_last_operation():
         return
 
     try:
-        with open(HISTORY_FILE, "r") as f:
+        with open(HISTORY_FILE) as f:
             history = json.load(f)
 
         if history:
@@ -78,5 +79,5 @@ def remove_last_operation():
         with open(HISTORY_FILE, "w") as f:
             json.dump(history, f, indent=4)
 
-    except (IOError, json.JSONDecodeError) as e:
+    except (OSError, json.JSONDecodeError) as e:
         logger.error(f"Error updating history file {HISTORY_FILE}: {e}")

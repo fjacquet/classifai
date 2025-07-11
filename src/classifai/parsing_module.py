@@ -298,4 +298,3 @@ def get_parser(file_extension: str):
         return parse_with_pandoc
 
     return None
-

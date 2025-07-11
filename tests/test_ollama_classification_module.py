@@ -14,9 +14,7 @@ def test_classify_content_with_rule_match(mocker):
     """
     Tests that a rule match correctly returns a category and skips AI call.
     """
-    mock_rules_engine = mocker.patch(
-        "classifai.ollama_classification_module.rules_engine"
-    )
+    mock_rules_engine = mocker.patch("classifai.ollama_classification_module.rules_engine")
     mock_rules_engine.match_category.return_value = "Invoices"
     mock_completion = mocker.patch("classifai.ollama_classification_module.completion")
     mock_logger = mocker.MagicMock()
@@ -30,9 +28,7 @@ def test_classify_content_with_rule_match(mocker):
     )
 
     assert result == {"category": "Invoices", "new_filename": None}
-    mock_rules_engine.match_category.assert_called_once_with(
-        "/path/to/invoice_123.pdf"
-    )
+    mock_rules_engine.match_category.assert_called_once_with("/path/to/invoice_123.pdf")
     mock_completion.assert_not_called()
 
 
@@ -58,9 +54,7 @@ def test_classify_content_with_kb_match(mocker):
     )
 
     assert result == {"category": "Receipts", "new_filename": None}
-    mock_kb.match_category.assert_called_once_with(
-        "Content mentioning a known debitor."
-    )
+    mock_kb.match_category.assert_called_once_with("Content mentioning a known debitor.")
     mock_completion.assert_not_called()
 
 
@@ -90,12 +84,11 @@ def test_classify_content_success(mocker):
     mock_logger = mocker.MagicMock()
 
     categories = ["Documents", "Images"]
-    result = classify_content(
-        "This is a test document.", categories, "/path/to/doc.txt", mock_logger
-    )
+    result = classify_content("This is a test document.", categories, "/path/to/doc.txt", mock_logger)
     assert result == {
         "category": "Documents",
         "new_filename": "2025-07-11-test-document.txt",
+        "issuer": None,
     }
 
 
@@ -122,9 +115,7 @@ def test_classify_content_unexpected_category(mocker):
     mock_logger = mocker.MagicMock()
 
     categories = ["Documents", "Images"]
-    result = classify_content(
-        "This is a test invoice.", categories, "/path/to/invoice.pdf", mock_logger
-    )
+    result = classify_content("This is a test invoice.", categories, "/path/to/invoice.pdf", mock_logger)
     assert result["category"] == "Unknown"
     mock_logger.warning.assert_called_once()
 
@@ -148,10 +139,8 @@ def test_classify_content_api_error(mocker):
     mock_logger = mocker.MagicMock()
 
     categories = ["Documents", "Images"]
-    result = classify_content(
-        "This is a test document.", categories, "/path/to/another.txt", mock_logger
-    )
-    assert result == {"category": "Unknown", "new_filename": None}
+    result = classify_content("This is a test document.", categories, "/path/to/another.txt", mock_logger)
+    assert result == {"category": "Unknown", "new_filename": None, "issuer": None}
     mock_logger.error.assert_called_once()
 
 
@@ -195,8 +184,6 @@ def test_classify_content_json_error(mocker):
     mock_logger = mocker.MagicMock()
 
     categories = ["Documents", "Images"]
-    result = classify_content(
-        "This is a test document.", categories, "/path/to/doc.txt", mock_logger
-    )
-    assert result == {"category": "Unknown", "new_filename": None}
+    result = classify_content("This is a test document.", categories, "/path/to/doc.txt", mock_logger)
+    assert result == {"category": "Unknown", "new_filename": None, "issuer": None}
     mock_logger.error.assert_called_once()

@@ -61,13 +61,15 @@ def test_name_conflict():
         dest_dir.mkdir()
 
         # Create a file with the same name in the destination
-        (dest_dir / "test.txt").write_text("existing content")
+        (dest_dir / "Unknown_Issuer").mkdir(parents=True, exist_ok=True)
+        (dest_dir / "Unknown_Issuer" / "test.txt").write_text("existing content")
 
         moved_path_str = move_file(str(test_file.absolute()), str(dest_dir.absolute()))
         moved_path = Path(moved_path_str)
 
         assert moved_path.exists()
         assert moved_path.name == "test (1).txt"
+        assert moved_path.parent.name == "Unknown_Issuer"
 
 
 def test_photo_destination_with_full_metadata():
@@ -109,14 +111,13 @@ def test_language_subfolder_creation():
     """
     with create_test_env() as (source_dir, test_file):
         dest_dir = source_dir.parent / "destination"
-        moved_path_str = move_file(
-            str(test_file.absolute()), str(dest_dir.absolute()), language="en"
-        )
+        moved_path_str = move_file(str(test_file.absolute()), str(dest_dir.absolute()), language="en")
         moved_path = Path(moved_path_str)
 
         assert moved_path.exists()
         assert moved_path.parent.name == "en"
-        assert moved_path.parent.parent == dest_dir.absolute()
+        assert moved_path.parent.parent.name == "Unknown_Issuer"
+        assert moved_path.parent.parent.parent == dest_dir.absolute()
 
 
 def test_file_renaming():
@@ -126,10 +127,67 @@ def test_file_renaming():
     with create_test_env() as (source_dir, test_file):
         dest_dir = source_dir.parent / "destination"
         new_name = "renamed_file.txt"
-        moved_path_str = move_file(
-            str(test_file.absolute()), str(dest_dir.absolute()), new_filename=new_name
-        )
+        moved_path_str = move_file(str(test_file.absolute()), str(dest_dir.absolute()), new_filename=new_name)
         moved_path = Path(moved_path_str)
 
         assert moved_path.exists()
         assert moved_path.name == new_name
+
+
+def test_issuer_subfolder_creation():
+    """
+    Tests that an issuer subfolder is created when an issuer is provided.
+    """
+    with create_test_env() as (source_dir, test_file):
+        dest_dir = source_dir.parent / "destination"
+        moved_path_str = move_file(
+            str(test_file.absolute()),
+            str(dest_dir.absolute()),
+            issuer="TestIssuer",
+        )
+        moved_path = Path(moved_path_str)
+
+        assert moved_path.exists()
+        assert moved_path.parent.name == "TestIssuer"
+        assert moved_path.parent.parent == dest_dir.absolute()
+
+
+def test_full_path_creation():
+    """
+    Tests the creation of the full path with language, issuer, and category.
+    """
+    with create_test_env() as (source_dir, test_file):
+        dest_dir = source_dir.parent / "destination"
+        moved_path_str = move_file(
+            str(test_file.absolute()),
+            str(dest_dir.absolute()),
+            language="en",
+            issuer="TestIssuer",
+        )
+        moved_path = Path(moved_path_str)
+
+        assert moved_path.exists()
+        assert moved_path.name == "test.txt"
+        assert moved_path.parent.name == "en"
+        assert moved_path.parent.parent.name == "TestIssuer"
+        assert moved_path.parent.parent.parent == dest_dir.absolute()
+
+
+def test_full_path_creation_no_issuer():
+    """
+    Tests the creation of the full path when no issuer is provided.
+    """
+    with create_test_env() as (source_dir, test_file):
+        dest_dir = source_dir.parent / "destination"
+        moved_path_str = move_file(
+            str(test_file.absolute()),
+            str(dest_dir.absolute()),
+            language="en",
+        )
+        moved_path = Path(moved_path_str)
+
+        assert moved_path.exists()
+        assert moved_path.name == "test.txt"
+        assert moved_path.parent.name == "en"
+        assert moved_path.parent.parent.name == "Unknown_Issuer"
+        assert moved_path.parent.parent.parent == dest_dir.absolute()

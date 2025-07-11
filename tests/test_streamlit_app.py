@@ -5,10 +5,8 @@ These tests focus on the data processing and logic functions within the
 Streamlit app, not the UI rendering itself.
 """
 
-import pytest
 import pandas as pd
-from pathlib import Path
-from unittest.mock import MagicMock
+import pytest
 
 from classifai.classifai_app import run_scan
 
@@ -16,10 +14,15 @@ from classifai.classifai_app import run_scan
 @pytest.fixture
 def mock_backend(mocker):
     """Mocks all the backend functions called by the Streamlit app."""
-    mocker.patch("classifai.classifai_app.get_parser", return_value=lambda x: "dummy content")
-    mocker.patch("classifai.classifai_app.classify_content", return_value="Documents")
-    mocker.patch("classifai.classifai_app.get_embedding", return_value=[0.1, 0.2, 0.3])
-    mocker.patch("classifai.classifai_app.cosine_similarity", return_value=0.9)
+    mocker.patch("classifai.core_logic.get_parser", return_value=lambda x: ("dummy content", {}))
+    mocker.patch(
+        "classifai.core_logic.classify_content",
+        return_value={"category": "Documents", "new_filename": "new_name.txt"},
+    )
+    mocker.patch("classifai.core_logic.get_embedding", return_value=[0.1, 0.2, 0.3])
+    mocker.patch("classifai.core_logic.cosine_similarity", return_value=0.9)
+    mocker.patch("classifai.file_operations_module.move_file")
+    mocker.patch("classifai.file_operations_module.copy_file")
 
 
 def test_run_scan_completion_mode(tmp_path, mock_backend):
@@ -35,7 +38,10 @@ def test_run_scan_completion_mode(tmp_path, mock_backend):
         dest_dir_str=str(tmp_path / "sorted"),
         class_mode="completion",
         model="gemma3n",
-        url="http://localhost:11434",
+        rename_files=False,
+        use_vision=False,
+        language_subfolders=False,
+        recursive=False,
     )
 
     assert isinstance(df, pd.DataFrame)
@@ -58,7 +64,10 @@ def test_run_scan_embedding_mode(tmp_path, mock_backend):
         dest_dir_str=str(tmp_path / "sorted"),
         class_mode="embedding",
         model="mxbai-embed-large",
-        url="http://localhost:11434",
+        rename_files=False,
+        use_vision=False,
+        language_subfolders=False,
+        recursive=False,
     )
 
     assert isinstance(df, pd.DataFrame)

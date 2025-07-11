@@ -17,9 +17,7 @@ def test_embedding_model_not_found(mocker):
         side_effect=EmbeddingModelNotFoundError("Model not found"),
     )
 
-    result = runner.invoke(
-        app, ["run", "--source-dir", ".", "--classification-mode", "embedding"]
-    )
+    result = runner.invoke(app, ["run", "--source-dir", ".", "--classification-mode", "embedding"])
     assert result.exit_code == 1
     assert "Error" in result.stdout
     assert "Model not found" in result.stdout

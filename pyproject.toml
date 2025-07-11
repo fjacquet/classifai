@@ -1,55 +1,49 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "classifai"
-version = "0.1.0"
+version = "0.2.0"
 description = "Classify and organize your files with local AI models."
 authors = [
-    {name = "Your Name", email = "you@example.com"},
+    {name = "ClassifAI Project", email = "fred.jacquet@gmail.com"},
 ]
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "MIT"}
 dependencies = [
-    "python-dotenv",
-    "litellm",
-    "pymupdf",
-    "python-docx",
-    "openpyxl",
-    "pillow",
-    "pytesseract",
     "beautifulsoup4",
-    "striprtf",
     "extract-msg",
     "geopy",
-    "typer",
+    "langdetect>=1.0.9",
+    "litellm",
     "loguru",
+    "ollama",
+    "openpyxl",
+    "Pillow",
+    "PyMuPDF",
+    "pytesseract",
+    "python-docx",
+    "python-dotenv",
+    "streamlit",
+    "striprtf",
+    "typer",
+    "watchdog",
+]
+
+[project.optional-dependencies]
+dev = [
     "ruff",
     "yamlfix",
     "pytest",
     "pytest-mock",
     "pytest-cov",
     "faker",
-    "streamlit",
-    "ollama",
-    "langdetect>=1.0.9",
-    "geopy>=2.4.1",
-    "fuzzywuzzy>=0.18.0",
-    "python-pptx>=1.0.2",
-    "pypdf2>=3.0.1",
-    "opencv-python>=4.12.0.88",
-    "moviepy>=2.2.1",
-    "pydub>=0.25.1",
-    "speechrecognition>=3.14.3",
-    "mutagen>=1.47.0",
-    "librosa>=0.11.0",
-    "extract-msg>=0.54.1",
-    "pypandoc>=1.15",
-    "beautifulsoup4>=4.13.4",
-    "striprtf>=0.0.29",
 ]
-requires-python = ">=3.10"
-readme = "README.md"
-license = {text = "MIT"}
 
-[tool.uv]
-dev-dependencies = []
-
+[project.scripts]
+classifai = "classifai.classifai_cli:app"
 
 [tool.ruff]
 line-length = 110
@@ -60,10 +54,8 @@ ignore = []
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-v -rA --cov=src/classifai --cov-report=term-missing"
-testpaths = [
-    "tests",
-]
+addopts = "-v -rA --cov=src --cov-report=term-missing"
+testpaths = ["tests"]
 pythonpath = ["src"]
 
 [tool.yamlfix]

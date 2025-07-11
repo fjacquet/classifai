@@ -2,31 +2,24 @@
 CLI for ClassifAI.
 """
 
+import shutil
 from pathlib import Path
 from typing import Annotated
-import shutil
 
 import typer
 from rich.console import Console
 from rich.table import Table
 
 from classifai.background_watcher import start_watcher
-from classifai.classifai_app import process_file
 from classifai.config import USE_VISION_MODEL
+from classifai.core_logic import run_scan
 from classifai.embedding_module import (
     EmbeddingModelNotFoundError,
-    cosine_similarity,
     get_embedding,
 )
 from classifai.file_operations_module import copy_file, move_file
 from classifai.history_module import get_last_operation, remove_last_operation
 from classifai.logging_module import setup_logger
-from classifai.ollama_classification_module import (
-    classify_content,
-    classify_image_with_vision,
-)
-from classifai.parsing_module import get_parser
-from classifai.utils import detect_language
 
 app = typer.Typer()
 console = Console()
@@ -115,6 +108,14 @@ def run(
             help="Create language-based subfolders (e.g., /en, /fr).",
         ),
     ] = False,
+    recursive: Annotated[
+        bool,
+        typer.Option(
+            "--recursive",
+            "-R",
+            help="Scan subdirectories recursively.",
+        ),
+    ] = False,
     verbose: Annotated[bool, typer.Option("--verbose", "-v", help="Enable verbose output.")] = False,
     log_file: Annotated[Path, typer.Option("--log-file", help="Path to save the log file.")] = Path(
         "logs/main.log"
@@ -154,68 +155,72 @@ def run(
         category_embeddings = {}
         if classification_mode == "embedding":
             for category in categories:
-                category_embeddings[category] = get_embedding(
-                    category, model=embedding_model
-                )
+                category_embeddings[category] = get_embedding(category, model=embedding_model)
     except EmbeddingModelNotFoundError as e:
         console.print(f"[bold red]Error:[/bold red] {e}")
         raise typer.Exit(code=1)
 
-    table = Table(title="Classification Preview")
-    table.add_column("File Name", style="cyan")
+    table = Table(title="Classification Preview", expand=True)
+    table.add_column("File Name", style="cyan", no_wrap=True)
     table.add_column("Language", style="yellow")
     table.add_column("Proposed Category", style="magenta")
-    table.add_column("New Filename", style="blue")
-    table.add_column("Destination Path", style="green")
+    table.add_column("New Filename", style="blue", no_wrap=True)
+    table.add_column("Destination Path", style="green", no_wrap=True)
+
+    results_df = run_scan(
+        source_dir,
+        destination_dir,
+        classification_mode,
+        embedding_model,
+        rename_files,
+        use_vision,
+        language_subfolders,
+        recursive,
+    )
 
     files_to_process = []
-
-    for item in source_dir.iterdir():
-        if item.is_file():
-            result = process_file(
-                item,
-                destination_dir,
-                classification_mode,
-                embedding_model,
-                rename_files,
-                use_vision,
-                language_subfolders,
-                logger,
-                categories,
-                category_embeddings,
+    for _, row in results_df.iterrows():
+        table.add_row(
+            row["File Name"],
+            row["Language"],
+            row["Category"],
+            row["New Filename"],
+            row["Destination Path"],
+        )
+        files_to_process.append(
+            (
+                Path(row["Source Path"]),
+                row["Category"],
+                Path(row["Destination Path"]),
+                row["Language"],
+                row["Metadata"],
+                row["Issuer"],
             )
-            if result:
-                file, category, dest_path, language, metadata = result
-                table.add_row(
-                    file.name,
-                    language,
-                    category,
-                    dest_path.name,
-                    str(dest_path),
-                )
-                files_to_process.append(result)
+        )
 
     console.print(table)
 
     if mode != "dry-run":
         if typer.confirm("Do you want to proceed with the file operations?"):
-            for file, category, dest_path, lang, meta in files_to_process:
+            for file, category, dest_path, lang, meta, issuer in files_to_process:
                 dest_dir = dest_path.parent
                 if mode == "move":
                     move_file(
                         str(file.absolute()),
-                        str(dest_dir.parent),
+                        str(dest_dir.parent.parent),
                         meta,
                         lang if language_subfolders else None,
                         dest_path.name,
+                        issuer,
                     )
                 elif mode == "copy":
                     copy_file(
                         str(file.absolute()),
-                        str(dest_dir.parent),
+                        str(dest_dir.parent.parent),
                         meta,
                         lang if language_subfolders else None,
                         dest_path.name,
+                        issuer,
                     )
             logger.info("File operations completed.")
         else:

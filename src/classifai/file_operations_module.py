@@ -36,12 +36,19 @@ def move_file(
     metadata: dict = None,
     language: str = None,
     new_filename: str = None,
+    issuer: str = None,
 ) -> str:
     """
     Moves a file to a destination directory, handling name conflicts.
     """
     return _transfer_file(
-        source_path, destination_dir, "move", metadata, language, new_filename
+        source_path,
+        destination_dir,
+        "move",
+        metadata,
+        language,
+        new_filename,
+        issuer,
     )
 
 
@@ -51,12 +58,19 @@ def copy_file(
     metadata: dict = None,
     language: str = None,
     new_filename: str = None,
+    issuer: str = None,
 ) -> str:
     """
     Copies a file to a destination directory, handling name conflicts.
     """
     return _transfer_file(
-        source_path, destination_dir, "copy", metadata, language, new_filename
+        source_path,
+        destination_dir,
+        "copy",
+        metadata,
+        language,
+        new_filename,
+        issuer,
     )
 
 
@@ -67,6 +81,7 @@ def _transfer_file(
     metadata: dict = None,
     language: str = None,
     new_filename: str = None,
+    issuer: str = None,
 ) -> str:
     """
     Internal function to handle both move and copy operations.
@@ -77,23 +92,35 @@ def _transfer_file(
         filename = new_filename or source.name
 
         if metadata and source.suffix.lower() in [".jpg", ".jpeg", ".png", ".tiff"]:
+            # Photo-specific logic remains the same
             new_file_path = _get_photo_destination(destination, metadata, filename)
-            destination = new_file_path.parent
+            destination_folder = new_file_path.parent
         else:
-            # Add language subfolder if provided
-            if language and language != "N/A":
-                destination = destination / language
-            new_file_path = destination / filename
+            # General path construction
+            destination_folder = destination
+            if issuer:
+                destination_folder = destination_folder / issuer
+            else:
+                destination_folder = destination_folder / "Unknown_Issuer"
 
-        destination.mkdir(parents=True, exist_ok=True)
+            if language and language != "N/A":
+                destination_folder = destination_folder / language
+
+            new_file_path = destination_folder / filename
+
+        destination_folder.mkdir(parents=True, exist_ok=True)
 
         # Handle name conflicts
         counter = 1
         stem = new_file_path.stem
         suffix = new_file_path.suffix
-        while new_file_path.exists():
-            new_file_path = destination / f"{stem} ({counter}){suffix}"
-            counter += 1
+
+        # Check if a file with the same name already exists in the destination
+        if new_file_path.exists():
+            # If it exists, start the counter to find a new name
+            while new_file_path.exists():
+                new_file_path = destination_folder / f"{stem} ({counter}){suffix}"
+                counter += 1
 
         if operation == "move":
             shutil.move(source, new_file_path)
@@ -107,7 +134,5 @@ def _transfer_file(
         return str(new_file_path)
 
     except Exception as e:
-        logger.error(
-            f"Error {operation}ing file {source_path} to {destination_dir}: {e}"
-        )
+        logger.error(f"Error {operation}ing file {source_path} to {destination_dir}: {e}")
         return ""
