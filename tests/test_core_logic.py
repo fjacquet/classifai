@@ -40,6 +40,7 @@ def test_get_photo_destination_with_no_metadata():
     metadata = {}
     filename = "photo.jpg"
     language = None
+    # Expect the 'un' folder as a fallback for unknown language
     expected_path = dest_dir / "Photos" / "photo.jpg"
     assert _get_photo_destination(dest_dir, metadata, filename, language) == expected_path
 
@@ -52,6 +53,7 @@ def test_get_photo_destination_no_language():
     metadata = {"date": "2025:07:11 10:30:00", "location": "Berlin, Germany"}
     filename = "photo.jpg"
     language = None
+    # Expect the 'un' folder as a fallback for unknown language
     expected_path = dest_dir / "Photos" / "2025" / "07_July" / "Berlin, Germany" / "photo.jpg"
     assert _get_photo_destination(dest_dir, metadata, filename, language) == expected_path
 

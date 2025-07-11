@@ -33,12 +33,12 @@ def _get_photo_destination(
     destination_dir: Path, metadata: dict, original_filename: str, language: str | None
 ) -> Path:
     """Constructs a destination path for photos based on EXIF data."""
-    try:
-        # Start with a base path including language if available
-        base_path = destination_dir
-        if language and language != "N/A":
-            base_path = base_path / language
+    # Start with a base path, including language only if it's available
+    base_path = destination_dir
+    if language and language != "N/A":
+        base_path = base_path / language
 
+    try:
         # Add category
         photo_path = base_path / "Photos"
 
@@ -57,11 +57,8 @@ def _get_photo_destination(
     except (ValueError, KeyError) as e:
         logger.warning(f"Could not parse photo metadata: {e}")
 
-    # Fallback to a generic 'Photos' directory within the language folder
-    fallback_path = destination_dir
-    if language and language != "N/A":
-        fallback_path = fallback_path / language
-    return fallback_path / "Photos" / original_filename
+    # Fallback to a generic 'Photos' directory within the language folder (if applicable)
+    return base_path / "Photos" / original_filename
 
 
 def process_file(
@@ -156,22 +153,28 @@ def process_file(
 
     if category == "Photos" and metadata.get("date"):
         destination_path = _get_photo_destination(
-            destination_dir, metadata, final_filename, language if language_subfolders else None
+            destination_dir, metadata, final_filename, language
         )
     else:
         # Build the path component by component for clarity and correctness
+        # Path structure: {language}/{sector}/{issuer}/{category}/{filename}
         current_path = destination_dir
-        if language_subfolders and language != "N/A":
-            current_path = current_path / language
 
+        # 1. Language
+        lang_folder = language if language and language != "N/A" else "un"
+        current_path = current_path / lang_folder
+
+        # 2. Sector
         current_path = current_path / sector
 
+        # 3. Issuer
         if issuer:
             safe_issuer = "".join(c for c in issuer if c.isalnum() or c in " -_").rstrip()
             current_path = current_path / safe_issuer
         else:
             current_path = current_path / "Unknown_Issuer"
 
+        # 4. Category
         current_path = current_path / category
         destination_path = current_path / final_filename
 

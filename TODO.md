@@ -6,26 +6,30 @@ This document tracks the remaining tasks and the history of completed work for t
 
 ## Remaining Tasks
 
-### 1. Finalizing AI and Rule-Based Logic
-
-- [x] **AI-Powered Sector Classification**:
-  - [x] Add a new function `get_sector_with_ai` to `ollama_classification_module.py`.
-  - [x] Update `core_logic.py` to call this function as a fallback when the issuer is not in the knowledge base.
-- [x] **Rule for `.ppk` Files**:
-  - [x] Add a rule to `config/rules.yaml` to classify `.ppk` files as "Clés et Certificats".
-
-### 2. Fonctionnalités Futures
+### 1. Fonctionnalités Futures
 
 - [ ] **Support Audio/Vidéo**:
   - [ ] Ré-intégrer la transcription audio/vidéo avec des imports conditionnels (tâche différée).
+
+- [ ] **Support PDF**:
+  - [ ] Ré-intégrer la transcription PDF avec des imports conditionnels (tâche différée).
+
+- [ ] **Support Archive**:
+  - [ ] Ré-intégrer la transcription archive avec des imports conditionnels (tâche différée).
+
+- [ ] **Keep track of unknown issuers and sectors to qualify and update the database**:
 
 ---
 
 ## Completed Tasks
 
+<details>
+<summary>Click to view archived tasks</summary>
+
 ### 1. Finalizing Implementation and Documentation
 
-- [x] **Refine File Naming**:
+- [x] **Bug Fix**: Corrected the destination path logic in `core_logic.py` to align with the `Langue/Émetteur/Catégorie` structure.
+- [x] **Refine File Naming**
   - [x] Improve the AI prompt in `ollama_classification_module.py` to enforce the `YYYY-MM-DD_Titre_Court_Document.ext` format.
   - [x] Add a fallback mechanism in `core_logic.py` to handle cases where the AI-generated filename is invalid.
 - [x] **Consolidate Documentation**:
@@ -55,7 +59,7 @@ This document tracks the remaining tasks and the history of completed work for t
 ### 4. Advanced Parsing & Classification
 
 - [x] **Structured Renaming & Organization**:
-  - [x] Implement the full folder structure: `Langue/Secteur/Émetteur/Catégorie/`.
+  - [x] Implement the full folder structure: `Langue/Émetteur/Catégorie/`.
   - [x] Ensure the filename format `Date_Titre_Court_Document.ext` is correctly applied.
 - [x] **Knowledge-Based Classification**:
   - [x] Create `knowledge_base_module.py` to handle `debitors.yaml`.
@@ -75,6 +79,11 @@ This document tracks the remaining tasks and the history of completed work for t
   - [x] Add support for parsing archive contents (`.zip`, etc.).
 - [x] **AI-Powered Renaming (Initial)**:
   - [x] Enhance Ollama prompts to extract issuer, date, and a short title.
+- [x] **AI-Powered Sector Classification**:
+  - [x] Add a new function `get_sector_with_ai` to `ollama_classification_module.py`.
+  - [x] Update `core_logic.py` to call this function as a fallback when the issuer is not in the knowledge base.
+- [x] **Rule for `.ppk` Files**:
+  - [x] Add a rule to `config/rules.yaml` to classify `.ppk` files as "Clés et Certificats".
 
 ### 5. Advanced Features
 
@@ -92,3 +101,5 @@ This document tracks the remaining tasks and the history of completed work for t
 - [x] Add configuration for generic text file extensions.
 - [x] Add configuration to enable/disable vision model usage.
 - [x] Add `categories.yaml` for dynamic category management.
+
+</details>

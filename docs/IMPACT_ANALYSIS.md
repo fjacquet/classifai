@@ -19,7 +19,7 @@ Les principaux écarts restants concernent la **structure de dossiers granulaire
 
 ### 2.1. Finalisation de la Structure de Dossiers et du Renommage
 
-**Spécification Requise :** `Langue/Émetteur/Catégorie/Date_Titre.ext`
+**Spécification Requise :** `Langue/Secteur_Activité/Émetteur/Catégorie/Date_Titre.ext`
 
 L'implémentation actuelle ne crée pas le sous-dossier `{Émetteur}` et ne passe pas les informations nécessaires pour le faire.
 

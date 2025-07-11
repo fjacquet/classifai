@@ -40,11 +40,7 @@ def classify_content(content: str, categories: list[str], file_path: str, logger
     Analyze the following document content and return a JSON object with three keys:
     1. "category": Classify the document into one of the following categories: {", ".join(categories)}.
     2. "new_filename": Suggest a new filename in the format YYYY-MM-DD_issuer_short_description.ext.
-       - The date should be the most relevant date from the document. If no date is found,
-         use the current date.
-       - The issuer should be the name of the company or person who created the document.
-       - The description should be a 1-3 word summary in English.
-       - Use the original file extension.
+       - `new_filename`: A descriptive filename in the format `YYYY-MM-DD_Titre-Concise-en-Francais.extension`. The date should be extracted from the document content. If no date is found, use the current date. The title should be a short, descriptive, kebab-case summary of the document's content in French. Do not include the issuer or category in the title.
     3. "issuer": The name of the company or person who created the document.
 
     Content:
