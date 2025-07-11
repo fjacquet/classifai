@@ -33,6 +33,7 @@ dependencies = [
     "pydub",
     "moviepy",
     "SpeechRecognition",
+    "openai-whisper>=20250625",
 ]
 
 [project.optional-dependencies]
