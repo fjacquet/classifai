@@ -1,6 +1,7 @@
 """
 Tests for the utils module.
 """
+
 import pytest
 
 from classifai.utils import detect_language

@@ -17,11 +17,11 @@
   - [x] Add configuration for photo organization strategy.
 - [x] **Custom Rules**:
   - [x] Implement a rules engine for pre-classification based on filename or path.
-- [ ] **Language-Based Organization**:
-  - [ ] Integrate a language detection library (e.g., `langdetect`).
+- [x] **Language-Based Organization**:
+  - [x] Integrate a language detection library (e.g., `langdetect`).
 - [ ] **Expanded Format Support**:
   - [ ] Add support for audio and video transcription.
-  - [ ] Add support for parsing archive contents (`.zip`, etc.).
+  - [x] Add support for parsing archive contents (`.zip`, etc.).
   - [ ] Update file operations to create language-based subfolders (`/en`, `/fr`).
 - [ ] **AI-Powered Renaming**:
   - [ ] Enhance Ollama prompts to extract issuer, date, and a short title.

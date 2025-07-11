@@ -6,7 +6,11 @@ using a hierarchical strategy.
 """
 
 import email
+import os
 import subprocess
+import tarfile
+import tempfile
+import zipfile
 
 import fitz  # PyMuPDF
 import openpyxl
@@ -206,24 +210,78 @@ def parse_with_pandoc(file_path: str) -> tuple[str, dict]:
         return "", {}
 
 
+def parse_archive(file_path: str) -> tuple[str, dict]:
+    """
+    Extracts content from files within a ZIP or TAR archive by extracting them
+    to a temporary directory and parsing them individually.
+    """
+    text_content = []
+    file_path_lower = file_path.lower()
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        try:
+            if file_path_lower.endswith(".zip"):
+                with zipfile.ZipFile(file_path, "r") as archive:
+                    archive.extractall(temp_dir)
+                    for root, _, files in os.walk(temp_dir):
+                        for name in files:
+                            file_ext = "." + name.split(".")[-1]
+                            parser = get_parser(file_ext)
+                            if parser and parser != parse_archive:
+                                temp_file_path = os.path.join(root, name)
+                                content, _ = parser(temp_file_path)
+                                if content:
+                                    text_content.append(f"--- Content from {name} ---\n{content}")
+
+            elif file_path_lower.endswith((".tar", ".gz", ".bz2", ".xz")):
+                with tarfile.open(file_path, "r:*") as archive:
+                    archive.extractall(temp_dir)
+                    for root, _, files in os.walk(temp_dir):
+                        for name in files:
+                            file_ext = "." + name.split(".")[-1]
+                            parser = get_parser(file_ext)
+                            if parser and parser != parse_archive:
+                                temp_file_path = os.path.join(root, name)
+                                content, _ = parser(temp_file_path)
+                                if content:
+                                    text_content.append(f"--- Content from {name} ---\n{content}")
+
+            return "\n\n".join(text_content), {}
+
+        except (zipfile.BadZipFile, tarfile.ReadError) as e:
+            logger.error(f"Could not read archive {file_path}: {e}")
+            return "", {}
+        except Exception as e:
+            logger.error(f"Error parsing archive {file_path}: {e}")
+            return "", {}
+
+
 def get_parser(file_extension: str):
     """
     Returns the appropriate parser function for a given file extension using
     a hierarchical strategy.
     """
     specific_parsers = {
+        # Text & Documents
         ".pdf": parse_pdf,
         ".docx": parse_docx,
         ".xlsx": parse_xlsx,
+        ".html": parse_html,
+        ".htm": parse_html,
+        ".rtf": parse_rtf,
+        ".eml": parse_eml,
+        # Images
         ".png": parse_image,
         ".jpg": parse_image,
         ".jpeg": parse_image,
         ".tiff": parse_image,
         ".bmp": parse_image,
-        ".html": parse_html,
-        ".htm": parse_html,
-        ".rtf": parse_rtf,
-        ".eml": parse_eml,
+        # Archives
+        ".zip": parse_archive,
+        ".tar": parse_archive,
+        ".gz": parse_archive,
+        ".bz2": parse_archive,
+        ".xz": parse_archive,
     }
     if file_extension in specific_parsers:
         return specific_parsers[file_extension]

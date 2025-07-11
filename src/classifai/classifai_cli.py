@@ -83,6 +83,14 @@ def run(
             help="URL of the Ollama API.",
         ),
     ] = "http://localhost:11434",
+    language_subfolders: Annotated[
+        bool,
+        typer.Option(
+            "--language-subfolders",
+            "-ls",
+            help="Create language-based subfolders (e.g., /en, /fr).",
+        ),
+    ] = False,
     verbose: Annotated[bool, typer.Option("--verbose", "-v", help="Enable verbose output.")] = False,
     log_file: Annotated[Path, typer.Option("--log-file", help="Path to save the log file.")] = Path(
         "logs/main.log"
@@ -152,27 +160,27 @@ def run(
                 language = detect_language(content) or "N/A"
 
                 if classification_mode == "embedding":
-                    content_embedding = get_embedding(
-                        content, model=embedding_model
-                    )
+                    content_embedding = get_embedding(content, model=embedding_model)
                     if content_embedding:
                         similarities = {
-                            category: cosine_similarity(
-                                content_embedding, cat_embedding
-                            )
+                            category: cosine_similarity(content_embedding, cat_embedding)
                             for category, cat_embedding in category_embeddings.items()
                         }
                         category = max(similarities, key=similarities.get)
                     else:
                         category = "Unknown"
                 else:
-                    category = classify_content(
-                        content, categories, str(item.absolute()), logger
-                    )
+                    category = classify_content(content, categories, str(item.absolute()), logger)
 
-                destination_path = destination_dir / category / item.name
+                destination_path = destination_dir / category
+                if language_subfolders and language != "N/A":
+                    destination_path = destination_path / language
+                destination_path = destination_path / item.name
+
                 table.add_row(item.name, language, category, str(destination_path))
-                files_to_process.append((item, category, destination_path))
+                files_to_process.append(
+                    (item, category, destination_path, language)
+                )
             else:
                 logger.warning(f"No parser found for file type: {item.suffix}")
 
@@ -180,12 +188,22 @@ def run(
 
     if mode != "dry-run":
         if typer.confirm("Do you want to proceed with the file operations?"):
-            for file, category, dest_path in files_to_process:
+            for file, category, dest_path, lang in files_to_process:
                 dest_dir = dest_path.parent
                 if mode == "move":
-                    move_file(str(file.absolute()), str(dest_dir), metadata)
+                    move_file(
+                        str(file.absolute()),
+                        str(dest_dir.parent),
+                        metadata,
+                        lang if language_subfolders else None,
+                    )
                 elif mode == "copy":
-                    copy_file(str(file.absolute()), str(dest_dir), metadata)
+                    copy_file(
+                        str(file.absolute()),
+                        str(dest_dir.parent),
+                        metadata,
+                        lang if language_subfolders else None,
+                    )
             logger.info("File operations completed.")
         else:
             logger.info("File operations cancelled.")

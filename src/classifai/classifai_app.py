@@ -46,6 +46,7 @@ def run_scan(
     class_mode: str,
     model: str,
     url: str,
+    language_subfolders: bool,
 ):
     """
     Scans the source directory, classifies files, and returns a DataFrame.
@@ -104,20 +105,28 @@ def run_scan(
                     content, categories, str(item.absolute()), logger
                 )
 
+            destination_path = dest_path / category
+            if language_subfolders and language != "N/A":
+                destination_path = destination_path / language
+            destination_path = destination_path / item.name
+
             results.append(
                 {
                     "File Name": item.name,
                     "Language": language,
                     "Category": category,
-                    "Destination Path": str(dest_path / category / item.name),
+                    "Destination Path": str(destination_path),
                     "Source Path": str(item.absolute()),
+                    "Metadata": metadata,
                 }
             )
     progress_bar.empty()
     return pd.DataFrame(results)
 
 
-def execute_file_operations(df: pd.DataFrame, operation: str):
+def execute_file_operations(
+    df: pd.DataFrame, operation: str, language_subfolders: bool
+):
     """
     Executes the file operations (move or copy) based on the DataFrame.
     """
@@ -133,19 +142,35 @@ def execute_file_operations(df: pd.DataFrame, operation: str):
         source_path = row["Source Path"]
         dest_path = Path(row["Destination Path"])
         dest_dir = dest_path.parent
+        metadata = row["Metadata"]
+        language = row["Language"]
 
-        progress_bar.progress((i + 1) / total_ops, text=f"{operation.capitalize()}ing: {row['File Name']}")
+        progress_bar.progress(
+            (i + 1) / total_ops, text=f"{operation.capitalize()}ing: {row['File Name']}"
+        )
 
         if operation == "move":
-            result = move_file(source_path, str(dest_dir))
+            result = move_file(
+                source_path,
+                str(dest_dir.parent),
+                metadata,
+                language if language_subfolders else None,
+            )
         else:
-            result = copy_file(source_path, str(dest_dir))
+            result = copy_file(
+                source_path,
+                str(dest_dir.parent),
+                metadata,
+                language if language_subfolders else None,
+            )
 
         if result:
             success_count += 1
 
     progress_bar.empty()
-    st.success(f"Successfully {operation}ed {success_count} out of {total_ops} files.")
+    st.success(
+        f"Successfully {operation}ed {success_count} out of {total_ops} files."
+    )
     st.session_state.scan_results = pd.DataFrame()  # Clear results
 
 
@@ -186,6 +211,14 @@ with st.sidebar:
     else:
         model_name = st.text_input("Completion Model", value=OLLAMA_MODEL_NAME)
 
+    # --- Other Options ---
+    st.subheader("⚙️ Other Options")
+    language_subfolders = st.checkbox(
+        "Create Language Subfolders",
+        value=False,
+        help="Organize files into subfolders based on detected language (e.g., /en, /fr).",
+    )
+
     # --- Action Button ---
     st.divider()
     if st.button("Scan Directory", type="primary", use_container_width=True):
@@ -196,6 +229,7 @@ with st.sidebar:
                 classification_mode,
                 model_name,
                 ollama_url,
+                language_subfolders,
             )
 
 
@@ -219,11 +253,11 @@ if not st.session_state.scan_results.empty:
 
     with col2:
         if st.button("Copy Files", use_container_width=True):
-            execute_file_operations(edited_df, "copy")
+            execute_file_operations(edited_df, "copy", language_subfolders)
 
     with col3:
         if st.button("Move Files", type="primary", use_container_width=True):
-            execute_file_operations(edited_df, "move")
+            execute_file_operations(edited_df, "move", language_subfolders)
 
 else:
     st.info("Click 'Scan Directory' in the sidebar to begin.")

@@ -1,7 +1,8 @@
 """
 Utility functions for ClassifAI.
 """
-from langdetect import detect, LangDetectException
+
+from langdetect import LangDetectException, detect
 
 
 def detect_language(text: str) -> str | None:

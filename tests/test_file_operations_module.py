@@ -101,3 +101,19 @@ def test_photo_destination_with_no_metadata():
     filename = "photo.jpg"
     expected_path = dest_dir / "Photos/photo.jpg"
     assert _get_photo_destination(dest_dir, metadata, filename) == expected_path
+
+
+def test_language_subfolder_creation():
+    """
+    Tests that a language subfolder is created when a language is provided.
+    """
+    with create_test_env() as (source_dir, test_file):
+        dest_dir = source_dir.parent / "destination"
+        moved_path_str = move_file(
+            str(test_file.absolute()), str(dest_dir.absolute()), language="en"
+        )
+        moved_path = Path(moved_path_str)
+
+        assert moved_path.exists()
+        assert moved_path.parent.name == "en"
+        assert moved_path.parent.parent == dest_dir.absolute()

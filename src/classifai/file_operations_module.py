@@ -28,21 +28,31 @@ def _get_photo_destination(destination_dir: Path, metadata: dict, original_filen
     return destination_dir / "Photos" / original_filename
 
 
-def move_file(source_path: str, destination_dir: str, metadata: dict = None) -> str:
+def move_file(
+    source_path: str, destination_dir: str, metadata: dict = None, language: str = None
+) -> str:
     """
     Moves a file to a destination directory, handling name conflicts.
     """
-    return _transfer_file(source_path, destination_dir, "move", metadata)
+    return _transfer_file(source_path, destination_dir, "move", metadata, language)
 
 
-def copy_file(source_path: str, destination_dir: str, metadata: dict = None) -> str:
+def copy_file(
+    source_path: str, destination_dir: str, metadata: dict = None, language: str = None
+) -> str:
     """
     Copies a file to a destination directory, handling name conflicts.
     """
-    return _transfer_file(source_path, destination_dir, "copy", metadata)
+    return _transfer_file(source_path, destination_dir, "copy", metadata, language)
 
 
-def _transfer_file(source_path: str, destination_dir: str, operation: str, metadata: dict = None) -> str:
+def _transfer_file(
+    source_path: str,
+    destination_dir: str,
+    operation: str,
+    metadata: dict = None,
+    language: str = None,
+) -> str:
     """
     Internal function to handle both move and copy operations.
     """
@@ -54,6 +64,9 @@ def _transfer_file(source_path: str, destination_dir: str, operation: str, metad
             new_file_path = _get_photo_destination(destination, metadata, source.name)
             destination = new_file_path.parent
         else:
+            # Add language subfolder if provided
+            if language and language != "N/A":
+                destination = destination / language
             new_file_path = destination / source.name
 
         destination.mkdir(parents=True, exist_ok=True)
@@ -74,5 +87,7 @@ def _transfer_file(source_path: str, destination_dir: str, operation: str, metad
         return str(new_file_path)
 
     except Exception as e:
-        logger.error(f"Error {operation}ing file {source_path} to {destination_dir}: {e}")
+        logger.error(
+            f"Error {operation}ing file {source_path} to {destination_dir}: {e}"
+        )
         return ""
