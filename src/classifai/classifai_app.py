@@ -37,7 +37,7 @@ if "destination_dir" not in st.session_state:
     st.session_state.destination_dir = str(Path.home() / "Documents" / "Classified")
 
 
-def execute_file_operations(df: pd.DataFrame, operation: str, language_subfolders: bool, rename_files: bool):
+def execute_file_operations(df: pd.DataFrame, operation: str):
     """
     Executes the file operations (move or copy) based on the DataFrame.
     """
@@ -51,33 +51,14 @@ def execute_file_operations(df: pd.DataFrame, operation: str, language_subfolder
 
     for i, row in df.iterrows():
         source_path = row["Source Path"]
-        dest_path = Path(row["Destination Path"])
-        dest_dir = dest_path.parent
-        metadata = row["Metadata"]
-        language = row["Language"]
-        new_filename = row["New Filename"]
-        issuer = row["Issuer"]
+        dest_path = row["Destination Path"]
 
         progress_bar.progress((i + 1) / total_ops, text=f"{operation.capitalize()}ing: {row['File Name']}")
 
         if operation == "move":
-            result = move_file(
-                source_path,
-                str(dest_dir.parent.parent),
-                metadata,
-                language if language_subfolders else None,
-                new_filename if rename_files else None,
-                issuer,
-            )
+            result = move_file(source_path, dest_path)
         else:
-            result = copy_file(
-                source_path,
-                str(dest_dir.parent.parent),
-                metadata,
-                language if language_subfolders else None,
-                new_filename if rename_files else None,
-                issuer,
-            )
+            result = copy_file(source_path, dest_path)
 
         if result:
             success_count += 1
@@ -178,11 +159,11 @@ if not st.session_state.scan_results.empty:
 
     with col2:
         if st.button("Copy Files", use_container_width=True):
-            execute_file_operations(edited_df, "copy", language_subfolders, rename_files)
+            execute_file_operations(edited_df, "copy")
 
     with col3:
         if st.button("Move Files", type="primary", use_container_width=True):
-            execute_file_operations(edited_df, "move", language_subfolders, rename_files)
+            execute_file_operations(edited_df, "move")
 
 else:
     st.info("Click 'Scan Directory' in the sidebar to begin.")

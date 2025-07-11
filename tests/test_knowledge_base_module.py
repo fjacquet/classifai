@@ -34,8 +34,9 @@ def test_kb_match_found(create_kb_file):
     """Tests a successful match from the knowledge base."""
     kb = KnowledgeBase(config_path=create_kb_file)
     content = "This document is from Test Debitor, please pay the bill."
-    category = kb.match_category(content)
+    category, issuer = kb.match_category(content)
     assert category == "Test Category"
+    assert issuer == "test debitor"
 
 
 def test_kb_match_not_found(create_kb_file):

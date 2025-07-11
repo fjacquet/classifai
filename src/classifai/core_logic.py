@@ -7,6 +7,7 @@ used by both the CLI and the Streamlit UI.
 """
 
 from pathlib import Path
+from datetime import datetime
 
 import pandas as pd
 from loguru import logger
@@ -19,6 +20,39 @@ from classifai.ollama_classification_module import (
 )
 from classifai.parsing_module import get_parser
 from classifai.utils import detect_language
+
+
+def _get_photo_destination(
+    destination_dir: Path, metadata: dict, original_filename: str, language: str | None
+) -> Path:
+    """Constructs a destination path for photos based on EXIF data."""
+    try:
+        # Start with a base path including language if available
+        base_path = destination_dir
+        if language and language != "N/A":
+            base_path = base_path / language
+
+        # Add category
+        photo_path = base_path / "Photos"
+
+        if "date" in metadata and metadata["date"]:
+            date = datetime.strptime(metadata["date"], "%Y:%m:%d %H:%M:%S")
+            year = date.strftime("%Y")
+            month = date.strftime("%m_%B")
+            dest = photo_path / year / month
+            if "location" in metadata and metadata["location"]:
+                # Sanitize location to be a valid directory name
+                safe_location = "".join(c for c in metadata["location"] if c.isalnum() or c in " -_,").rstrip()
+                dest = dest / safe_location
+            return dest / original_filename
+    except (ValueError, KeyError) as e:
+        logger.warning(f"Could not parse photo metadata: {e}")
+
+    # Fallback to a generic 'Photos' directory within the language folder
+    fallback_path = destination_dir
+    if language and language != "N/A":
+        fallback_path = fallback_path / language
+    return fallback_path / "Photos" / original_filename
 
 
 def process_file(
@@ -81,14 +115,26 @@ def process_file(
 
     final_filename = new_filename if rename_files and new_filename else item.name
 
-    destination_path = destination_dir / category
-    if language_subfolders and language != "N/A":
-        destination_path = destination_path / language
-    if issuer:
-        destination_path = destination_path / issuer
+    # Handle photo-specific destination path
+    if category == "Photos" and metadata.get("date"):
+        destination_path = _get_photo_destination(
+            destination_dir, metadata, final_filename, language if language_subfolders else None
+        )
     else:
-        destination_path = destination_path / "Unknown_Issuer"
-    destination_path = destination_path / final_filename
+        # General path construction: base / language / issuer / category / filename
+        destination_path = destination_dir
+        if language_subfolders and language != "N/A":
+            destination_path = destination_path / language
+
+        # Sanitize issuer to be a valid directory name
+        if issuer:
+            safe_issuer = "".join(c for c in issuer if c.isalnum() or c in " -_").rstrip()
+            destination_path = destination_path / safe_issuer
+        else:
+            destination_path = destination_path / "Unknown_Issuer"
+
+        destination_path = destination_path / category
+        destination_path = destination_path / final_filename
 
     return item, category, destination_path, language, metadata, issuer
 

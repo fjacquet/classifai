@@ -30,6 +30,9 @@ dependencies = [
     "striprtf",
     "typer",
     "watchdog",
+    "pydub",
+    "moviepy",
+    "SpeechRecognition",
 ]
 
 [project.optional-dependencies]

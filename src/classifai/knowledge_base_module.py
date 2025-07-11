@@ -30,7 +30,7 @@ class KnowledgeBase:
             logger.error(f"Error parsing debitors.yaml: {e}")
             return {}
 
-    def match_category(self, text_content: str) -> str | None:
+    def match_category(self, text_content: str) -> tuple[str, str] | None:
         """
         Matches text content against the knowledge base to find a category.
 
@@ -38,7 +38,8 @@ class KnowledgeBase:
             text_content (str): The text content of the document.
 
         Returns:
-            str | None: The matched category or None if no match is found.
+            A tuple containing the matched category and the debitor name (issuer),
+            or None if no match is found.
         """
         if not self.debitors:
             return None
@@ -47,5 +48,5 @@ class KnowledgeBase:
         for debitor, category in self.debitors.items():
             if debitor in text_content_lower:
                 logger.info(f"Found knowledge base match: '{debitor}' -> '{category}'")
-                return category
+                return category, debitor
         return None

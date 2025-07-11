@@ -12,6 +12,7 @@ import tarfile
 import tempfile
 import zipfile
 
+import extract_msg
 import fitz  # PyMuPDF
 import openpyxl
 import pytesseract
@@ -176,6 +177,16 @@ def parse_eml(file_path: str) -> tuple[str, dict]:
         return "", {}
 
 
+def parse_msg(file_path: str) -> tuple[str, dict]:
+    """Extracts text from an MSG file."""
+    try:
+        with extract_msg.openMsg(file_path) as msg:
+            return msg.body, {}
+    except Exception as e:
+        logger.error(f"Error parsing MSG file {file_path}: {e}")
+        return "", {}
+
+
 def parse_generic_text(file_path: str) -> tuple[str, dict]:
     """Extracts content from a generic text file, trying various encodings."""
     encodings = ["utf-8", "latin-1", "iso-8859-1"]
@@ -270,6 +281,7 @@ def get_parser(file_extension: str):
         ".htm": parse_html,
         ".rtf": parse_rtf,
         ".eml": parse_eml,
+        ".msg": parse_msg,
         # Images
         ".png": parse_image,
         ".jpg": parse_image,

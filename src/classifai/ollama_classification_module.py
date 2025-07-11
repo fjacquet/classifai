@@ -41,9 +41,11 @@ def classify_content(content: str, categories: list[str], file_path: str, logger
         return {"category": rule_category, "new_filename": None}
 
     # 2. Attempt pre-classification with the knowledge base
-    kb_category = knowledge_base.match_category(content)
-    if kb_category:
-        return {"category": kb_category, "new_filename": None}
+    kb_match = knowledge_base.match_category(content)
+    if kb_match:
+        category, issuer = kb_match
+        # We don't have a new filename from the knowledge base, but we have the issuer
+        return {"category": category, "new_filename": None, "issuer": issuer}
 
     # 3. Fallback to AI classification
     prompt = """

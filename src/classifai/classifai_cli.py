@@ -161,11 +161,12 @@ def run(
         raise typer.Exit(code=1)
 
     table = Table(title="Classification Preview", expand=True)
-    table.add_column("File Name", style="cyan", no_wrap=True)
-    table.add_column("Language", style="yellow")
-    table.add_column("Proposed Category", style="magenta")
-    table.add_column("New Filename", style="blue", no_wrap=True)
-    table.add_column("Destination Path", style="green", no_wrap=True)
+    table.add_column("File Name", style="cyan", width=30)
+    table.add_column("Language", style="yellow", width=10)
+    table.add_column("Category", style="magenta", width=20)
+    table.add_column("Issuer", style="blue", width=20)
+    table.add_column("New Filename", style="blue", width=30)
+    table.add_column("Destination Path", style="green")
 
     results_df = run_scan(
         source_dir,
@@ -184,6 +185,7 @@ def run(
             row["File Name"],
             row["Language"],
             row["Category"],
+            row["Issuer"],
             row["New Filename"],
             row["Destination Path"],
         )
@@ -203,25 +205,10 @@ def run(
     if mode != "dry-run":
         if typer.confirm("Do you want to proceed with the file operations?"):
             for file, category, dest_path, lang, meta, issuer in files_to_process:
-                dest_dir = dest_path.parent
                 if mode == "move":
-                    move_file(
-                        str(file.absolute()),
-                        str(dest_dir.parent.parent),
-                        meta,
-                        lang if language_subfolders else None,
-                        dest_path.name,
-                        issuer,
-                    )
+                    move_file(str(file.absolute()), str(dest_path))
                 elif mode == "copy":
-                    copy_file(
-                        str(file.absolute()),
-                        str(dest_dir.parent.parent),
-                        meta,
-                        lang if language_subfolders else None,
-                        dest_path.name,
-                        issuer,
-                    )
+                    copy_file(str(file.absolute()), str(dest_path))
             logger.info("File operations completed.")
         else:
             logger.info("File operations cancelled.")

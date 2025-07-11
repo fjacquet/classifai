@@ -41,7 +41,7 @@ def test_classify_content_with_kb_match(mocker):
         return_value=None,
     )
     mock_kb = mocker.patch("classifai.ollama_classification_module.knowledge_base")
-    mock_kb.match_category.return_value = "Receipts"
+    mock_kb.match_category.return_value = ("Receipts", "Test Debitor")
     mock_completion = mocker.patch("classifai.ollama_classification_module.completion")
     mock_logger = mocker.MagicMock()
 
@@ -53,7 +53,8 @@ def test_classify_content_with_kb_match(mocker):
         mock_logger,
     )
 
-    assert result == {"category": "Receipts", "new_filename": None}
+    assert result["category"] == "Receipts"
+    assert result["issuer"] == "Test Debitor"
     mock_kb.match_category.assert_called_once_with("Content mentioning a known debitor.")
     mock_completion.assert_not_called()
 
