@@ -12,6 +12,5 @@ wheels/
 .venv
 .env
 config/debitors.yaml
-logs/main.log
 .DS_Store
-logs/main.log
+logs/

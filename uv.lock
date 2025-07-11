@@ -422,10 +422,13 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "beautifulsoup4" },
     { name = "beautifulsoup4", specifier = ">=4.13.4" },
+    { name = "extract-msg" },
     { name = "extract-msg", specifier = ">=0.54.1" },
     { name = "faker" },
     { name = "fuzzywuzzy", specifier = ">=0.18.0" },
+    { name = "geopy" },
     { name = "geopy", specifier = ">=2.4.1" },
     { name = "langdetect", specifier = ">=1.0.9" },
     { name = "librosa", specifier = ">=0.11.0" },
@@ -451,6 +454,7 @@ requires-dist = [
     { name = "ruff" },
     { name = "speechrecognition", specifier = ">=3.14.3" },
     { name = "streamlit" },
+    { name = "striprtf" },
     { name = "striprtf", specifier = ">=0.0.29" },
     { name = "typer" },
     { name = "yamlfix" },
