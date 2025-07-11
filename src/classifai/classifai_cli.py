@@ -137,7 +137,7 @@ def run(
         if item.is_file():
             parser = get_parser(item.suffix)
             if parser:
-                content = parser(str(item.absolute()))
+                content, metadata = parser(str(item.absolute()))
 
                 # Fallback to filename if content is empty
                 if not content.strip():
@@ -147,10 +147,14 @@ def run(
                     content = item.name
 
                 if classification_mode == "embedding":
-                    content_embedding = get_embedding(content, model=embedding_model)
+                    content_embedding = get_embedding(
+                        content, model=embedding_model
+                    )
                     if content_embedding:
                         similarities = {
-                            category: cosine_similarity(content_embedding, cat_embedding)
+                            category: cosine_similarity(
+                                content_embedding, cat_embedding
+                            )
                             for category, cat_embedding in category_embeddings.items()
                         }
                         category = max(similarities, key=similarities.get)
@@ -172,9 +176,9 @@ def run(
             for file, category, dest_path in files_to_process:
                 dest_dir = dest_path.parent
                 if mode == "move":
-                    move_file(str(file.absolute()), str(dest_dir))
+                    move_file(str(file.absolute()), str(dest_dir), metadata)
                 elif mode == "copy":
-                    copy_file(str(file.absolute()), str(dest_dir))
+                    copy_file(str(file.absolute()), str(dest_dir), metadata)
             logger.info("File operations completed.")
         else:
             logger.info("File operations cancelled.")

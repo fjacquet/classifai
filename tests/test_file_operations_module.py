@@ -2,19 +2,20 @@
 Tests for the file_operations_module.
 """
 
-import tempfile
 from contextlib import contextmanager
 from pathlib import Path
+import tempfile
+import shutil
+import pytest
+from datetime import datetime
 
-from classifai.file_operations_module import copy_file, move_file
+from classifai.file_operations_module import move_file, copy_file, _get_photo_destination
 
 
 @contextmanager
 def create_test_env():
     """
     Creates a temporary directory structure for testing file operations.
-    Yields:
-        tuple: A tuple containing the source directory path and the test file path.
     """
     with tempfile.TemporaryDirectory() as tmpdir:
         source_dir = Path(tmpdir) / "source"
@@ -45,7 +46,9 @@ def test_copy_file():
     """
     with create_test_env() as (source_dir, test_file):
         dest_dir = source_dir.parent / "destination"
-        copied_path_str = copy_file(str(test_file.absolute()), str(dest_dir.absolute()))
+        copied_path_str = copy_file(
+            str(test_file.absolute()), str(dest_dir.absolute())
+        )
         copied_path = Path(copied_path_str)
 
         assert copied_path.exists()
@@ -70,3 +73,36 @@ def test_name_conflict():
 
         assert moved_path.exists()
         assert moved_path.name == "test (1).txt"
+
+
+def test_photo_destination_with_full_metadata():
+    """
+    Tests the photo destination logic with complete EXIF data.
+    """
+    dest_dir = Path("/tmp/sorted")
+    metadata = {"date": "2025:07:11 10:30:00", "location": "Paris, France"}
+    filename = "photo.jpg"
+    expected_path = dest_dir / "Photos/2025/07_July/Paris, France/photo.jpg"
+    assert _get_photo_destination(dest_dir, metadata, filename) == expected_path
+
+
+def test_photo_destination_with_date_only():
+    """
+    Tests the photo destination logic with only date information.
+    """
+    dest_dir = Path("/tmp/sorted")
+    metadata = {"date": "2025:07:11 10:30:00"}
+    filename = "photo.jpg"
+    expected_path = dest_dir / "Photos/2025/07_July/photo.jpg"
+    assert _get_photo_destination(dest_dir, metadata, filename) == expected_path
+
+
+def test_photo_destination_with_no_metadata():
+    """
+    Tests the photo destination logic with no relevant EXIF data.
+    """
+    dest_dir = Path("/tmp/sorted")
+    metadata = {}
+    filename = "photo.jpg"
+    expected_path = dest_dir / "Photos/photo.jpg"
+    assert _get_photo_destination(dest_dir, metadata, filename) == expected_path

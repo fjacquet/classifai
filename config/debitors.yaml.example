@@ -1,0 +1,16 @@
+# Knowledge Base for Debitors/Emitters
+#
+# This file maps known entity names found in documents to a specific category.
+# The matching is case-insensitive.
+#
+# To use this feature, rename this file to `debitors.yaml` and customize it.
+
+"Orange": "Factures"
+"Google": "Factures"
+"Amazon": "Reçus"
+"Microsoft": "Reçus"
+"EDF": "Factures"
+"Revolut": "Relevés Bancaires"
+"Credit Suisse": "Relevés Bancaires"
+"Swisscom": "Factures"
+"Apple": "Reçus"

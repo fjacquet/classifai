@@ -1,6 +1,14 @@
 # ClassifAI
 
-ClassifAI is a tool to automatically organize files in a directory using local AI models with Ollama.
+ClassifAI is a tool to automatically organize files in a directory using a hybrid of rule-based logic and local AI models with Ollama.
+
+## Features
+
+* **Hybrid Classification**: Uses a user-defined knowledge base (`debitors.yaml`) for fast, rule-based classification, falling back to powerful Ollama language models for semantic analysis.
+* **Multiple AI Modes**: Choose between a fast `embedding` mode for quick similarity searches or a `completion` mode for in-depth content analysis.
+* **Robust Parsing**: Supports a wide range of file types, including PDFs, Office documents, images (with OCR), and generic text files, with a fallback to `pandoc` for maximum compatibility.
+* **Web Interface**: An intuitive Streamlit UI for easy configuration, previewing, and execution.
+* **Command-Line Interface**: A powerful CLI for scripting and advanced users.
 
 ## Installation
 
@@ -11,35 +19,49 @@ ClassifAI is a tool to automatically organize files in a directory using local A
     cd classifai
     ```
 
-2. **Install dependencies:**
+2. **Install System Dependencies:**
+    * **Pandoc:** For advanced document parsing.
+
+        ```bash
+        # On macOS with Homebrew
+        brew install pandoc
+        ```
+
+    * **Tesseract:** For Optical Character Recognition (OCR) in images.
+
+        ```bash
+        # On macOS with Homebrew
+        brew install tesseract
+        ```
+
+3. **Install Python dependencies:**
 
     ```bash
     uv pip install -e .
     ```
 
-3. **Install Ollama:**
-    Follow the instructions on the [Ollama website](https://ollama.ai/) to install and run Ollama on your system.
-
-4. **Pull the required models:**
-    ClassifAI uses two types of models: a **completion model** for detailed analysis and an **embedding model** for fast similarity searches.
-
-    * **Completion Model (for `-cm completion` mode):**
+4. **Install Ollama & Models:**
+    * Follow the instructions on the [Ollama website](https://ollama.ai/) to install and run Ollama.
+    * Pull the required models:
 
         ```bash
+        # For completion mode
         ollama pull gemma3n
-        ```
-
-    * **Embedding Model (for `-cm embedding` mode):**
-
-        ```bash
+        # For embedding mode
         ollama pull mxbai-embed-large
         ```
 
 ## Usage
 
-### Command-Line Interface (CLI)
+### Web Interface (Recommended)
 
-To run the CLI, use the `uv run main.py` command with your desired options.
+Launch the Streamlit application for a user-friendly experience:
+
+```bash
+streamlit run src/classifai/classifai_app.py
+```
+
+### Command-Line Interface (CLI)
 
 **Example (using fast embedding mode):**
 
@@ -52,13 +74,3 @@ uv run main.py --source-dir /path/to/your/files --classification-mode embedding
 ```bash
 uv run main.py --source-dir /path/to/your/files --classification-mode completion
 ```
-
-### Web Interface (Streamlit)
-
-To launch the web interface, run:
-
-```bash
-streamlit run src/classifai/classifai_app.py
-```
-
-The web UI allows you to configure all options graphically.

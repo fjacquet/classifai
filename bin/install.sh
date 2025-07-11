@@ -1,12 +1,15 @@
 #!/bin/bash
 
-uv pip install \
+uv add \
+    python-dotenv \
+    langdetect \
+    geopy \
+    fuzzywuzzy \
     python-docx \
     openpyxl \
     python-pptx \
     PyPDF2 \
     PyMuPDF \
-    textract \
     Pillow \
     opencv-python \
     pytesseract \
@@ -14,11 +17,18 @@ uv pip install \
     pydub \
     SpeechRecognition \
     mutagen \
-    librosa
+    librosa \
+    faker \
+    pytest \
+    pytest-mock \
+    ruff \
+    yamlfix \
+    loguru \
+    typer \
+    streamlit \
+    litellm \
+    pypandoc
+uv add beautifulsoup4 striprtf extract-msg
 
-brew install poppler antiword tesseract ffmpeg
+brew install poppler-qt5 antiword tesseract ffmpeg pandoc
 
-
-# tika-python: Nécessite Java Runtime Environment (JRE) installé sur votre système et le serveur Apache Tika en cours d'exécution.
-# Installation de Java : Suivez les instructions pour votre OS.
-# Démarrage du serveur Tika : Téléchargez le JAR de Tika (ex: tika-server-x.x.jar) et exécutez-le : java -jar tika-server-x.x.jar. tika-python se connectera à ce serveur.

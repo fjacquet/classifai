@@ -1,4 +1,20 @@
-## 8. Advanced Features (Future)
+## 8. Contextual Intelligence & Advanced Parsing (Post-MVP)
+
+- [x] **Knowledge-Based Classification**:
+  - [x] Create `knowledge_base_module.py` to handle `debitors.yaml`.
+  - [x] Create `config/debitors.yaml` with example data.
+  - [x] Update classification module to pre-classify using the knowledge base.
+  - [x] Update UI/CLI to show rule-based classification source.
+- [x] **Advanced Parsing with Pandoc**:
+  - [x] Add new dependencies (`beautifulsoup4`, `striprtf`, `extract-msg`).
+  - [x] Refactor `parsing_module.py` to use a hierarchical approach with Pandoc as a fallback.
+  - [x] Update documentation to include `pandoc` as a system dependency.
+- [x] **EXIF-Based Photo Organization**:
+  - [x] Enhance image parser to extract all relevant EXIF data.
+  - [x] Create `geocoding_module.py` to handle reverse geocoding.
+  - [x] Update file operations to create date/location-based folders for photos.
+  - [x] Enhance classification prompts with EXIF data.
+  - [x] Add configuration for photo organization strategy.
 
 - [ ] **Language-Based Organization**:
   - [ ] Integrate a language detection library (e.g., `langdetect`).
@@ -11,13 +27,16 @@
   - [ ] Implement an `undo` command.
 - [ ] **Custom Rules**:
   - [ ] Implement a rules engine for pre-classification based on filename or path.
-- [ ] **Background Watching**:
-  - [ ] Implement a background process to watch a folder for new files.
-- [ ] **Vision Model Integration**:
-  - [ ] Integrate `ollama/llava` for advanced image classification.
+
+## 9. Advanced Features (Future)
+
 - [ ] **Expanded Format Support**:
   - [ ] Add support for audio and video transcription.
   - [ ] Add support for parsing archive contents (`.zip`, etc.).
+- [ ] **Vision Model Integration**:
+  - [ ] Integrate `ollama/llava` for advanced image classification.
+- [ ] **Background Watching**:
+  - [ ] Implement a background process to watch a folder for new files.
 
 ---
 

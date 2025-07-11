@@ -1027,3 +1027,80 @@ For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/St
 2025-07-10 23:14:04 | INFO     | classifai.file_operations_module:_transfer_file:73 - Copied: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp2yjeok92/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp2yjeok92/destination/test.txt
 2025-07-10 23:14:04 | INFO     | classifai.file_operations_module:_transfer_file:70 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp5s0z5_6d/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp5s0z5_6d/destination/test (1).txt
 2025-07-10 23:14:04 | INFO     | classifai.parsing_module:parse_image:63 - OCR returned no text for image: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpacc4f93z/blank.png
+2025-07-10 23:20:16 | INFO     | classifai.classifai_cli:run:103 - Starting ClassifAI in dry-run mode.
+2025-07-10 23:20:16 | INFO     | classifai.classifai_cli:run:104 - Source directory: /Users/fjacquet/Downloads
+2025-07-10 23:20:16 | INFO     | classifai.classifai_cli:run:105 - Destination directory: /Users/fjacquet/sorted
+2025-07-10 23:20:16 | INFO     | classifai.classifai_cli:run:106 - Ollama model: gemma3n
+2025-07-10 23:20:16 | INFO     | classifai.classifai_cli:run:107 - Classification mode: embedding
+2025-07-10 23:20:17 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .zip
+2025-07-10 23:20:17 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .zip
+2025-07-10 23:20:18 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .zip
+2025-07-10 23:20:18 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .backup
+2025-07-10 23:20:18 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .zip
+2025-07-10 23:20:18 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .zip
+2025-07-10 23:20:18 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .backup
+2025-07-10 23:20:18 | INFO     | classifai.parsing_module:parse_image:63 - OCR returned no text for image: /Users/fjacquet/Downloads/e56faa46-18cf-4c8a-b2f1-b44b144fd148.png
+2025-07-10 23:20:18 | INFO     | classifai.classifai_cli:run:144 - Content for e56faa46-18cf-4c8a-b2f1-b44b144fd148.png is empty, falling back to filename for classification.
+2025-07-10 23:20:19 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .zip
+2025-07-10 23:20:20 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .rdp
+2025-07-10 23:20:20 | INFO     | classifai.classifai_cli:run:144 - Content for .localized is empty, falling back to filename for classification.
+2025-07-10 23:20:20 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .zip
+2025-07-10 23:20:21 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .part
+2025-07-10 23:20:21 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .zip
+2025-07-10 23:20:21 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .rtsz
+2025-07-10 23:20:21 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .zip
+2025-07-10 23:20:21 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .xls
+2025-07-10 23:20:21 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .zip
+2025-07-10 23:20:21 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .zip
+2025-07-10 23:20:23 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .zip
+2025-07-10 23:20:23 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .zip
+2025-07-10 23:20:23 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .zip
+2025-07-10 23:20:23 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .zip
+2025-07-10 23:20:24 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .zip
+2025-07-10 23:20:24 | WARNING  | classifai.classifai_cli:run:166 - No parser found for file type: .zip
+2025-07-11 07:40:05 | INFO     | classifai.classifai_cli:run:103 - Starting ClassifAI in dry-run mode.
+2025-07-11 07:40:05 | INFO     | classifai.classifai_cli:run:104 - Source directory: .
+2025-07-11 07:40:05 | INFO     | classifai.classifai_cli:run:105 - Destination directory: .
+2025-07-11 07:40:05 | INFO     | classifai.classifai_cli:run:106 - Ollama model: gemma3n
+2025-07-11 07:40:05 | INFO     | classifai.classifai_cli:run:107 - Classification mode: embedding
+2025-07-11 07:40:05 | ERROR    | classifai.embedding_module:get_embedding:53 - Error generating embedding: API Error
+2025-07-11 07:40:05 | INFO     | classifai.file_operations_module:_transfer_file:70 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpxj99ll60/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpxj99ll60/destination/test.txt
+2025-07-11 07:40:05 | INFO     | classifai.file_operations_module:_transfer_file:73 - Copied: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpcn16fgdk/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpcn16fgdk/destination/test.txt
+2025-07-11 07:40:05 | INFO     | classifai.file_operations_module:_transfer_file:70 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpgxszy2ei/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpgxszy2ei/destination/test (1).txt
+2025-07-11 07:40:05 | INFO     | classifai.knowledge_base_module:match_category:49 - Found knowledge base match: 'test debitor' -> 'Test Category'
+2025-07-11 07:40:05 | INFO     | classifai.knowledge_base_module:_load_debitors:20 - Knowledge base file not found at non_existent_dir/debitors.yaml. Skipping rule-based classification.
+2025-07-11 07:40:05 | INFO     | classifai.parsing_module:parse_image:63 - OCR returned no text for image: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpqhyzu0e7/blank.png
+2025-07-11 07:43:57 | INFO     | classifai.classifai_cli:run:103 - Starting ClassifAI in dry-run mode.
+2025-07-11 07:43:57 | INFO     | classifai.classifai_cli:run:104 - Source directory: .
+2025-07-11 07:43:57 | INFO     | classifai.classifai_cli:run:105 - Destination directory: .
+2025-07-11 07:43:57 | INFO     | classifai.classifai_cli:run:106 - Ollama model: gemma3n
+2025-07-11 07:43:57 | INFO     | classifai.classifai_cli:run:107 - Classification mode: embedding
+2025-07-11 07:43:57 | ERROR    | classifai.embedding_module:get_embedding:53 - Error generating embedding: API Error
+2025-07-11 07:43:57 | INFO     | classifai.file_operations_module:_transfer_file:70 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpvsp9ropq/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpvsp9ropq/destination/test.txt
+2025-07-11 07:43:57 | INFO     | classifai.file_operations_module:_transfer_file:73 - Copied: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp7wec5vo7/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp7wec5vo7/destination/test.txt
+2025-07-11 07:43:57 | INFO     | classifai.file_operations_module:_transfer_file:70 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp2qqrt_yx/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp2qqrt_yx/destination/test (1).txt
+2025-07-11 07:43:57 | INFO     | classifai.knowledge_base_module:match_category:49 - Found knowledge base match: 'test debitor' -> 'Test Category'
+2025-07-11 07:43:57 | INFO     | classifai.knowledge_base_module:_load_debitors:20 - Knowledge base file not found at non_existent_dir/debitors.yaml. Skipping rule-based classification.
+2025-07-11 07:49:02 | INFO     | classifai.classifai_cli:run:103 - Starting ClassifAI in dry-run mode.
+2025-07-11 07:49:02 | INFO     | classifai.classifai_cli:run:104 - Source directory: .
+2025-07-11 07:49:02 | INFO     | classifai.classifai_cli:run:105 - Destination directory: .
+2025-07-11 07:49:02 | INFO     | classifai.classifai_cli:run:106 - Ollama model: gemma3n
+2025-07-11 07:49:02 | INFO     | classifai.classifai_cli:run:107 - Classification mode: embedding
+2025-07-11 07:49:02 | ERROR    | classifai.embedding_module:get_embedding:53 - Error generating embedding: API Error
+2025-07-11 07:49:02 | INFO     | classifai.file_operations_module:_transfer_file:75 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpymfk77um/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpymfk77um/destination/test.txt
+2025-07-11 07:49:02 | INFO     | classifai.file_operations_module:_transfer_file:78 - Copied: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp5kdw9qok/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp5kdw9qok/destination/test.txt
+2025-07-11 07:49:02 | INFO     | classifai.file_operations_module:_transfer_file:75 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp6ekr2fpv/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp6ekr2fpv/destination/test (1).txt
+2025-07-11 07:49:02 | INFO     | classifai.knowledge_base_module:match_category:49 - Found knowledge base match: 'test debitor' -> 'Test Category'
+2025-07-11 07:49:02 | INFO     | classifai.knowledge_base_module:_load_debitors:20 - Knowledge base file not found at non_existent_dir/debitors.yaml. Skipping rule-based classification.
+2025-07-11 08:01:20 | INFO     | classifai.classifai_cli:run:103 - Starting ClassifAI in dry-run mode.
+2025-07-11 08:01:20 | INFO     | classifai.classifai_cli:run:104 - Source directory: .
+2025-07-11 08:01:20 | INFO     | classifai.classifai_cli:run:105 - Destination directory: .
+2025-07-11 08:01:20 | INFO     | classifai.classifai_cli:run:106 - Ollama model: gemma3n
+2025-07-11 08:01:20 | INFO     | classifai.classifai_cli:run:107 - Classification mode: embedding
+2025-07-11 08:01:20 | ERROR    | classifai.embedding_module:get_embedding:53 - Error generating embedding: API Error
+2025-07-11 08:01:20 | INFO     | classifai.file_operations_module:_transfer_file:75 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpviwia0cb/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpviwia0cb/destination/test.txt
+2025-07-11 08:01:20 | INFO     | classifai.file_operations_module:_transfer_file:78 - Copied: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp40mahc99/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmp40mahc99/destination/test.txt
+2025-07-11 08:01:20 | INFO     | classifai.file_operations_module:_transfer_file:75 - Moved: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpkxffr65o/source/test.txt -> /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpkxffr65o/destination/test (1).txt
+2025-07-11 08:01:20 | INFO     | classifai.knowledge_base_module:match_category:49 - Found knowledge base match: 'test debitor' -> 'Test Category'
+2025-07-11 08:01:20 | INFO     | classifai.knowledge_base_module:_load_debitors:20 - Knowledge base file not found at non_existent_dir/debitors.yaml. Skipping rule-based classification.
+2025-07-11 08:01:20 | INFO     | classifai.parsing_module:parse_image:58 - OCR returned no text for image: /var/folders/yf/l79_wd8x54702k3vntd015l80000gn/T/tmpasy5tkqa/exif.jpg
