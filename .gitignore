@@ -14,3 +14,4 @@ wheels/
 config/debitors.yaml
 .DS_Store
 logs/
+.coverage*
