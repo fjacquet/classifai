@@ -6,37 +6,44 @@ to classify the content of documents.
 """
 
 from litellm import completion
-from loguru import logger
 
 from classifai.config import OLLAMA_API_URL, OLLAMA_MODEL_NAME
 from classifai.knowledge_base_module import KnowledgeBase
+from classifai.rules_engine_module import RulesEngine
 
-# Initialize the knowledge base
+# Initialize the engines
+rules_engine = RulesEngine()
 knowledge_base = KnowledgeBase()
 
 
-def classify_content(content: str, categories: list[str], logger) -> str:
+def classify_content(content: str, categories: list[str], file_path: str, logger) -> str:
     """
     Classifies the given content into one of the provided categories using a
-    hybrid approach (knowledge base -> AI).
+    hybrid approach (rules -> knowledge base -> AI).
 
     Args:
         content (str): The content to classify.
         categories (list[str]): A list of possible categories.
+        file_path (str): The path to the file being classified.
         logger: The logger instance.
 
     Returns:
         str: The most appropriate category, or "Unknown" if classification fails.
     """
-    # 1. Attempt pre-classification with the knowledge base
+    # 1. Attempt pre-classification with the rules engine
+    rule_category = rules_engine.match_category(file_path)
+    if rule_category:
+        return rule_category
+
+    # 2. Attempt pre-classification with the knowledge base
     kb_category = knowledge_base.match_category(content)
     if kb_category:
         return kb_category
 
-    # 2. Fallback to AI classification
+    # 3. Fallback to AI classification
     prompt = f"""
     Given the following document content, please classify it into one of the
-    following categories: {', '.join(categories)}.
+    following categories: {", ".join(categories)}.
 
     Content:
     ---
@@ -47,9 +54,7 @@ def classify_content(content: str, categories: list[str], logger) -> str:
     """
 
     try:
-        model_prefix = (
-            "ollama_chat/" if "chat" in OLLAMA_MODEL_NAME.lower() else "ollama/"
-        )
+        model_prefix = "ollama_chat/" if "chat" in OLLAMA_MODEL_NAME.lower() else "ollama/"
         model_to_use = f"{model_prefix}{OLLAMA_MODEL_NAME}"
 
         response = completion(

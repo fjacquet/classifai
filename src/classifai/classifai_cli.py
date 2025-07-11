@@ -18,6 +18,7 @@ from classifai.file_operations_module import copy_file, move_file
 from classifai.logging_module import setup_logger
 from classifai.ollama_classification_module import classify_content
 from classifai.parsing_module import get_parser
+from classifai.utils import detect_language
 
 app = typer.Typer()
 console = Console()
@@ -128,6 +129,7 @@ def run(
 
     table = Table(title="Classification Preview")
     table.add_column("File Name", style="cyan")
+    table.add_column("Language", style="yellow")
     table.add_column("Proposed Category", style="magenta")
     table.add_column("Destination Path", style="green")
 
@@ -146,6 +148,9 @@ def run(
                     )
                     content = item.name
 
+                # Detect language
+                language = detect_language(content) or "N/A"
+
                 if classification_mode == "embedding":
                     content_embedding = get_embedding(
                         content, model=embedding_model
@@ -161,10 +166,12 @@ def run(
                     else:
                         category = "Unknown"
                 else:
-                    category = classify_content(content, categories, logger)
+                    category = classify_content(
+                        content, categories, str(item.absolute()), logger
+                    )
 
                 destination_path = destination_dir / category / item.name
-                table.add_row(item.name, category, str(destination_path))
+                table.add_row(item.name, language, category, str(destination_path))
                 files_to_process.append((item, category, destination_path))
             else:
                 logger.warning(f"No parser found for file type: {item.suffix}")

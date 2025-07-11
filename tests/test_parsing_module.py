@@ -1,30 +1,19 @@
-
 """
 Tests for the parsing_module.
 """
 
+import tempfile
 from contextlib import contextmanager
 from pathlib import Path
-import tempfile
+
 import openpyxl
 import pytest
-from PIL import Image, ExifTags
+from PIL import ExifTags, Image
 
 from classifai.parsing_module import (
-    get_parser,
-    parse_docx,
-    parse_image,
-    parse_pdf,
-    parse_html,
-    parse_rtf,
-    parse_eml,
-    parse_xlsx,
-    parse_generic_text,
-    parse_with_pandoc,
-    _get_exif_data,
     _convert_gps_to_decimal,
+    parse_image,
 )
-from classifai.config import GENERIC_TEXT_EXTENSIONS
 
 
 @contextmanager
@@ -39,7 +28,7 @@ def create_test_files():
         (tmp_path / "no_extension").write_text("File with no extension.")
         (tmp_path / "test.html").write_text("<h1>Title</h1><p>Paragraph</p>")
         (tmp_path / "test.rtf").write_text(
-            "{\rtf1\ansi{\fonttbl\f0\fswiss Helvetica;}\f0\pard\nThis is RTF text.\par}"
+            "{\rtf1\ansi{\fonttbl\f0\fswiss Helvetica;}\f0\\pard\nThis is RTF text.\\par}"
         )
         (tmp_path / "test.eml").write_text(
             "From: sender@example.com\nTo: receiver@example.com\nSubject: Test\n\nThis is the body."

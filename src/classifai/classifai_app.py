@@ -12,19 +12,16 @@ import pandas as pd
 import streamlit as st
 from loguru import logger
 
-from classifai.classifai_cli import (
-    classify_content,
-    copy_file,
-    cosine_similarity,
-    get_embedding,
-    get_parser,
-    move_file,
-)
 from classifai.config import (
     OLLAMA_API_URL,
     OLLAMA_EMBEDDING_MODEL_NAME,
     OLLAMA_MODEL_NAME,
 )
+from classifai.embedding_module import cosine_similarity, get_embedding
+from classifai.file_operations_module import copy_file, move_file
+from classifai.ollama_classification_module import classify_content
+from classifai.parsing_module import get_parser
+from classifai.utils import detect_language
 
 # --- Page Configuration ---
 st.set_page_config(
@@ -86,9 +83,11 @@ def run_scan(
         progress_bar.progress((i + 1) / total_files, text=f"Processing: {item.name}")
         parser = get_parser(item.suffix)
         if parser:
-            content = parser(str(item.absolute()))
+            content, metadata = parser(str(item.absolute()))
             if not content.strip():
                 content = item.name  # Fallback to filename
+
+            language = detect_language(content) or "N/A"
 
             if class_mode == "embedding":
                 content_embedding = get_embedding(content, model=model)
@@ -101,11 +100,14 @@ def run_scan(
                 else:
                     category = "Unknown"
             else:
-                category = classify_content(content, categories, logger)
+                category = classify_content(
+                    content, categories, str(item.absolute()), logger
+                )
 
             results.append(
                 {
                     "File Name": item.name,
+                    "Language": language,
                     "Category": category,
                     "Destination Path": str(dest_path / category / item.name),
                     "Source Path": str(item.absolute()),

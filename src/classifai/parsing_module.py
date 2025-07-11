@@ -1,4 +1,3 @@
-
 """
 Parsing module for ClassifAI.
 
@@ -6,17 +5,18 @@ This module encapsulates the logic for extracting content from various file type
 using a hierarchical strategy.
 """
 
+import email
+import subprocess
+
 import fitz  # PyMuPDF
 import openpyxl
 import pytesseract
-import subprocess
-from PIL import Image, UnidentifiedImageError
-from PIL.ExifTags import TAGS
+from bs4 import BeautifulSoup
 from docx import Document
 from loguru import logger
-from bs4 import BeautifulSoup
+from PIL import Image, UnidentifiedImageError
+from PIL.ExifTags import TAGS
 from striprtf.striprtf import rtf_to_text
-import email
 
 from classifai.config import GENERIC_TEXT_EXTENSIONS
 from classifai.geocoding_module import get_location_from_gps
@@ -97,8 +97,7 @@ def parse_pdf(file_path: str) -> tuple[str, dict]:
                 return result.stdout, {}
             except (subprocess.CalledProcessError, FileNotFoundError) as e:
                 logger.warning(
-                    f"pdftotext fallback failed for {file_path}: {e}. "
-                    "Ensure 'poppler-utils' is installed."
+                    f"pdftotext fallback failed for {file_path}: {e}. Ensure 'poppler-utils' is installed."
                 )
                 return "", {}
         return text, {}
@@ -136,7 +135,7 @@ def parse_xlsx(file_path: str) -> tuple[str, dict]:
 def parse_html(file_path: str) -> tuple[str, dict]:
     """Extracts text from an HTML file."""
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             soup = BeautifulSoup(f, "html.parser")
             return soup.get_text(), {}
     except Exception as e:
@@ -147,7 +146,7 @@ def parse_html(file_path: str) -> tuple[str, dict]:
 def parse_rtf(file_path: str) -> tuple[str, dict]:
     """Extracts text from an RTF file."""
     try:
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             return rtf_to_text(f.read()), {}
     except Exception as e:
         logger.error(f"Error parsing RTF file {file_path}: {e}")
@@ -157,7 +156,7 @@ def parse_rtf(file_path: str) -> tuple[str, dict]:
 def parse_eml(file_path: str) -> tuple[str, dict]:
     """Extracts text from an EML file."""
     try:
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             msg = email.message_from_file(f)
             body = ""
             if msg.is_multipart():
@@ -178,13 +177,11 @@ def parse_generic_text(file_path: str) -> tuple[str, dict]:
     encodings = ["utf-8", "latin-1", "iso-8859-1"]
     for encoding in encodings:
         try:
-            with open(file_path, "r", encoding=encoding) as f:
+            with open(file_path, encoding=encoding) as f:
                 return f.read(), {}
         except UnicodeDecodeError:
             continue
-    logger.warning(
-        f"Could not decode file {file_path} with any of the default encodings."
-    )
+    logger.warning(f"Could not decode file {file_path} with any of the default encodings.")
     return "", {}
 
 
@@ -200,8 +197,7 @@ def parse_with_pandoc(file_path: str) -> tuple[str, dict]:
         return result.stdout, {}
     except FileNotFoundError:
         logger.error(
-            "Pandoc is not installed or not in your PATH. "
-            "Please install it for advanced document parsing."
+            "Pandoc is not installed or not in your PATH. Please install it for advanced document parsing."
         )
         # Re-raise to avoid repeated attempts
         raise

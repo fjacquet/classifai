@@ -4,16 +4,14 @@ File operations module for ClassifAI.
 This module handles moving and copying files, as well as resolving name conflicts.
 """
 
-import os
 import shutil
-from pathlib import Path
-from loguru import logger
 from datetime import datetime
+from pathlib import Path
+
+from loguru import logger
 
 
-def _get_photo_destination(
-    destination_dir: Path, metadata: dict, original_filename: str
-) -> Path:
+def _get_photo_destination(destination_dir: Path, metadata: dict, original_filename: str) -> Path:
     """Constructs a destination path for photos based on EXIF data."""
     try:
         if "date" in metadata and metadata["date"]:
@@ -44,9 +42,7 @@ def copy_file(source_path: str, destination_dir: str, metadata: dict = None) -> 
     return _transfer_file(source_path, destination_dir, "copy", metadata)
 
 
-def _transfer_file(
-    source_path: str, destination_dir: str, operation: str, metadata: dict = None
-) -> str:
+def _transfer_file(source_path: str, destination_dir: str, operation: str, metadata: dict = None) -> str:
     """
     Internal function to handle both move and copy operations.
     """
@@ -55,9 +51,7 @@ def _transfer_file(
         destination = Path(destination_dir)
 
         if metadata and source.suffix.lower() in [".jpg", ".jpeg", ".png", ".tiff"]:
-            new_file_path = _get_photo_destination(
-                destination, metadata, source.name
-            )
+            new_file_path = _get_photo_destination(destination, metadata, source.name)
             destination = new_file_path.parent
         else:
             new_file_path = destination / source.name
@@ -80,7 +74,5 @@ def _transfer_file(
         return str(new_file_path)
 
     except Exception as e:
-        logger.error(
-            f"Error {operation}ing file {source_path} to {destination_dir}: {e}"
-        )
+        logger.error(f"Error {operation}ing file {source_path} to {destination_dir}: {e}")
         return ""

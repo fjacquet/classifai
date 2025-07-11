@@ -1,0 +1,44 @@
+# This file defines custom rules for pre-classification based on file attributes.
+# Rules are processed in the order they appear. The first rule that matches
+# will determine the file's category.
+
+rules:
+  # Rule to classify PDF files named "invoice_..." into the "Invoices" category.
+  - name: "Invoice Rule (by name)"
+    conditions:
+      # You can use multiple conditions. All must be met for the rule to apply.
+      - type: "filename" # Condition based on the file's name.
+        pattern: "invoice_*.pdf" # Glob pattern (like in .gitignore).
+    action:
+      type: "categorize"
+      category: "Invoices"
+
+  # Rule to classify any file containing "receipt" in its name as a "Receipt".
+  - name: "Receipt Rule (by name)"
+    conditions:
+      - type: "filename"
+        pattern: "*receipt*.*"
+    action:
+      type: "categorize"
+      category: "Receipts"
+
+  # Rule to classify any file inside a specific project folder.
+  - name: "Project Documents Rule (by path)"
+    conditions:
+      - type: "path" # Condition based on the file's full path.
+        pattern: "*/projects/classifai/*"
+    action:
+      type: "categorize"
+      category: "Work/Classifai"
+
+  # Example of a more complex rule with multiple conditions.
+  # A file would need to be a JPG and have "vacation" in its name.
+  - name: "Vacation Photos Rule"
+    conditions:
+      - type: "filename"
+        pattern: "*vacation*.jpg"
+      - type: "filename" # Redundant, but shows multiple conditions
+        pattern: "*.jpg"
+    action:
+      type: "categorize"
+      category: "Personal/Photos/Vacations"

@@ -4,8 +4,9 @@ Knowledge Base module for ClassifAI.
 This module handles loading and querying the debitors.yaml knowledge base.
 """
 
-import yaml
 from pathlib import Path
+
+import yaml
 from loguru import logger
 
 
@@ -18,12 +19,11 @@ class KnowledgeBase:
         """Loads the debitors from the YAML file."""
         if not self.config_path.exists():
             logger.info(
-                f"Knowledge base file not found at {self.config_path}. "
-                "Skipping rule-based classification."
+                f"Knowledge base file not found at {self.config_path}. Skipping rule-based classification."
             )
             return {}
         try:
-            with open(self.config_path, "r") as f:
+            with open(self.config_path) as f:
                 # Convert keys to lowercase for case-insensitive matching
                 return {k.lower(): v for k, v in yaml.safe_load(f).items()}
         except yaml.YAMLError as e:
@@ -46,8 +46,6 @@ class KnowledgeBase:
         text_content_lower = text_content.lower()
         for debitor, category in self.debitors.items():
             if debitor in text_content_lower:
-                logger.info(
-                    f"Found knowledge base match: '{debitor}' -> '{category}'"
-                )
+                logger.info(f"Found knowledge base match: '{debitor}' -> '{category}'")
                 return category
         return None

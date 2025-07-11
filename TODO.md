@@ -15,14 +15,18 @@
   - [x] Update file operations to create date/location-based folders for photos.
   - [x] Enhance classification prompts with EXIF data.
   - [x] Add configuration for photo organization strategy.
-- [ ] **Custom Rules**:
-  - [ ] Implement a rules engine for pre-classification based on filename or path.
+- [x] **Custom Rules**:
+  - [x] Implement a rules engine for pre-classification based on filename or path.
 - [ ] **Language-Based Organization**:
   - [ ] Integrate a language detection library (e.g., `langdetect`).
+- [ ] **Expanded Format Support**:
+  - [ ] Add support for audio and video transcription.
+  - [ ] Add support for parsing archive contents (`.zip`, etc.).
   - [ ] Update file operations to create language-based subfolders (`/en`, `/fr`).
 - [ ] **AI-Powered Renaming**:
   - [ ] Enhance Ollama prompts to extract issuer, date, and a short title.
   - [ ] Implement structured file renaming logic.
+
 - [ ] **History and Undo**:
   - [ ] Create `history_module.py` to log all file operations.
   - [ ] Implement an `undo` command.
@@ -30,9 +34,7 @@
 
 ## 9. Advanced Features (Future)
 
-- [ ] **Expanded Format Support**:
-  - [ ] Add support for audio and video transcription.
-  - [ ] Add support for parsing archive contents (`.zip`, etc.).
+
 - [ ] **Vision Model Integration**:
   - [ ] Integrate `ollama/llava` for advanced image classification.
 - [ ] **Background Watching**:
