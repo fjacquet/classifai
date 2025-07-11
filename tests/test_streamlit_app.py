@@ -42,6 +42,7 @@ def test_run_scan_completion_mode(tmp_path, mock_backend):
         use_vision=False,
         language_subfolders=False,
         recursive=False,
+        categories=["Documents", "Images"],
     )
 
     assert isinstance(df, pd.DataFrame)
@@ -68,6 +69,7 @@ def test_run_scan_embedding_mode(tmp_path, mock_backend):
         use_vision=False,
         language_subfolders=False,
         recursive=False,
+        categories=["Documents", "Images"],
     )
 
     assert isinstance(df, pd.DataFrame)

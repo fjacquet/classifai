@@ -42,3 +42,12 @@ rules:
     action:
       type: "categorize"
       category: "Personal/Photos/Vacations"
+
+  # Rule to classify .ppk files as "Clés et Certificats".
+  - name: "PPK Rule"
+    conditions:
+      - type: "filename"
+        pattern: "*.ppk"
+    action:
+      type: "categorize"
+      category: "Clés et Certificats"

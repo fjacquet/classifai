@@ -30,23 +30,29 @@ class KnowledgeBase:
             logger.error(f"Error parsing debitors.yaml: {e}")
             return {}
 
-    def match_category(self, text_content: str) -> tuple[str, str] | None:
+    def get_sector_for_issuer(self, issuer_name: str) -> str | None:
         """
-        Matches text content against the knowledge base to find a category.
+        Finds the business sector for a given issuer name.
 
         Args:
-            text_content (str): The text content of the document.
+            issuer_name (str): The name of the issuer to look up.
 
         Returns:
-            A tuple containing the matched category and the debitor name (issuer),
-            or None if no match is found.
+            The corresponding business sector or None if no match is found.
         """
-        if not self.debitors:
+        if not self.debitors or not issuer_name:
             return None
 
-        text_content_lower = text_content.lower()
-        for debitor, category in self.debitors.items():
-            if debitor in text_content_lower:
-                logger.info(f"Found knowledge base match: '{debitor}' -> '{category}'")
-                return category, debitor
+        issuer_lower = issuer_name.lower()
+        # First, try for an exact match
+        if issuer_lower in self.debitors:
+            return self.debitors[issuer_lower]
+
+        # If no exact match, try for a partial match (e.g., "amazon" in "amazon web services")
+        for debitor, sector in self.debitors.items():
+            if debitor in issuer_lower:
+                logger.info(
+                    f"Found partial knowledge base match: '{issuer_name}' contains '{debitor}' -> '{sector}'"
+                )
+                return sector
         return None

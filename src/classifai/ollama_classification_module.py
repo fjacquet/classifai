@@ -22,8 +22,7 @@ knowledge_base = KnowledgeBase()
 
 def classify_content(content: str, categories: list[str], file_path: str, logger) -> dict:
     """
-    Classifies the given content and suggests a new filename using a hybrid
-    approach (rules -> knowledge base -> AI).
+    Classifies the given content and extracts the issuer using an AI model.
 
     Args:
         content (str): The content to classify.
@@ -32,29 +31,18 @@ def classify_content(content: str, categories: list[str], file_path: str, logger
         logger: The logger instance.
 
     Returns:
-        dict: A dictionary containing the category and a suggested new filename.
-              Example: {"category": "Invoices", "new_filename": "2025-07-11-invoice-acme.pdf"}
+        dict: A dictionary containing the category, a suggested new filename, and the issuer.
+              Example: {"category": "Factures", "new_filename": "2025-07-11-invoice-acme.pdf",
+                        "issuer": "Acme Corp"}
     """
-    # 1. Attempt pre-classification with the rules engine
-    rule_category = rules_engine.match_category(file_path)
-    if rule_category:
-        return {"category": rule_category, "new_filename": None}
-
-    # 2. Attempt pre-classification with the knowledge base
-    kb_match = knowledge_base.match_category(content)
-    if kb_match:
-        category, issuer = kb_match
-        # We don't have a new filename from the knowledge base, but we have the issuer
-        return {"category": category, "new_filename": None, "issuer": issuer}
-
-    # 3. Fallback to AI classification
-    prompt = """
+    # The rule and knowledge base matching is now handled in the core_logic
+    prompt = f"""
     Analyze the following document content and return a JSON object with three keys:
     1. "category": Classify the document into one of the following categories: {", ".join(categories)}.
-    2. "new_filename": Suggest a new filename in the format YYYY-MM-DD-issuer-short_description.ext.
-       - The date should be the most relevant date from the document.
+    2. "new_filename": Suggest a new filename in the format YYYY-MM-DD_issuer_short_description.ext.
+       - The date should be the most relevant date from the document. If no date is found, use the current date.
        - The issuer should be the name of the company or person who created the document.
-       - The description should be a 1-3 word summary.
+       - The description should be a 1-3 word summary in English.
        - Use the original file extension.
     3. "issuer": The name of the company or person who created the document.
 
@@ -65,6 +53,7 @@ def classify_content(content: str, categories: list[str], file_path: str, logger
 
     Return only the JSON object, with no other text or explanations.
     """
+    logger.debug(f"Prompt sent to Ollama for {file_path}:\n{prompt}")
 
     try:
         model_prefix = "ollama_chat/" if "chat" in OLLAMA_MODEL_NAME.lower() else "ollama/"
@@ -85,22 +74,23 @@ def classify_content(content: str, categories: list[str], file_path: str, logger
         issuer = response_data.get("issuer")
 
         if category not in categories:
-            logger.warning(f"Model returned an unexpected category: {category}")
-            category = "Unknown"
+            logger.warning(f"Model returned an unexpected category: '{category}'. Using 'Non Classé'.")
+            category = "Non Classé"
 
         return {"category": category, "new_filename": new_filename, "issuer": issuer}
 
     except (json.JSONDecodeError, KeyError) as e:
         logger.error(f"Error parsing JSON response from Ollama: {e}")
-        return {"category": "Unknown", "new_filename": None, "issuer": None}
+        return {"category": "Non Classé", "new_filename": None, "issuer": None}
     except Exception as e:
         logger.error(f"Error classifying content with Ollama: {e}")
-        return {"category": "Unknown", "new_filename": None, "issuer": None}
+        return {"category": "Non Classé", "new_filename": None, "issuer": None}
 
 
-def extract_issuer(content: str, logger) -> str | None:
+def extract_issuer_with_ai(content: str, logger) -> str | None:
     """
     Extracts the issuer from the given document content using an AI model.
+    This is a fallback for when the main classification doesn't provide it.
 
     Args:
         content (str): The content to extract the issuer from.
@@ -116,7 +106,7 @@ def extract_issuer(content: str, logger) -> str | None:
 
     Content:
     ---
-    {content[:4000]}
+    {content[:2000]}
     ---
 
     Return only the JSON object.
@@ -142,6 +132,55 @@ def extract_issuer(content: str, logger) -> str | None:
         return None
     except Exception as e:
         logger.error(f"Error extracting issuer with Ollama: {e}")
+        return None
+
+
+def get_sector_with_ai(issuer_name: str, content: str, logger) -> str | None:
+    """
+    Determines the business sector for a given issuer name using an AI model.
+
+    Args:
+        issuer_name (str): The name of the issuer.
+        content (str): The content of the document for context.
+        logger: The logger instance.
+
+    Returns:
+        The determined business sector, or None if it cannot be determined.
+    """
+    prompt = f"""
+    Given the issuer name "{issuer_name}" and the following document content,
+    what is the most likely business sector for this issuer?
+    Choose from sectors like "Finance", "Technologie", "Santé", "Commerce de détail", etc.
+    Return a JSON object with a single key: "sector". The sector must be in French.
+
+    Content:
+    ---
+    {content[:2000]}
+    ---
+
+    Return only the JSON object.
+    """
+    try:
+        model_prefix = "ollama_chat/" if "chat" in OLLAMA_MODEL_NAME.lower() else "ollama/"
+        model_to_use = f"{model_prefix}{OLLAMA_MODEL_NAME}"
+
+        response = completion(
+            model=model_to_use,
+            messages=[{"content": prompt, "role": "user"}],
+            api_base=OLLAMA_API_URL,
+            response_format={"type": "json_object"},
+        )
+
+        response_text = response.choices[0].message.content.strip()
+        response_data = json.loads(response_text)
+        sector = response_data.get("sector")
+        return sector
+
+    except (json.JSONDecodeError, KeyError) as e:
+        logger.error(f"Error parsing JSON response from Ollama for sector: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"Error determining sector with Ollama: {e}")
         return None
 
 

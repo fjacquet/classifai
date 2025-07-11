@@ -11,7 +11,7 @@ wheels/
 # Virtual environments
 .venv
 .env
-config/debitors.yaml
+# config/debitors.yaml
 .DS_Store
 logs/
 .coverage*

@@ -40,6 +40,30 @@ def load_yaml_config():
 # Load the YAML config
 _yaml_config = load_yaml_config()
 
+
+def load_categories():
+    """Loads categories from the categories.yaml file."""
+    config_path = Path("config/categories.yaml")
+    if not config_path.exists():
+        logger.warning("config/categories.yaml not found. Using default categories.")
+        return [
+            "Documents",
+            "Images",
+            "Videos",
+            "Audio",
+            "Archives",
+            "Scripts",
+            "Misc",
+        ]
+    try:
+        with open(config_path) as f:
+            return yaml.safe_load(f)
+    except yaml.YAMLError as e:
+        logger.error(f"Error parsing config/categories.yaml: {e}")
+        return []
+
+
 # --- Application Settings ---
+CATEGORIES = load_categories()
 GENERIC_TEXT_EXTENSIONS = _yaml_config.get("generic_text_extensions", [])
 USE_VISION_MODEL = _yaml_config.get("use_vision_model", False)

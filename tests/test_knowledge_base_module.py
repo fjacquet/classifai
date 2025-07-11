@@ -30,25 +30,29 @@ def test_kb_loading(create_kb_file):
     assert "another company" in kb.debitors
 
 
-def test_kb_match_found(create_kb_file):
-    """Tests a successful match from the knowledge base."""
+def test_get_sector_for_issuer_exact_match(create_kb_file):
+    """Tests a successful exact match for an issuer."""
     kb = KnowledgeBase(config_path=create_kb_file)
-    content = "This document is from Test Debitor, please pay the bill."
-    category, issuer = kb.match_category(content)
-    assert category == "Test Category"
-    assert issuer == "test debitor"
+    sector = kb.get_sector_for_issuer("Test Debitor")
+    assert sector == "Test Category"
 
 
-def test_kb_match_not_found(create_kb_file):
-    """Tests when no match is found in the knowledge base."""
+def test_get_sector_for_issuer_partial_match(create_kb_file):
+    """Tests a successful partial match for an issuer."""
     kb = KnowledgeBase(config_path=create_kb_file)
-    content = "This is a document from an unknown company."
-    category = kb.match_category(content)
-    assert category is None
+    sector = kb.get_sector_for_issuer("Some Company called Another Company Inc.")
+    assert sector == "Invoices"
+
+
+def test_get_sector_for_issuer_no_match(create_kb_file):
+    """Tests when no match is found for an issuer."""
+    kb = KnowledgeBase(config_path=create_kb_file)
+    sector = kb.get_sector_for_issuer("Unknown Company")
+    assert sector is None
 
 
 def test_kb_file_not_found():
     """Tests that the knowledge base handles a missing file gracefully."""
     kb = KnowledgeBase(config_path=Path("non_existent_dir/debitors.yaml"))
     assert kb.debitors == {}
-    assert kb.match_category("any content") is None
+    assert kb.get_sector_for_issuer("any issuer") is None

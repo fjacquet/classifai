@@ -6,20 +6,27 @@ classifying files, and preparing file operations. It is designed to be
 used by both the CLI and the Streamlit UI.
 """
 
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
 from loguru import logger
 
 from classifai.embedding_module import cosine_similarity, get_embedding
+from classifai.knowledge_base_module import KnowledgeBase
 from classifai.ollama_classification_module import (
     classify_content,
     classify_image_with_vision,
-    extract_issuer,
+    extract_issuer_with_ai,
+    get_sector_with_ai,
 )
 from classifai.parsing_module import get_parser
+from classifai.rules_engine_module import RulesEngine
 from classifai.utils import detect_language
+
+# Initialize engines
+rules_engine = RulesEngine()
+knowledge_base = KnowledgeBase()
 
 
 def _get_photo_destination(
@@ -42,7 +49,9 @@ def _get_photo_destination(
             dest = photo_path / year / month
             if "location" in metadata and metadata["location"]:
                 # Sanitize location to be a valid directory name
-                safe_location = "".join(c for c in metadata["location"] if c.isalnum() or c in " -_,").rstrip()
+                safe_location = "".join(
+                    c for c in metadata["location"] if c.isalnum() or c in " -_,"
+                ).rstrip()
                 dest = dest / safe_location
             return dest / original_filename
     except (ValueError, KeyError) as e:
@@ -70,6 +79,18 @@ def process_file(
     """
     Processes a single file: parses, classifies, and determines the destination.
     """
+    # 1. Rule-based pre-classification
+    rule_category = rules_engine.match_category(str(item.absolute()))
+    if rule_category:
+        logger.info(f"Matched rule for {item.name}: Category '{rule_category}'")
+        # If a rule matches, we might not have issuer/sector info, so we use defaults
+        destination_path = destination_dir
+        if language_subfolders:
+            destination_path = destination_path / "N/A"
+        destination_path = destination_path / "Unknown_Sector" / "Unknown_Issuer" / rule_category / item.name
+        return item, rule_category, destination_path, "N/A", {}, "Unknown_Issuer"
+
+    # 2. Parsing
     parser = get_parser(item.suffix)
     if not parser:
         logger.warning(f"No parser found for file type: {item.suffix}")
@@ -80,62 +101,81 @@ def process_file(
         logger.info(f"Content for {item.name} is empty, falling back to filename for classification.")
         content = item.name
 
-    if use_vision and item.suffix.lower() in [
-        ".png",
-        ".jpg",
-        ".jpeg",
-        ".tiff",
-        ".bmp",
-    ]:
+    if use_vision and item.suffix.lower() in [".png", ".jpg", ".jpeg", ".tiff", ".bmp"]:
         vision_content = classify_image_with_vision(str(item.absolute()), logger)
         if vision_content:
             content = vision_content
 
     language = detect_language(content) or "N/A"
+    logger.info(f"Detected language for {item.name}: {language}")
 
-    if classification_mode == "embedding":
-        content_embedding = get_embedding(content, model=embedding_model)
-        if content_embedding:
-            similarities = {
-                category: cosine_similarity(content_embedding, cat_embedding)
-                for category, cat_embedding in category_embeddings.items()
-            }
-            category = max(similarities, key=similarities.get)
-            new_filename = None
-            issuer = extract_issuer(content, logger)
-        else:
-            category = "Unknown"
-            new_filename = None
-            issuer = None
+    # 3. Keyword-based category matching
+    category = None
+    new_filename = None
+    issuer = None
+
+    # 4. AI-based classification if no keyword match
+    if not category:
+        if classification_mode == "embedding":
+            content_embedding = get_embedding(content, model=embedding_model)
+            if content_embedding:
+                similarities = {
+                    cat: cosine_similarity(content_embedding, cat_embedding)
+                    for cat, cat_embedding in category_embeddings.items()
+                }
+                category = max(similarities, key=similarities.get)
+            else:
+                category = "Non Classé"
+        else:  # completion mode
+            result = classify_content(content, categories, str(item.absolute()), logger)
+            category = result.get("category", "Non Classé")
+            new_filename = result.get("new_filename")
+            issuer = result.get("issuer")
+
+    # 5. Issuer extraction (if not already extracted)
+    if not issuer:
+        issuer = extract_issuer_with_ai(content, logger)
+
+    # 6. Knowledge Base Enrichment (Sector lookup)
+    sector = knowledge_base.get_sector_for_issuer(issuer) if issuer else None
+    if not sector and issuer:
+        logger.info(f"Issuer '{issuer}' not found in knowledge base. Asking AI for sector.")
+        sector = get_sector_with_ai(issuer, content, logger)
+
+    if not sector:
+        sector = "Secteur_Inconnu"
+
+    # 7. Final Path Construction
+    if rename_files and new_filename:
+        # Sanitize AI-generated filename
+        final_filename = "".join(c for c in new_filename if c.isalnum() or c in " -_.").rstrip()
+        if not final_filename.endswith(item.suffix):
+            final_filename += item.suffix
     else:
-        result = classify_content(content, categories, str(item.absolute()), logger)
-        category = result.get("category", "Unknown")
-        new_filename = result.get("new_filename")
-        issuer = result.get("issuer")
+        final_filename = item.name
 
-    final_filename = new_filename if rename_files and new_filename else item.name
-
-    # Handle photo-specific destination path
     if category == "Photos" and metadata.get("date"):
         destination_path = _get_photo_destination(
             destination_dir, metadata, final_filename, language if language_subfolders else None
         )
     else:
-        # General path construction: base / language / issuer / category / filename
-        destination_path = destination_dir
+        # Build the path component by component for clarity and correctness
+        current_path = destination_dir
         if language_subfolders and language != "N/A":
-            destination_path = destination_path / language
+            current_path = current_path / language
 
-        # Sanitize issuer to be a valid directory name
+        current_path = current_path / sector
+
         if issuer:
             safe_issuer = "".join(c for c in issuer if c.isalnum() or c in " -_").rstrip()
-            destination_path = destination_path / safe_issuer
+            current_path = current_path / safe_issuer
         else:
-            destination_path = destination_path / "Unknown_Issuer"
+            current_path = current_path / "Unknown_Issuer"
 
-        destination_path = destination_path / category
-        destination_path = destination_path / final_filename
+        current_path = current_path / category
+        destination_path = current_path / final_filename
 
+    logger.info(f"Final destination for {item.name}: {destination_path}")
     return item, category, destination_path, language, metadata, issuer
 
 
@@ -148,33 +188,25 @@ def run_scan(
     use_vision: bool,
     language_subfolders: bool,
     recursive: bool,
+    categories: list[str],
 ):
     """
     Scans the source directory, classifies files, and returns a DataFrame.
     """
     source_path = Path(source_dir_str)
-    dest_path = Path(dest_dir_str)
+    destination_directory = Path(dest_dir_str)  # Renamed for clarity
     results = []
 
     if not source_path.is_dir():
         logger.error(f"Source directory not found: {source_path}")
         return pd.DataFrame()
 
-    # Default categories for now, will be configurable later
-    categories = [
-        "Documents",
-        "Images",
-        "Videos",
-        "Audio",
-        "Archives",
-        "Scripts",
-        "Misc",
-    ]
-
     category_embeddings = {}
     if class_mode == "embedding":
+        logger.info(f"Generating embeddings for {len(categories)} categories...")
         for category in categories:
             category_embeddings[category] = get_embedding(category, model=model)
+        logger.info("Embeddings generated.")
 
     if recursive:
         files = [f for f in source_path.rglob("*") if f.is_file()]
@@ -184,7 +216,7 @@ def run_scan(
     for item in files:
         result = process_file(
             item,
-            dest_path,
+            destination_directory,  # Pass the base destination directory
             class_mode,
             model,
             rename_files,
@@ -195,15 +227,15 @@ def run_scan(
             category_embeddings,
         )
         if result:
-            file, category, dest_path, language, metadata, issuer = result
+            file, category, final_dest_path, language, metadata, issuer = result
             results.append(
                 {
                     "File Name": file.name,
                     "Language": language,
                     "Category": category,
                     "Issuer": issuer,
-                    "New Filename": dest_path.name,
-                    "Destination Path": str(dest_path),
+                    "New Filename": final_dest_path.name,
+                    "Destination Path": str(final_dest_path),
                     "Source Path": str(file.absolute()),
                     "Metadata": metadata,
                 }

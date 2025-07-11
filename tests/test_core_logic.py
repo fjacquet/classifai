@@ -59,22 +59,24 @@ def test_get_photo_destination_no_language():
 @patch("classifai.core_logic.get_parser")
 @patch("classifai.core_logic.detect_language")
 @patch("classifai.core_logic.classify_content")
-def test_process_file_general_path(mock_classify, mock_detect_language, mock_get_parser):
+@patch("classifai.core_logic.knowledge_base")
+def test_process_file_final_path_construction(mock_kb, mock_classify, mock_detect_language, mock_get_parser):
     """
-    Tests that the general path construction is correct.
+    Tests that the final destination path is constructed correctly according to the spec.
     """
     # Arrange
     mock_parser = MagicMock(return_value=("file content", {}))
     mock_get_parser.return_value = mock_parser
-    mock_detect_language.return_value = "en"
+    mock_detect_language.return_value = "fr"
     mock_classify.return_value = {
-        "category": "Invoices",
-        "new_filename": "2025-07-11-invoice.pdf",
-        "issuer": "TestCorp",
+        "category": "Relevés Bancaires",
+        "new_filename": "2025-07-11_Relevé.pdf",
+        "issuer": "Revolut",
     }
+    mock_kb.get_sector_for_issuer.return_value = "Services Financiers"
 
-    item = Path("/source/invoice.pdf")
-    dest_dir = Path("/dest")
+    item = Path("/source/releve.pdf")
+    dest_dir = Path("/Users/fjacquet/sorted")
 
     # Act
     _, _, destination_path, _, _, _ = process_file(
@@ -86,10 +88,12 @@ def test_process_file_general_path(mock_classify, mock_detect_language, mock_get
         False,
         True,
         MagicMock(),
-        ["Invoices"],
+        ["Relevés Bancaires"],
         {},
     )
 
     # Assert
-    expected_path = Path("/dest/en/TestCorp/Invoices/2025-07-11-invoice.pdf")
+    expected_path = Path(
+        "/Users/fjacquet/sorted/fr/Services Financiers/Revolut/Relevés Bancaires/2025-07-11_Relevé.pdf"
+    )
     assert destination_path == expected_path

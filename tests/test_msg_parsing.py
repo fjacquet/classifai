@@ -1,8 +1,8 @@
-
 import unittest
 from unittest.mock import MagicMock, patch
 
 from classifai.parsing_module import parse_msg
+
 
 class TestMsgParsing(unittest.TestCase):
     @patch("extract_msg.openMsg")
@@ -34,6 +34,7 @@ class TestMsgParsing(unittest.TestCase):
         self.assertEqual(content, "")
         self.assertEqual(metadata, {})
         mock_openMsg.assert_called_once_with(file_path)
+
 
 if __name__ == "__main__":
     unittest.main()

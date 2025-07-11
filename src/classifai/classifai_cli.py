@@ -11,7 +11,7 @@ from rich.console import Console
 from rich.table import Table
 
 from classifai.background_watcher import start_watcher
-from classifai.config import USE_VISION_MODEL
+from classifai.config import CATEGORIES, USE_VISION_MODEL
 from classifai.core_logic import run_scan
 from classifai.embedding_module import (
     EmbeddingModelNotFoundError,
@@ -140,32 +140,21 @@ def run(
     logger.info(f"Ollama model: {ollama_model}")
     logger.info(f"Classification mode: {classification_mode}")
 
-    # Default categories for now, will be configurable later
-    categories = [
-        "Documents",
-        "Images",
-        "Videos",
-        "Audio",
-        "Archives",
-        "Scripts",
-        "Misc",
-    ]
-
     try:
         category_embeddings = {}
         if classification_mode == "embedding":
-            for category in categories:
+            for category in CATEGORIES:
                 category_embeddings[category] = get_embedding(category, model=embedding_model)
     except EmbeddingModelNotFoundError as e:
         console.print(f"[bold red]Error:[/bold red] {e}")
         raise typer.Exit(code=1)
 
-    table = Table(title="Classification Preview", expand=True)
-    table.add_column("File Name", style="cyan", width=30)
-    table.add_column("Language", style="yellow", width=10)
-    table.add_column("Category", style="magenta", width=20)
-    table.add_column("Issuer", style="blue", width=20)
-    table.add_column("New Filename", style="blue", width=30)
+    table = Table(title="Classification Preview", show_header=True, header_style="bold magenta")
+    table.add_column("File Name", style="cyan")
+    table.add_column("Language", style="yellow")
+    table.add_column("Category", style="magenta")
+    table.add_column("Issuer", style="blue")
+    table.add_column("New Filename", style="blue")
     table.add_column("Destination Path", style="green")
 
     results_df = run_scan(
@@ -177,6 +166,7 @@ def run(
         use_vision,
         language_subfolders,
         recursive,
+        CATEGORIES,
     )
 
     files_to_process = []
