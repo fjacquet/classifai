@@ -19,6 +19,7 @@ load_dotenv()
 OLLAMA_MODEL_NAME = os.getenv("OLLAMA_MODEL_NAME", "gemma3n")
 OLLAMA_EMBEDDING_MODEL_NAME = os.getenv("OLLAMA_EMBEDDING_MODEL_NAME", "mxbai-embed-large")
 OLLAMA_API_URL = os.getenv("OLLAMA_API_URL", "http://localhost:11434")
+OLLAMA_VISION_MODEL_NAME = os.getenv("OLLAMA_VISION_MODEL_NAME", "llava")
 
 
 # --- YAML Configuration ---
@@ -41,3 +42,4 @@ _yaml_config = load_yaml_config()
 
 # --- Application Settings ---
 GENERIC_TEXT_EXTENSIONS = _yaml_config.get("generic_text_extensions", [])
+USE_VISION_MODEL = _yaml_config.get("use_vision_model", False)

@@ -10,6 +10,8 @@ from pathlib import Path
 
 from loguru import logger
 
+from classifai.history_module import log_operation
+
 
 def _get_photo_destination(destination_dir: Path, metadata: dict, original_filename: str) -> Path:
     """Constructs a destination path for photos based on EXIF data."""
@@ -99,6 +101,8 @@ def _transfer_file(
         elif operation == "copy":
             shutil.copy2(source, new_file_path)
             logger.info(f"Copied: {source} -> {new_file_path}")
+
+        log_operation(operation, str(source), str(new_file_path))
 
         return str(new_file_path)
 

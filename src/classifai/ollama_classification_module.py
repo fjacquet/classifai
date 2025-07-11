@@ -5,13 +5,16 @@ This module handles the interaction with the Ollama API via litellm
 to classify the content of documents.
 """
 
+import base64
 import json
+import mimetypes
 
 from litellm import completion
 
-from classifai.config import OLLAMA_API_URL, OLLAMA_MODEL_NAME
+from classifai.config import OLLAMA_API_URL, OLLAMA_MODEL_NAME, OLLAMA_VISION_MODEL_NAME
 from classifai.knowledge_base_module import KnowledgeBase
 from classifai.rules_engine_module import RulesEngine
+
 
 # Initialize the engines
 rules_engine = RulesEngine()
@@ -92,3 +95,55 @@ def classify_content(
     except Exception as e:
         logger.error(f"Error classifying content with Ollama: {e}")
         return {"category": "Unknown", "new_filename": None}
+
+
+def classify_image_with_vision(file_path: str, logger) -> str | None:
+    """
+    Generates a description of an image using a vision model.
+
+    Args:
+        file_path (str): The path to the image file.
+        logger: The logger instance.
+
+    Returns:
+        A string description of the image, or None if an error occurs.
+    """
+    try:
+        with open(file_path, "rb") as image_file:
+            base64_image = base64.b64encode(image_file.read()).decode("utf-8")
+
+        mime_type, _ = mimetypes.guess_type(file_path)
+        if not mime_type or not mime_type.startswith("image"):
+            logger.warning(f"Cannot determine mime type for image: {file_path}")
+            return None
+
+        model_to_use = f"ollama/{OLLAMA_VISION_MODEL_NAME}"
+
+        response = completion(
+            model=model_to_use,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Describe this image in detail. What is the subject? What is happening?",
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:{mime_type};base64,{base64_image}"
+                            },
+                        },
+                    ],
+                }
+            ],
+            api_base=OLLAMA_API_URL,
+        )
+
+        description = response.choices[0].message.content.strip()
+        return description
+
+    except Exception as e:
+        logger.error(f"Error classifying image with vision model: {e}")
+        return None

@@ -1,0 +1,14 @@
+# Generic text file extensions
+# Files with these extensions will be treated as plain text if no specific
+# parser is available.
+generic_text_extensions:
+  - ".txt"
+  - ".md"
+  - ".log"
+  - ".csv"
+  - ".json"
+  - ".xml"
+
+# Vision model settings
+# Enable or disable the use of a vision model for image classification.
+use_vision_model: false

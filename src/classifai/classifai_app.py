@@ -16,10 +16,14 @@ from classifai.config import (
     OLLAMA_API_URL,
     OLLAMA_EMBEDDING_MODEL_NAME,
     OLLAMA_MODEL_NAME,
+    USE_VISION_MODEL,
 )
 from classifai.embedding_module import cosine_similarity, get_embedding
 from classifai.file_operations_module import copy_file, move_file
-from classifai.ollama_classification_module import classify_content
+from classifai.ollama_classification_module import (
+    classify_content,
+    classify_image_with_vision,
+)
 from classifai.parsing_module import get_parser
 from classifai.utils import detect_language
 
@@ -40,6 +44,73 @@ if "destination_dir" not in st.session_state:
     st.session_state.destination_dir = str(Path.home() / "Documents" / "Classified")
 
 
+def process_file(
+    item: Path,
+    destination_dir: Path,
+    classification_mode: str,
+    embedding_model: str,
+    rename_files: bool,
+    use_vision: bool,
+    language_subfolders: bool,
+    logger,
+    categories: list[str],
+    category_embeddings: dict,
+):
+    """
+    Processes a single file: parses, classifies, and determines the destination.
+    """
+    parser = get_parser(item.suffix)
+    if not parser:
+        logger.warning(f"No parser found for file type: {item.suffix}")
+        return None
+
+    content, metadata = parser(str(item.absolute()))
+    if not content.strip():
+        logger.info(
+            f"Content for {item.name} is empty, falling back to filename for classification."
+        )
+        content = item.name
+
+    if use_vision and item.suffix.lower() in [
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".tiff",
+        ".bmp",
+    ]:
+        vision_content = classify_image_with_vision(str(item.absolute()), logger)
+        if vision_content:
+            content = vision_content
+
+    language = detect_language(content) or "N/A"
+
+    if classification_mode == "embedding":
+        content_embedding = get_embedding(content, model=embedding_model)
+        if content_embedding:
+            similarities = {
+                category: cosine_similarity(content_embedding, cat_embedding)
+                for category, cat_embedding in category_embeddings.items()
+            }
+            category = max(similarities, key=similarities.get)
+            new_filename = None
+        else:
+            category = "Unknown"
+            new_filename = None
+    else:
+        result = classify_content(content, categories, str(item.absolute()), logger)
+        category = result.get("category", "Unknown")
+        new_filename = result.get("new_filename")
+
+    final_filename = new_filename if rename_files and new_filename else item.name
+
+    destination_path = destination_dir / category
+    if language_subfolders and language != "N/A":
+        destination_path = destination_path / language
+    destination_path = destination_path / final_filename
+
+    return item, category, destination_path, language, metadata
+
+
 def run_scan(
     source_dir_str: str,
     dest_dir_str: str,
@@ -48,6 +119,7 @@ def run_scan(
     url: str,
     language_subfolders: bool,
     rename_files: bool,
+    use_vision: bool,
 ):
     """
     Scans the source directory, classifies files, and returns a DataFrame.
@@ -83,48 +155,28 @@ def run_scan(
 
     for i, item in enumerate(files):
         progress_bar.progress((i + 1) / total_files, text=f"Processing: {item.name}")
-        parser = get_parser(item.suffix)
-        if parser:
-            content, metadata = parser(str(item.absolute()))
-            if not content.strip():
-                content = item.name  # Fallback to filename
-
-            language = detect_language(content) or "N/A"
-
-            if class_mode == "embedding":
-                content_embedding = get_embedding(content, model=model)
-                if content_embedding:
-                    similarities = {
-                        cat: cosine_similarity(content_embedding, emb)
-                        for cat, emb in category_embeddings.items()
-                    }
-                    category = max(similarities, key=similarities.get)
-                    new_filename = None
-                else:
-                    category = "Unknown"
-                    new_filename = None
-            else:
-                result = classify_content(
-                    content, categories, str(item.absolute()), logger
-                )
-                category = result.get("category", "Unknown")
-                new_filename = result.get("new_filename")
-
-            final_filename = new_filename if rename_files and new_filename else item.name
-
-            destination_path = dest_path / category
-            if language_subfolders and language != "N/A":
-                destination_path = destination_path / language
-            destination_path = destination_path / final_filename
-
+        result = process_file(
+            item,
+            dest_path,
+            class_mode,
+            model,
+            rename_files,
+            use_vision,
+            language_subfolders,
+            logger,
+            categories,
+            category_embeddings,
+        )
+        if result:
+            file, category, dest_path, language, metadata = result
             results.append(
                 {
-                    "File Name": item.name,
+                    "File Name": file.name,
                     "Language": language,
                     "Category": category,
-                    "New Filename": final_filename,
-                    "Destination Path": str(destination_path),
-                    "Source Path": str(item.absolute()),
+                    "New Filename": dest_path.name,
+                    "Destination Path": str(dest_path),
+                    "Source Path": str(file.absolute()),
                     "Metadata": metadata,
                 }
             )
@@ -234,6 +286,11 @@ with st.sidebar:
         value=False,
         help="Allow the AI to suggest new, descriptive filenames.",
     )
+    use_vision = st.checkbox(
+        "Use Vision Model for Images",
+        value=USE_VISION_MODEL,
+        help="Enable image analysis with a vision-capable model for more accurate classification.",
+    )
 
     # --- Action Button ---
     st.divider()
@@ -247,6 +304,7 @@ with st.sidebar:
                 ollama_url,
                 language_subfolders,
                 rename_files,
+                use_vision,
             )
 
 

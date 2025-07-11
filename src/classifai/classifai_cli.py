@@ -4,19 +4,27 @@ CLI for ClassifAI.
 
 from pathlib import Path
 from typing import Annotated
+import shutil
 
 import typer
 from rich.console import Console
 from rich.table import Table
 
+from classifai.background_watcher import start_watcher
+from classifai.classifai_app import process_file
+from classifai.config import USE_VISION_MODEL
 from classifai.embedding_module import (
     EmbeddingModelNotFoundError,
     cosine_similarity,
     get_embedding,
 )
 from classifai.file_operations_module import copy_file, move_file
+from classifai.history_module import get_last_operation, remove_last_operation
 from classifai.logging_module import setup_logger
-from classifai.ollama_classification_module import classify_content
+from classifai.ollama_classification_module import (
+    classify_content,
+    classify_image_with_vision,
+)
 from classifai.parsing_module import get_parser
 from classifai.utils import detect_language
 
@@ -91,6 +99,14 @@ def run(
             help="Enable AI-powered file renaming.",
         ),
     ] = False,
+    use_vision: Annotated[
+        bool,
+        typer.Option(
+            "--use-vision",
+            "-uv",
+            help="Use vision model for image classification.",
+        ),
+    ] = USE_VISION_MODEL,
     language_subfolders: Annotated[
         bool,
         typer.Option(
@@ -138,7 +154,9 @@ def run(
         category_embeddings = {}
         if classification_mode == "embedding":
             for category in categories:
-                category_embeddings[category] = get_embedding(category, model=embedding_model)
+                category_embeddings[category] = get_embedding(
+                    category, model=embedding_model
+                )
     except EmbeddingModelNotFoundError as e:
         console.print(f"[bold red]Error:[/bold red] {e}")
         raise typer.Exit(code=1)
@@ -147,73 +165,47 @@ def run(
     table.add_column("File Name", style="cyan")
     table.add_column("Language", style="yellow")
     table.add_column("Proposed Category", style="magenta")
+    table.add_column("New Filename", style="blue")
     table.add_column("Destination Path", style="green")
 
     files_to_process = []
 
     for item in source_dir.iterdir():
         if item.is_file():
-            parser = get_parser(item.suffix)
-            if parser:
-                content, metadata = parser(str(item.absolute()))
-
-                # Fallback to filename if content is empty
-                if not content.strip():
-                    logger.info(
-                        f"Content for {item.name} is empty, falling back to filename for classification."
-                    )
-                    content = item.name
-
-                # Detect language
-                language = detect_language(content) or "N/A"
-
-                if classification_mode == "embedding":
-                    content_embedding = get_embedding(content, model=embedding_model)
-                    if content_embedding:
-                        similarities = {
-                            category: cosine_similarity(content_embedding, cat_embedding)
-                            for category, cat_embedding in category_embeddings.items()
-                        }
-                        category = max(similarities, key=similarities.get)
-                        new_filename = None
-                    else:
-                        category = "Unknown"
-                        new_filename = None
-                else:
-                    result = classify_content(
-                        content, categories, str(item.absolute()), logger
-                    )
-                    category = result.get("category", "Unknown")
-                    new_filename = result.get("new_filename")
-
-                # Determine the final filename
-                final_filename = (
-                    new_filename if rename_files and new_filename else item.name
+            result = process_file(
+                item,
+                destination_dir,
+                classification_mode,
+                embedding_model,
+                rename_files,
+                use_vision,
+                language_subfolders,
+                logger,
+                categories,
+                category_embeddings,
+            )
+            if result:
+                file, category, dest_path, language, metadata = result
+                table.add_row(
+                    file.name,
+                    language,
+                    category,
+                    dest_path.name,
+                    str(dest_path),
                 )
-
-                destination_path = destination_dir / category
-                if language_subfolders and language != "N/A":
-                    destination_path = destination_path / language
-                destination_path = destination_path / final_filename
-
-                table.add_row(item.name, language, category, str(destination_path))
-                files_to_process.append(
-                    (item, category, destination_path, language)
-                )
-            else:
-                logger.warning(f"No parser found for file type: {item.suffix}")
+                files_to_process.append(result)
 
     console.print(table)
 
     if mode != "dry-run":
         if typer.confirm("Do you want to proceed with the file operations?"):
-            for file, category, dest_path, lang in files_to_process:
+            for file, category, dest_path, lang, meta in files_to_process:
                 dest_dir = dest_path.parent
                 if mode == "move":
                     move_file(
                         str(file.absolute()),
                         str(dest_dir.parent),
-                        metadata,
+                        meta,
                         lang if language_subfolders else None,
                         dest_path.name,
                     )
@@ -221,13 +213,96 @@ def run(
                     copy_file(
                         str(file.absolute()),
                         str(dest_dir.parent),
-                        metadata,
+                        meta,
                         lang if language_subfolders else None,
                         dest_path.name,
                     )
             logger.info("File operations completed.")
         else:
             logger.info("File operations cancelled.")
+
+
+@app.command()
+def undo():
+    """
+    Undoes the last file operation.
+    """
+    last_op = get_last_operation()
+    if not last_op:
+        console.print("[bold yellow]No history found. Nothing to undo.[/bold yellow]")
+        raise typer.Exit()
+
+    op_type = last_op["operation"]
+    source = last_op["source"]
+    dest = last_op["destination"]
+
+    console.print(f"Last operation: {op_type} '{source}' to '{dest}'")
+    if not typer.confirm("Do you want to undo this operation?"):
+        raise typer.Exit()
+
+    try:
+        if op_type == "move":
+            # Move the file back to its original location
+            original_path = Path(source)
+            shutil.move(dest, original_path)
+            console.print(f"[green]Moved '{dest}' back to '{original_path}'[/green]")
+        elif op_type == "copy":
+            # Delete the copied file
+            Path(dest).unlink()
+            console.print(f"[green]Deleted copied file '{dest}'[/green]")
+
+        remove_last_operation()
+        console.print("[bold green]Undo successful.[/bold green]")
+
+    except FileNotFoundError:
+        console.print(f"[bold red]Error: File not found at '{dest}'. Cannot undo.[/bold red]")
+        if typer.confirm("Remove this entry from history?"):
+            remove_last_operation()
+    except Exception as e:
+        console.print(f"[bold red]An error occurred during undo: {e}[/bold red]")
+
+
+@app.command()
+def watch(
+    source_dir: Annotated[
+        Path,
+        typer.Option(
+            ...,
+            "--source-dir",
+            "-s",
+            help="Path to the directory to watch.",
+        ),
+    ],
+    destination_dir: Annotated[
+        Path,
+        typer.Option(
+            "--destination-dir",
+            "-d",
+            help="Path to the destination directory.",
+        ),
+    ],
+    mode: Annotated[
+        str,
+        typer.Option(
+            "--mode",
+            "-m",
+            help="Mode of operation: move or copy.",
+        ),
+    ] = "move",
+    classification_mode: Annotated[
+        str,
+        typer.Option(
+            "--classification-mode",
+            "-cm",
+            help="Classification mode: completion or embedding.",
+        ),
+    ] = "completion",
+    **kwargs,
+):
+    """
+    Watches a directory for new files and organizes them automatically.
+    """
+    start_watcher(source_dir, destination_dir, mode, classification_mode, **kwargs)
 
 
 if __name__ == "__main__":

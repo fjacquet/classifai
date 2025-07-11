@@ -4,7 +4,10 @@ Tests for the ollama_classification_module.
 
 import json
 
-from classifai.ollama_classification_module import classify_content
+from classifai.ollama_classification_module import (
+    classify_content,
+    classify_image_with_vision,
+)
 
 
 def test_classify_content_with_rule_match(mocker):
@@ -150,6 +153,25 @@ def test_classify_content_api_error(mocker):
     )
     assert result == {"category": "Unknown", "new_filename": None}
     mock_logger.error.assert_called_once()
+
+
+def test_classify_image_with_vision_success(mocker):
+    """
+    Tests successful image description with a vision model.
+    """
+    mock_response = mocker.MagicMock()
+    mock_response.choices[0].message.content = "A beautiful landscape."
+    mock_completion = mocker.patch(
+        "classifai.ollama_classification_module.completion",
+        return_value=mock_response,
+    )
+    mocker.patch("builtins.open", mocker.mock_open(read_data=b"imagedata"))
+    mock_logger = mocker.MagicMock()
+
+    description = classify_image_with_vision("/path/to/image.png", mock_logger)
+
+    assert description == "A beautiful landscape."
+    mock_completion.assert_called_once()
 
 
 def test_classify_content_json_error(mocker):

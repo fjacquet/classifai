@@ -23,22 +23,22 @@
   - [ ] Add support for audio and video transcription.
   - [x] Add support for parsing archive contents (`.zip`, etc.).
   - [x] Update file operations to create language-based subfolders (`/en`, `/fr`).
-- [ ] **AI-Powered Renaming**:
-  - [ ] Enhance Ollama prompts to extract issuer, date, and a short title.
-  - [ ] Implement structured file renaming logic.
+- [x] **AI-Powered Renaming**:
+  - [x] Enhance Ollama prompts to extract issuer, date, and a short title.
+  - [x] Implement structured file renaming logic.
 
-- [ ] **History and Undo**:
-  - [ ] Create `history_module.py` to log all file operations.
-  - [ ] Implement an `undo` command.
+- [x] **History and Undo**:
+  - [x] Create `history_module.py` to log all file operations.
+  - [x] Implement an `undo` command.
 
 
 ## 9. Advanced Features (Future)
 
 
-- [ ] **Vision Model Integration**:
-  - [ ] Integrate `ollama/llava` for advanced image classification.
-- [ ] **Background Watching**:
-  - [ ] Implement a background process to watch a folder for new files.
+- [x] **Vision Model Integration**:
+  - [x] Integrate `ollama/llava` for advanced image classification.
+- [x] **Background Watching**:
+  - [x] Implement a background process to watch a folder for new files.
 
 ---
 
@@ -120,7 +120,7 @@
   - [x] Update classification module to use filename and metadata when text content is empty.
 - [x] **Configuration**:
   - [x] Add configuration for generic text file extensions.
-  - [ ] Add configuration to enable/disable vision model usage for images.
+  - [x] Add configuration to enable/disable vision model usage for images.
 
 ### 7. Streamlit UI (Post-MVP)
 
