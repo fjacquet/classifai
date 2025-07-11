@@ -29,21 +29,33 @@ def _get_photo_destination(destination_dir: Path, metadata: dict, original_filen
 
 
 def move_file(
-    source_path: str, destination_dir: str, metadata: dict = None, language: str = None
+    source_path: str,
+    destination_dir: str,
+    metadata: dict = None,
+    language: str = None,
+    new_filename: str = None,
 ) -> str:
     """
     Moves a file to a destination directory, handling name conflicts.
     """
-    return _transfer_file(source_path, destination_dir, "move", metadata, language)
+    return _transfer_file(
+        source_path, destination_dir, "move", metadata, language, new_filename
+    )
 
 
 def copy_file(
-    source_path: str, destination_dir: str, metadata: dict = None, language: str = None
+    source_path: str,
+    destination_dir: str,
+    metadata: dict = None,
+    language: str = None,
+    new_filename: str = None,
 ) -> str:
     """
     Copies a file to a destination directory, handling name conflicts.
     """
-    return _transfer_file(source_path, destination_dir, "copy", metadata, language)
+    return _transfer_file(
+        source_path, destination_dir, "copy", metadata, language, new_filename
+    )
 
 
 def _transfer_file(
@@ -52,6 +64,7 @@ def _transfer_file(
     operation: str,
     metadata: dict = None,
     language: str = None,
+    new_filename: str = None,
 ) -> str:
     """
     Internal function to handle both move and copy operations.
@@ -59,22 +72,25 @@ def _transfer_file(
     try:
         source = Path(source_path)
         destination = Path(destination_dir)
+        filename = new_filename or source.name
 
         if metadata and source.suffix.lower() in [".jpg", ".jpeg", ".png", ".tiff"]:
-            new_file_path = _get_photo_destination(destination, metadata, source.name)
+            new_file_path = _get_photo_destination(destination, metadata, filename)
             destination = new_file_path.parent
         else:
             # Add language subfolder if provided
             if language and language != "N/A":
                 destination = destination / language
-            new_file_path = destination / source.name
+            new_file_path = destination / filename
 
         destination.mkdir(parents=True, exist_ok=True)
 
         # Handle name conflicts
         counter = 1
+        stem = new_file_path.stem
+        suffix = new_file_path.suffix
         while new_file_path.exists():
-            new_file_path = destination / f"{source.stem} ({counter}){source.suffix}"
+            new_file_path = destination / f"{stem} ({counter}){suffix}"
             counter += 1
 
         if operation == "move":

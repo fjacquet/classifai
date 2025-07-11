@@ -83,6 +83,14 @@ def run(
             help="URL of the Ollama API.",
         ),
     ] = "http://localhost:11434",
+    rename_files: Annotated[
+        bool,
+        typer.Option(
+            "--rename-files",
+            "-r",
+            help="Enable AI-powered file renaming.",
+        ),
+    ] = False,
     language_subfolders: Annotated[
         bool,
         typer.Option(
@@ -167,15 +175,26 @@ def run(
                             for category, cat_embedding in category_embeddings.items()
                         }
                         category = max(similarities, key=similarities.get)
+                        new_filename = None
                     else:
                         category = "Unknown"
+                        new_filename = None
                 else:
-                    category = classify_content(content, categories, str(item.absolute()), logger)
+                    result = classify_content(
+                        content, categories, str(item.absolute()), logger
+                    )
+                    category = result.get("category", "Unknown")
+                    new_filename = result.get("new_filename")
+
+                # Determine the final filename
+                final_filename = (
+                    new_filename if rename_files and new_filename else item.name
+                )
 
                 destination_path = destination_dir / category
                 if language_subfolders and language != "N/A":
                     destination_path = destination_path / language
-                destination_path = destination_path / item.name
+                destination_path = destination_path / final_filename
 
                 table.add_row(item.name, language, category, str(destination_path))
                 files_to_process.append(
@@ -196,6 +215,7 @@ def run(
                         str(dest_dir.parent),
                         metadata,
                         lang if language_subfolders else None,
+                        dest_path.name,
                     )
                 elif mode == "copy":
                     copy_file(
@@ -203,6 +223,7 @@ def run(
                         str(dest_dir.parent),
                         metadata,
                         lang if language_subfolders else None,
+                        dest_path.name,
                     )
             logger.info("File operations completed.")
         else:

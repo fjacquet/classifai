@@ -22,7 +22,7 @@
 - [ ] **Expanded Format Support**:
   - [ ] Add support for audio and video transcription.
   - [x] Add support for parsing archive contents (`.zip`, etc.).
-  - [ ] Update file operations to create language-based subfolders (`/en`, `/fr`).
+  - [x] Update file operations to create language-based subfolders (`/en`, `/fr`).
 - [ ] **AI-Powered Renaming**:
   - [ ] Enhance Ollama prompts to extract issuer, date, and a short title.
   - [ ] Implement structured file renaming logic.

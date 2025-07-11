@@ -47,6 +47,7 @@ def run_scan(
     model: str,
     url: str,
     language_subfolders: bool,
+    rename_files: bool,
 ):
     """
     Scans the source directory, classifies files, and returns a DataFrame.
@@ -98,23 +99,30 @@ def run_scan(
                         for cat, emb in category_embeddings.items()
                     }
                     category = max(similarities, key=similarities.get)
+                    new_filename = None
                 else:
                     category = "Unknown"
+                    new_filename = None
             else:
-                category = classify_content(
+                result = classify_content(
                     content, categories, str(item.absolute()), logger
                 )
+                category = result.get("category", "Unknown")
+                new_filename = result.get("new_filename")
+
+            final_filename = new_filename if rename_files and new_filename else item.name
 
             destination_path = dest_path / category
             if language_subfolders and language != "N/A":
                 destination_path = destination_path / language
-            destination_path = destination_path / item.name
+            destination_path = destination_path / final_filename
 
             results.append(
                 {
                     "File Name": item.name,
                     "Language": language,
                     "Category": category,
+                    "New Filename": final_filename,
                     "Destination Path": str(destination_path),
                     "Source Path": str(item.absolute()),
                     "Metadata": metadata,
@@ -125,7 +133,7 @@ def run_scan(
 
 
 def execute_file_operations(
-    df: pd.DataFrame, operation: str, language_subfolders: bool
+    df: pd.DataFrame, operation: str, language_subfolders: bool, rename_files: bool
 ):
     """
     Executes the file operations (move or copy) based on the DataFrame.
@@ -144,6 +152,7 @@ def execute_file_operations(
         dest_dir = dest_path.parent
         metadata = row["Metadata"]
         language = row["Language"]
+        new_filename = row["New Filename"]
 
         progress_bar.progress(
             (i + 1) / total_ops, text=f"{operation.capitalize()}ing: {row['File Name']}"
@@ -155,6 +164,7 @@ def execute_file_operations(
                 str(dest_dir.parent),
                 metadata,
                 language if language_subfolders else None,
+                new_filename if rename_files else None,
             )
         else:
             result = copy_file(
@@ -162,6 +172,7 @@ def execute_file_operations(
                 str(dest_dir.parent),
                 metadata,
                 language if language_subfolders else None,
+                new_filename if rename_files else None,
             )
 
         if result:
@@ -218,6 +229,11 @@ with st.sidebar:
         value=False,
         help="Organize files into subfolders based on detected language (e.g., /en, /fr).",
     )
+    rename_files = st.checkbox(
+        "Enable AI-Powered Renaming",
+        value=False,
+        help="Allow the AI to suggest new, descriptive filenames.",
+    )
 
     # --- Action Button ---
     st.divider()
@@ -230,6 +246,7 @@ with st.sidebar:
                 model_name,
                 ollama_url,
                 language_subfolders,
+                rename_files,
             )
 
 
@@ -253,11 +270,15 @@ if not st.session_state.scan_results.empty:
 
     with col2:
         if st.button("Copy Files", use_container_width=True):
-            execute_file_operations(edited_df, "copy", language_subfolders)
+            execute_file_operations(
+                edited_df, "copy", language_subfolders, rename_files
+            )
 
     with col3:
         if st.button("Move Files", type="primary", use_container_width=True):
-            execute_file_operations(edited_df, "move", language_subfolders)
+            execute_file_operations(
+                edited_df, "move", language_subfolders, rename_files
+            )
 
 else:
     st.info("Click 'Scan Directory' in the sidebar to begin.")

@@ -5,6 +5,8 @@ This module handles the interaction with the Ollama API via litellm
 to classify the content of documents.
 """
 
+import json
+
 from litellm import completion
 
 from classifai.config import OLLAMA_API_URL, OLLAMA_MODEL_NAME
@@ -16,10 +18,12 @@ rules_engine = RulesEngine()
 knowledge_base = KnowledgeBase()
 
 
-def classify_content(content: str, categories: list[str], file_path: str, logger) -> str:
+def classify_content(
+    content: str, categories: list[str], file_path: str, logger
+) -> dict:
     """
-    Classifies the given content into one of the provided categories using a
-    hybrid approach (rules -> knowledge base -> AI).
+    Classifies the given content and suggests a new filename using a hybrid
+    approach (rules -> knowledge base -> AI).
 
     Args:
         content (str): The content to classify.
@@ -28,29 +32,35 @@ def classify_content(content: str, categories: list[str], file_path: str, logger
         logger: The logger instance.
 
     Returns:
-        str: The most appropriate category, or "Unknown" if classification fails.
+        dict: A dictionary containing the category and a suggested new filename.
+              Example: {"category": "Invoices", "new_filename": "2025-07-11-invoice-acme.pdf"}
     """
     # 1. Attempt pre-classification with the rules engine
     rule_category = rules_engine.match_category(file_path)
     if rule_category:
-        return rule_category
+        return {"category": rule_category, "new_filename": None}
 
     # 2. Attempt pre-classification with the knowledge base
     kb_category = knowledge_base.match_category(content)
     if kb_category:
-        return kb_category
+        return {"category": kb_category, "new_filename": None}
 
     # 3. Fallback to AI classification
     prompt = f"""
-    Given the following document content, please classify it into one of the
-    following categories: {", ".join(categories)}.
+    Analyze the following document content and return a JSON object with two keys:
+    1. "category": Classify the document into one of the following categories: {", ".join(categories)}.
+    2. "new_filename": Suggest a new filename in the format YYYY-MM-DD-issuer-short_description.ext.
+       - The date should be the most relevant date from the document.
+       - The issuer should be the name of the company or person who created the document.
+       - The description should be a 1-3 word summary.
+       - Use the original file extension.
 
     Content:
     ---
     {content[:4000]}
     ---
 
-    Please return only the name of the category.
+    Return only the JSON object, with no other text or explanations.
     """
 
     try:
@@ -61,16 +71,24 @@ def classify_content(content: str, categories: list[str], file_path: str, logger
             model=model_to_use,
             messages=[{"content": prompt, "role": "user"}],
             api_base=OLLAMA_API_URL,
+            response_format={"type": "json_object"},
         )
 
-        category = response.choices[0].message.content.strip()
+        response_text = response.choices[0].message.content.strip()
+        response_data = json.loads(response_text)
 
-        if category in categories:
-            return category
-        else:
+        category = response_data.get("category")
+        new_filename = response_data.get("new_filename")
+
+        if category not in categories:
             logger.warning(f"Model returned an unexpected category: {category}")
-            return "Unknown"
+            category = "Unknown"
 
+        return {"category": category, "new_filename": new_filename}
+
+    except (json.JSONDecodeError, KeyError) as e:
+        logger.error(f"Error parsing JSON response from Ollama: {e}")
+        return {"category": "Unknown", "new_filename": None}
     except Exception as e:
         logger.error(f"Error classifying content with Ollama: {e}")
-        return "Unknown"
+        return {"category": "Unknown", "new_filename": None}

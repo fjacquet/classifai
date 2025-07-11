@@ -117,3 +117,19 @@ def test_language_subfolder_creation():
         assert moved_path.exists()
         assert moved_path.parent.name == "en"
         assert moved_path.parent.parent == dest_dir.absolute()
+
+
+def test_file_renaming():
+    """
+    Tests that a file is correctly renamed during a move operation.
+    """
+    with create_test_env() as (source_dir, test_file):
+        dest_dir = source_dir.parent / "destination"
+        new_name = "renamed_file.txt"
+        moved_path_str = move_file(
+            str(test_file.absolute()), str(dest_dir.absolute()), new_filename=new_name
+        )
+        moved_path = Path(moved_path_str)
+
+        assert moved_path.exists()
+        assert moved_path.name == new_name
