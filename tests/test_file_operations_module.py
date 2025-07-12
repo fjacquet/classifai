@@ -6,7 +6,8 @@ import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 
-from classifai.file_operations_module import copy_file, move_file
+from classifai.core.types import FileContext
+from classifai.infrastructure.file_system import transfer_file
 
 
 @contextmanager
@@ -31,9 +32,20 @@ def test_move_file():
         dest_dir = source_dir.parent / "destination"
         dest_path = dest_dir / "test.txt"
 
-        moved_path_str = move_file(str(test_file.absolute()), str(dest_path.absolute()))
-        moved_path = Path(moved_path_str)
+        context = FileContext(
+            source_path=test_file,
+            destination_dir=dest_dir,
+            rename_files=False,
+            use_vision=False,
+            language_subfolders=False,
+            categories=[],
+            final_destination_path=dest_path,
+        )
 
+        result = transfer_file(context, "move")
+        assert result.is_successful()
+
+        moved_path = Path(context.final_destination_path)
         assert moved_path.exists()
         assert moved_path.name == "test.txt"
         assert not test_file.exists()
@@ -49,9 +61,20 @@ def test_copy_file():
         dest_dir = source_dir.parent / "destination"
         dest_path = dest_dir / "test.txt"
 
-        copied_path_str = copy_file(str(test_file.absolute()), str(dest_path.absolute()))
-        copied_path = Path(copied_path_str)
+        context = FileContext(
+            source_path=test_file,
+            destination_dir=dest_dir,
+            rename_files=False,
+            use_vision=False,
+            language_subfolders=False,
+            categories=[],
+            final_destination_path=dest_path,
+        )
 
+        result = transfer_file(context, "copy")
+        assert result.is_successful()
+
+        copied_path = Path(context.final_destination_path)
         assert copied_path.exists()
         assert copied_path.name == "test.txt"
         assert test_file.exists()  # Original file should still exist
@@ -74,9 +97,22 @@ def test_name_conflict_resolution():
         # The destination path for the move is the same as the existing file
         dest_path = dest_dir / "test.txt"
 
-        moved_path_str = move_file(str(test_file.absolute()), str(dest_path.absolute()))
-        moved_path = Path(moved_path_str)
+        context = FileContext(
+            source_path=test_file,
+            destination_dir=dest_dir,
+            rename_files=False,
+            use_vision=False,
+            language_subfolders=False,
+            categories=[],
+            final_destination_path=dest_path,
+        )
 
+        result = transfer_file(context, "move")
+        assert result.is_successful()
+
+        # Get the updated context from the result
+        updated_context = result.unwrap()
+        moved_path = Path(updated_context.final_destination_path)
         assert moved_path.exists()
         assert moved_path.name == "test (1).txt"
         assert moved_path.parent == dest_dir.absolute()

@@ -30,14 +30,15 @@ dependencies = [
     "striprtf",
     "typer",
     "watchdog",
-    "pydub",
-    "moviepy",
-    "SpeechRecognition",
-    "openai-whisper>=20250625",
+    "pytest-cov>=6.2.1",
+    "scalene>=1.5.51",
+    "hypothesis>=6.135.27",
+    "returns>=0.25.0",
 ]
 
 [project.optional-dependencies]
 dev = [
+    "scalene",
     "ruff",
     "yamlfix",
     "pytest",
@@ -54,7 +55,7 @@ line-length = 110
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP"]
-ignore = []
+ignore = ["E501"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"

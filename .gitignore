@@ -10,8 +10,11 @@ wheels/
 
 # Virtual environments
 .venv
+# others
 .env
-# config/debitors.yaml
+config/debitors.yaml
 .DS_Store
 logs/
 .coverage*
+.hypothesis
+.git

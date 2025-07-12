@@ -1,57 +1,34 @@
 """
-Rules Engine for ClassifAI.
+Core logic for the rules engine.
 
-This module implements a simple rules engine to classify files based on
-their filename and path.
+This module contains the pure functions for applying classification rules.
 """
 
 import fnmatch
 from pathlib import Path
+from typing import Any
 
-import yaml
 from loguru import logger
+from returns.result import Result, Success
 
-RULES_FILE_PATH = Path("config/rules.yaml")
+from classifai.core.types import FileContext
 
 
 class RulesEngine:
     """
-    A simple rules engine that classifies files based on a set of rules
-    defined in a YAML file.
+    A simple rules engine that classifies files based on a set of rules.
+    The rules are passed in during initialization.
     """
 
-    def __init__(self):
-        self.rules = self._load_rules()
-
-    def _load_rules(self) -> list:
-        """
-        Loads the classification rules from the YAML file.
-        """
-        if not RULES_FILE_PATH.exists():
-            logger.debug(f"Rules file not found at {RULES_FILE_PATH}, skipping.")
-            return []
-
-        try:
-            with open(RULES_FILE_PATH) as f:
-                data = yaml.safe_load(f)
-                if data and "rules" in data:
-                    logger.info(f"Successfully loaded {len(data['rules'])} rules.")
-                    return data["rules"]
-                return []
-        except Exception as e:
-            logger.error(f"Error loading rules from {RULES_FILE_PATH}: {e}")
-            return []
+    def __init__(self, rules: list[dict[str, Any]]):
+        self.rules = rules
+        if self.rules:
+            logger.info(f"Successfully loaded {len(self.rules)} rules.")
 
     def match_category(self, file_path: str | Path) -> str | None:
         """
         Matches a file path against the loaded rules and returns a category
         if a rule is matched.
-
-        Args:
-            file_path (str | Path): The path to the file.
-
-        Returns:
-            str | None: The matched category or None if no rule matches.
         """
         if not self.rules:
             return None
@@ -97,3 +74,15 @@ class RulesEngine:
                 return False
 
         return True  # All conditions met
+
+
+def apply_rules(context: FileContext, rules_engine: RulesEngine) -> Result[FileContext, str]:
+    """
+    Applies the rules engine to the file path.
+    This is a pure function that returns an updated context in a Result.
+    """
+    category = rules_engine.match_category(str(context.source_path.absolute()))
+    if category:
+        updated_context = context.__class__(**{**context.__dict__, "rule_match_category": category})
+        return Success(updated_context)
+    return Success(context)

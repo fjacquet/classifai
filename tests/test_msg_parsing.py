@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from classifai.parsing_module import parse_msg
+from classifai.infrastructure.parsing import parse_msg
 
 
 class TestMsgParsing(unittest.TestCase):

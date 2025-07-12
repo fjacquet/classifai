@@ -10,15 +10,12 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+from returns.result import Success
 
-from classifai.config import (
-    OLLAMA_API_URL,
-    OLLAMA_EMBEDDING_MODEL_NAME,
-    OLLAMA_MODEL_NAME,
-    USE_VISION_MODEL,
-)
-from classifai.core_logic import run_scan
-from classifai.file_operations_module import copy_file, move_file
+from classifai.config import app_config
+from classifai.entrypoint_utils import generate_file_operations
+from classifai.infrastructure.file_system import transfer_file
+from classifai.pipeline import run_scan
 
 # --- Page Configuration ---
 st.set_page_config(
@@ -38,32 +35,25 @@ if "destination_dir" not in st.session_state:
 
 
 def execute_file_operations(df: pd.DataFrame, operation: str):
-    """
-    Executes the file operations (move or copy) based on the DataFrame.
-    """
-    if operation not in ["move", "copy"]:
+    """Wrapper around perform_operations with a Streamlit progress bar."""
+    if operation not in {"move", "copy"}:
         st.error("Invalid operation specified.")
         return
 
-    total_ops = len(df)
+    ops = generate_file_operations(df)
+    total_ops = len(ops)
     progress_bar = st.progress(0)
     success_count = 0
 
-    for i, row in df.iterrows():
-        source_path = row["Source Path"]
-        dest_path = row["Destination Path"]
-
-        progress_bar.progress((i + 1) / total_ops, text=f"{operation.capitalize()}ing: {row['File Name']}")
-
-        if operation == "move":
-            result = move_file(source_path, dest_path)
-        else:
-            result = copy_file(source_path, dest_path)
-
-        if result:
+    for i, op in enumerate(ops):
+        file_name = Path(op["source"]).name
+        progress_bar.progress((i + 1) / total_ops, text=f"{operation.capitalize()}ing: {file_name}")
+        result = transfer_file(op["context"], operation)
+        if isinstance(result, Success):
             success_count += 1
 
     progress_bar.empty()
+
     st.success(f"Successfully {operation}ed {success_count} out of {total_ops} files.")
     st.session_state.scan_results = pd.DataFrame()  # Clear results
 
@@ -91,22 +81,20 @@ with st.sidebar:
 
     # --- Model Selection ---
     st.subheader("🧠 AI & Model Settings")
-    ollama_url = st.text_input("Ollama API URL", value=OLLAMA_API_URL)
+    ollama_url = st.text_input("Ollama API URL", value=app_config.ollama_api_url)
+    model_name = st.text_input("Completion Model", value=app_config.ollama_model_name)
 
-    classification_mode = st.selectbox(
-        "Classification Mode",
-        ["embedding", "completion"],
-        index=0,
-        help="Choose 'embedding' for speed or 'completion' for more detailed analysis.",
+    categories_text = st.text_area(
+        "Categories (one per line)",
+        value="\n".join(app_config.categories),
+        height=200,
+        help="Enter the categories to classify files into, one per line.",
     )
-
-    if classification_mode == "embedding":
-        model_name = st.text_input("Embedding Model", value=OLLAMA_EMBEDDING_MODEL_NAME)
-    else:
-        model_name = st.text_input("Completion Model", value=OLLAMA_MODEL_NAME)
+    categories = [cat.strip() for cat in categories_text.split("\n") if cat.strip()]
 
     # --- Other Options ---
     st.subheader("⚙️ Other Options")
+    recursive = st.checkbox("Recursive Scan", value=True, help="Scan subdirectories recursively.")
     language_subfolders = st.checkbox(
         "Create Language Subfolders",
         value=False,
@@ -119,7 +107,7 @@ with st.sidebar:
     )
     use_vision = st.checkbox(
         "Use Vision Model for Images",
-        value=USE_VISION_MODEL,
+        value=app_config.use_vision_model,
         help="Enable image analysis with a vision-capable model for more accurate classification.",
     )
 
@@ -130,12 +118,11 @@ with st.sidebar:
             st.session_state.scan_results = run_scan(
                 st.session_state.source_dir,
                 st.session_state.destination_dir,
-                classification_mode,
-                model_name,
-                ollama_url,
-                language_subfolders,
                 rename_files,
                 use_vision,
+                language_subfolders,
+                recursive,
+                categories,
             )
 
 

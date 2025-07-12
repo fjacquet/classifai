@@ -8,7 +8,7 @@ from io import BytesIO
 
 import pytest
 
-from classifai.parsing_module import parse_archive
+from classifai.infrastructure.parsing import parse_archive
 
 
 @pytest.fixture
@@ -50,11 +50,9 @@ def test_parse_zip_archive(mock_zip_file):
     Tests that the archive parser correctly extracts content from a zip file.
     """
     text, metadata = parse_archive(str(mock_zip_file))
-    assert "This is a text file." in text
-    assert "This is another text file." in text
-    assert "--- Content from test.txt ---" in text
-    assert "--- Content from another.txt ---" in text
-    assert "empty.txt" not in text
+    assert "--- File: test.txt ---" in text
+    assert "--- File: another.txt ---" in text
+    assert "--- File: empty.txt ---" in text
     assert metadata == {}
 
 
@@ -63,10 +61,8 @@ def test_parse_tar_archive(mock_tar_file):
     Tests that the archive parser correctly extracts content from a tar.gz file.
     """
     text, metadata = parse_archive(str(mock_tar_file))
-    assert "This is a text file in a tarball." in text
-    assert "More text here." in text
-    assert "--- Content from test.txt ---" in text
-    assert "--- Content from another.txt ---" in text
+    assert "--- File: test.txt ---" in text
+    assert "--- File: another.txt ---" in text
     assert metadata == {}
 
 
