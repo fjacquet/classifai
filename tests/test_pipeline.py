@@ -118,9 +118,13 @@ def test_process_file_pipeline_orchestration(mocker):
     """
     # Arrange
     mock_apply_rules = mocker.patch("classifai.pipeline.apply_rules", return_value=Success(FileContext))
-    mock_read_parse = mocker.patch("classifai.pipeline.read_and_parse_file", return_value=Success(FileContext))
+    mock_read_parse = mocker.patch(
+        "classifai.pipeline.read_and_parse_file", return_value=Success(FileContext)
+    )
     mock_enrich_ai = mocker.patch("classifai.pipeline.enrich_with_ai", return_value=Success(FileContext))
-    mock_enrich_knowledge = mocker.patch("classifai.pipeline.enrich_with_knowledge", return_value=Success(FileContext))
+    mock_enrich_knowledge = mocker.patch(
+        "classifai.pipeline.enrich_with_knowledge", return_value=Success(FileContext)
+    )
     mock_determine_path = mocker.patch("classifai.pipeline.determine_final_path", return_value=FileContext)
 
     scan_config = {
