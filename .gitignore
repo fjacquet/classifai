@@ -19,3 +19,4 @@ logs/
 .hypothesis
 .git
 old/ 
+.python-version
