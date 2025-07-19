@@ -1,0 +1,21 @@
+# This file defines the business sectors used by ClassifAI.
+# It is used to create the 'Secteur_Activité' subfolder in the destination path.
+
+- Administration
+- Assurance
+- Banque
+- Commerce
+- Éducation
+- Emploi
+- Formation
+- Immobilier
+- Logement
+- Loisirs
+- Médias
+- Mobilité
+- Personnel
+- Santé
+- Services Publics
+- Télécommunications
+- Transport
+- Travail

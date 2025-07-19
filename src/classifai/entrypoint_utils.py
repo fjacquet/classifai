@@ -113,6 +113,14 @@ def build_scan_config(
 def generate_file_operations(results_df: pd.DataFrame) -> list[dict]:
     """Return a list of dictionaries with source, destination, and context."""
 
+    # Import logger from logging_module
+    from classifai.logging_module import logger
+
+    # If the DataFrame is empty, return an empty list of operations
+    if results_df.empty:
+        logger.info("No files were processed successfully. Returning empty operations list.")
+        return []
+
     required_cols = {"Source Path", "Destination Path"}
     missing = required_cols - set(results_df.columns)
     if missing:
@@ -134,7 +142,7 @@ def generate_file_operations(results_df: pd.DataFrame) -> list[dict]:
                 "source": row["Source Path"],
                 "destination": row["Destination Path"],
                 "context": context,
-            }
+            },
         )
     return ops
 

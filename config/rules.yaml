@@ -11,7 +11,7 @@ rules:
         pattern: "invoice_*.pdf" # Glob pattern (like in .gitignore).
     action:
       type: "categorize"
-      category: "Invoices"
+      category: "Factures"
 
   # Rule to classify any file containing "receipt" in its name as a "Receipt".
   - name: "Receipt Rule (by name)"
@@ -20,16 +20,7 @@ rules:
         pattern: "*receipt*.*"
     action:
       type: "categorize"
-      category: "Receipts"
-
-  # Rule to classify any file inside a specific project folder.
-  - name: "Project Documents Rule (by path)"
-    conditions:
-      - type: "path" # Condition based on the file's full path.
-        pattern: "*/projects/classifai/*"
-    action:
-      type: "categorize"
-      category: "Work/Classifai"
+      category: "Justificatifs"
 
   # Example of a more complex rule with multiple conditions.
   # A file would need to be a JPG and have "vacation" in its name.
@@ -41,7 +32,7 @@ rules:
         pattern: "*.jpg"
     action:
       type: "categorize"
-      category: "Personal/Photos/Vacations"
+      category: "Images"
 
   # Rule to classify .ppk files as "Clés et Certificats".
   - name: "PPK Rule"

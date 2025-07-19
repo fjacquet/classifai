@@ -37,7 +37,7 @@ def mock_pipeline(mocker):
                 **mock_context.__dict__,
                 "source_path": file_path,
                 "final_destination_path": f"/sorted/Documents/{file_path.name}",
-            }
+            },
         )
         return Success(context)
 

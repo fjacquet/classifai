@@ -1,35 +1,34 @@
+# Document Types
 
-# Type de Documents 
+When thinking about "email/downloads," the main types of documents encountered are generally those that convey information, transactions, evidence, or multimedia content. Here is a list of the most common types, in line with previous discussions for ClassifAI:
 
-Quand on pense "courrier email / téléchargements", les principaux types de documents que l'on rencontre sont généralement ceux qui véhiculent de l'information, des transactions, des preuves ou du contenu multimédia. Voici une liste des types les plus courants, en lien avec les discussions précédentes pour ClassifAI :
+1. **Office Documents (Textual and Structured)**:
+    * **PDF (.pdf)**: Very common for invoices, bank statements, contracts, reports, manuals, tickets, etc. It is a standard distribution format.
+    * **Microsoft Word (.doc, .docx)**: For letters, reports, working documents, resumes, etc.
+    * **Microsoft Excel (.xls, .xlsx)**: For data tables, budgets, lists, analyses.
+    * **Microsoft PowerPoint (.ppt, .pptx)**: For presentations.
+    * **Text Files (.txt, .rtf, .md)**: Simple notes, logs, readmes, configuration files, scripts.
+    * **Email Files (.eml, .msg)**: Archived emails, often with attachments.
 
-1. **Documents Bureautiques (Textuels et Structurés)**:
-    * **PDF (.pdf)** : Très fréquent pour les factures, relevés bancaires, contrats, rapports, manuels, tickets, etc. C'est un format de diffusion standard.
-    * **Microsoft Word (.doc, .docx)** : Pour les lettres, rapports, documents de travail, CV, etc.
-    * **Microsoft Excel (.xls, .xlsx)** : Pour les tableaux de données, budgets, listes, analyses.
-    * **Microsoft PowerPoint (.ppt, .pptx)** : Pour les présentations.
-    * **Fichiers Texte (.txt, .rtf, .md)** : Notes simples, logs, lise-moi, fichiers de configuration, scripts.
-    * **Fichiers E-mail (.eml, .msg)** : E-mails archivés, souvent avec des pièces jointes.
+2. **Multimedia Documents**:
+    * **Images (.jpg, .png, .gif, .tiff, .heic, .webp)**: Personal photos, screenshots, infographics, product images.
+    * **Videos (.mp4, .mov, .avi, .webm)**: Recordings, clips, tutorials, downloaded content.
+    * **Audio (.mp3, .wav, .ogg, .flac)**: Voice memos, podcasts, music, meeting recordings.
 
-2. **Documents Multimédia**:
-    * **Images (.jpg, .png, .gif, .tiff, .heic, .webp)** : Photos personnelles, captures d'écran, infographies, images de produits.
-    * **Vidéos (.mp4, .mov, .avi, .webm)** : Enregistrements, clips, tutoriels, contenu téléchargé.
-    * **Audio (.mp3, .wav, .ogg,I  .flac)** : Mémos vocaux, podcasts, musique, enregistrements de réunions.
+3. **Archives and Compressed Files**:
+    * **ZIP (.zip), RAR (.rar), 7z (.7z)**: For grouping and compressing multiple files, often entire folders of documents or photos.
 
-3. **Archives et Fichiers Compressés**:
-    * **ZIP (.zip), RAR (.rar), 7z (.7z)** : Pour regrouper et compresser plusieurs fichiers, souvent des dossiers entiers de documents ou de photos.
+4. **Code / Script Files**:
+    * **Scripts (.sh, .py, .js, .ps1)**: Automation scripts, development files.
+    * **Configuration Files (.json, .yaml, .xml, .ini)**: For software or system configuration.
 
-4. **Fichiers de Code / Scripts**:
-    * **Scripts (.sh, .py, .js, .ps1)** : Scripts d'automatisation, fichiers de développement.
-    * **Fichiers de Configuration (.json, .yaml, .xml, .ini)** : Pour la configuration de logiciels ou de systèmes.
+5. **Web Files and Links**:
+    * **HTML (.html, .htm)**: Saved web pages.
+    * **URL (.url, .webloc)**: Shortcuts to web pages.
 
-5. **Fichiers Web et Liens**:
-    * **HTML (.html, .htm)** : Pages web sauvegardées.
-    * **URL (.url, .webloc)** : Raccourcis vers des pages web.
+6. **Specific or Technical Files**:
+    * **Keys/Certificates (.pem, .ppk)**: Security-related files, very specific.
+    * **Backups (.backup, .bak)**: Backup copies of data or configurations.
+    * **Files without an extension**: Generic files whose type must be inferred from their content.
 
-6. **Fichiers Spécifiques ou Techniques**:
-    * **Clés/Certificats (.pem, .ppk)** : Fichiers liés à la sécurité, très spécifiques.
-    * **Sauvegardes (.backup, .bak)** : Copies de sécurité de données ou de configurations.
-    * **Fichiers sans extension** : Fichiers génériques dont le type doit être inféré par leur contenu.
-
-Cette liste couvre la vaste majorité des documents qu'un utilisateur typique pourrait avoir dans son dossier "Téléchargements" ou recevoir par e-mail. ClassifAI vise à couvrir un maximum de ces types pour offrir une solution d'organisation complète.
+This list covers the vast majority of documents that a typical user might have in their "Downloads" folder or receive via email. ClassifAI aims to cover as many of these types as possible to offer a complete organization solution.

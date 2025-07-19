@@ -9,21 +9,46 @@ data processing pipeline. It orchestrates functions from the `core` and
 from pathlib import Path
 
 import pandas as pd
+from loguru import logger
 from returns.maybe import Nothing
 from returns.pipeline import flow
 from returns.pointfree import bind
-from returns.result import Result, Success
+from returns.result import Failure, Result, Success
 
 from classifai.config import app_config
 from classifai.core.logic import create_summary, determine_final_path
 from classifai.core.rules import RulesEngine, apply_rules
 from classifai.core.types import FileContext
 from classifai.infrastructure.file_system import read_and_parse_file
-from classifai.infrastructure.knowledge import (
-    KnowledgeBase,
-    enrich_with_knowledge,
-)
+from classifai.infrastructure.knowledge import KnowledgeBase
 from classifai.infrastructure.llm import enrich_with_ai
+
+
+def enrich_with_knowledge(context: FileContext, knowledge_base: KnowledgeBase) -> Result[FileContext, str]:
+    """
+    Enriches the file context with knowledge from the knowledge base.
+    Specifically, it tries to find the sector for the issuer if available.
+
+    Args:
+        context: The file context to enrich
+        knowledge_base: The knowledge base to use for enrichment
+
+    Returns:
+        A Result containing the enriched context or an error message
+    """
+    try:
+        # If we have an issuer but no sector, try to find the sector from the knowledge base
+        if context.issuer and not context.sector:
+            sector = knowledge_base.get_sector_for_issuer(context.issuer)
+            if sector:
+                # Create a new context with the sector information
+                updated_context = context.__class__(**{**context.__dict__, "sector": sector})
+                return Success(updated_context)
+
+        # If no enrichment was needed or possible, return the original context
+        return Success(context)
+    except Exception as e:
+        return Failure(f"Error enriching context with knowledge: {str(e)}")
 
 
 def process_file_pipeline(
@@ -35,6 +60,15 @@ def process_file_pipeline(
     """
     Orchestrates the full processing pipeline for a single file using `flow`.
     """
+    # File type validation - reject .zip files per functional specification
+    if file_path.suffix.lower() == ".zip":
+        error_msg = (
+            f"ZIP files are not supported for direct processing: {file_path.name}. "
+            "Please decompress the archive before submitting files for classification."
+        )
+        logger.error(error_msg)
+        return Failure(error_msg)
+
     initial_context = FileContext(
         source_path=file_path,
         destination_dir=Path(scan_config["dest_dir_str"]),
@@ -44,7 +78,7 @@ def process_file_pipeline(
         categories=scan_config["categories"],
     )
 
-    pipeline = flow(
+    return flow(
         Success(initial_context),
         bind(lambda ctx: apply_rules(ctx, rules_engine)),
         bind(read_and_parse_file),
@@ -52,8 +86,6 @@ def process_file_pipeline(
         bind(lambda ctx: enrich_with_knowledge(ctx, knowledge_base)),
         bind(lambda ctx: Success(determine_final_path(ctx))),
     )
-
-    return pipeline
 
 
 def run_scan(
@@ -75,7 +107,7 @@ def run_scan(
 
     # Initialize engines once per scan, using the centralized config
     rules_engine = RulesEngine(app_config.rules)
-    knowledge_base = KnowledgeBase(app_config.debitors)
+    knowledge_base = KnowledgeBase()  # Deprecated class, use module-level functions instead
 
     scan_config = {
         "dest_dir_str": dest_dir_str,
@@ -91,10 +123,14 @@ def run_scan(
     results = []
     for item in file_paths:
         result: Result[FileContext, str] = process_file_pipeline(
-            item, scan_config, rules_engine, knowledge_base
+            item,
+            scan_config,
+            rules_engine,
+            knowledge_base,
         )
         summary = create_summary(result)
-        if summary is not Nothing:
+        # Use isinstance check instead of identity comparison for better reliability
+        if not isinstance(summary, Nothing):
             results.append(summary.unwrap())
 
     return pd.DataFrame(results)

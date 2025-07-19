@@ -3,7 +3,6 @@ Tests for the refactored core logic and pipeline.
 """
 
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pytest
 from returns.result import Success
@@ -47,7 +46,7 @@ def test_calculate_photo_destination_with_full_metadata(base_context):
             "metadata": {"date": "2025:07:11 10:30:00", "location": "Paris, France"},
             "source_path": Path("photo.jpg"),
             "language": "fr",
-        }
+        },
     )
     expected_path = Path("/dest") / "fr" / "Photos" / "2025" / "07_July" / "Paris, France" / "photo.jpg"
     assert _calculate_photo_destination(context) == expected_path
@@ -61,7 +60,7 @@ def test_calculate_photo_destination_with_date_only(base_context):
             "metadata": {"date": "2025:07:11 10:30:00"},
             "source_path": Path("photo.jpg"),
             "language": "en",
-        }
+        },
     )
     expected_path = Path("/dest") / "en" / "Photos" / "2025" / "07_July" / "photo.jpg"
     assert _calculate_photo_destination(context) == expected_path
@@ -77,63 +76,52 @@ def test_calculate_general_destination(base_context):
             "sector": "Finance",
             "issuer": "Global Bank",
             "ai_results": {"category": "Reports"},
-        }
+        },
     )
     expected_path = Path("/dest") / "de" / "Finance" / "Global Bank" / "Reports" / "report.docx"
     assert _calculate_general_destination(context) == expected_path
 
 
-def test_determine_final_path_dispatches_to_photo(base_context):
+def test_determine_final_path_dispatches_to_photo(mocker, base_context):
     """Ensures determine_final_path calls the correct photo helper."""
     context = base_context.__class__(
         **{
             **base_context.__dict__,
             "ai_results": {"category": "Photos"},
             "metadata": {"date": "2025:01:01 00:00:00"},
-        }
+        },
     )
-    with patch("classifai.core.logic._calculate_photo_destination") as mock_photo_calc:
-        # Make the mock return a valid Path object
-        mock_photo_calc.return_value = Path("/test/photo/path.jpg")
-        determine_final_path(context)
-        mock_photo_calc.assert_called_once_with(context)
+    mock_photo_calc = mocker.patch("classifai.core.logic._calculate_photo_destination")
+    # Make the mock return a valid Path object
+    mock_photo_calc.return_value = Path("/test/photo/path.jpg")
+    determine_final_path(context)
+    mock_photo_calc.assert_called_once_with(context)
 
 
-def test_determine_final_path_dispatches_to_general(base_context):
+def test_determine_final_path_dispatches_to_general(mocker, base_context):
     """Ensures determine_final_path calls the correct general helper."""
     context = base_context.__class__(**{**base_context.__dict__, "ai_results": {"category": "Invoices"}})
-    with patch("classifai.core.logic._calculate_general_destination") as mock_general_calc:
-        # Make the mock return a valid Path object
-        mock_general_calc.return_value = Path("/test/general/path.pdf")
-        determine_final_path(context)
-        mock_general_calc.assert_called_once_with(context)
+    mock_general_calc = mocker.patch("classifai.core.logic._calculate_general_destination")
+    # Make the mock return a valid Path object
+    mock_general_calc.return_value = Path("/test/general/path.pdf")
+    determine_final_path(context)
+    mock_general_calc.assert_called_once_with(context)
 
 
 # --- Integration Test for the Full Pipeline in core_logic.py ---
 
 
-@patch("classifai.pipeline.apply_rules")
-@patch("classifai.pipeline.read_and_parse_file")
-@patch("classifai.pipeline.enrich_with_ai")
-@patch("classifai.pipeline.enrich_with_knowledge")
-@patch("classifai.pipeline.determine_final_path")
-def test_process_file_pipeline_orchestration(
-    mock_determine_path,
-    mock_enrich_knowledge,
-    mock_enrich_ai,
-    mock_read_parse,
-    mock_apply_rules,
-):
+def test_process_file_pipeline_orchestration(mocker):
     """
     Tests that the pipeline calls all steps in the correct order.
     The patch targets are now in `core_logic`, the orchestrator.
     """
     # Arrange
-    mock_apply_rules.return_value = Success(FileContext)
-    mock_read_parse.return_value = Success(FileContext)
-    mock_enrich_ai.return_value = Success(FileContext)
-    mock_enrich_knowledge.return_value = Success(FileContext)
-    mock_determine_path.return_value = FileContext
+    mock_apply_rules = mocker.patch("classifai.pipeline.apply_rules", return_value=Success(FileContext))
+    mock_read_parse = mocker.patch("classifai.pipeline.read_and_parse_file", return_value=Success(FileContext))
+    mock_enrich_ai = mocker.patch("classifai.pipeline.enrich_with_ai", return_value=Success(FileContext))
+    mock_enrich_knowledge = mocker.patch("classifai.pipeline.enrich_with_knowledge", return_value=Success(FileContext))
+    mock_determine_path = mocker.patch("classifai.pipeline.determine_final_path", return_value=FileContext)
 
     scan_config = {
         "dest_dir_str": "/dest",
@@ -142,8 +130,8 @@ def test_process_file_pipeline_orchestration(
         "language_subfolders": True,
         "categories": ["Test"],
     }
-    mock_rules_engine = MagicMock()
-    mock_kb = MagicMock()
+    mock_rules_engine = mocker.MagicMock()
+    mock_kb = mocker.MagicMock()
 
     # Act
     process_file_pipeline(Path("/source/file.txt"), scan_config, mock_rules_engine, mock_kb)

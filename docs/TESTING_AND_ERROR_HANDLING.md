@@ -1,71 +1,63 @@
-# Testing and Error Handling Best Practices - ClassifAI
+# Testing and Error Handling Best Practices - ClassifAI (Harmonized)
 
-**Date:** July 12, 2025  
-**Version:** 1.0  
-**Project:** ClassifAI  
-**Objective:** This document outlines best practices for testing and error handling in the ClassifAI project, with a focus on functional programming principles and lessons learned from debugging.
+**Date:** July 19, 2025
+**Version:** 1.1
+**Project:** ClassifAI
+**Objective:** This document outlines best practices for testing and error handling in the ClassifAI project, with a focus on functional programming principles.
 
 ---
 
-## 1. Testing in Functional Programming Context
+## 1. Testing in a Functional Programming Context
 
-### 1.1. Testing Pure Functions
+### 1.1. Testing Pure Functions (`core/`)
 
-Pure functions are the cornerstone of our functional programming approach and offer significant advantages for testing:
+Pure functions are the cornerstone of our functional programming approach and are primarily located in the `core/` directory. They offer significant advantages for testing:
 
 * **Deterministic Results**: For the same input, a pure function always produces the same output, making tests reliable and reproducible.
 * **No Side Effects**: Pure functions don't modify external state, so tests don't need complex setup or teardown procedures.
 * **Isolated Testing**: Each function can be tested in isolation without complex mocking of external dependencies.
 
-**Example from ClassifAI**:
+### 1.2. Testing Impure Functions (`infrastructure/`)
+
+For functions in the `infrastructure/` directory that interact with external systems (file system, network, etc.), we use the following strategies:
+
+* **Dependency Injection**: Pass external dependencies (like a configuration object or a client) as parameters to make functions testable.
+* **Mocking**: Use `pytest-mock` to simulate external dependencies like file system calls or API responses.
+* **Test Fixtures**: Create controlled environments (e.g., temporary directories using `tmp_path`) for testing file operations.
+
+**Example Test**:
 
 ```python
-# Pure function - easy to test
-def _resolve_name_conflict(destination: Path) -> Path:
-    """
-    Handles name conflicts by appending a counter to the filename.
-    This is a pure-like helper, but marked safe due to file system access.
-    """
-    # Check if the destination exists
-    if not destination.exists():
-        return destination
-        
-    # If it exists, create a new filename with a counter
-    counter = 1
-    final_destination = destination.parent / f"{destination.stem} ({counter}){destination.suffix}"
-    
-    # Keep incrementing the counter until we find a non-existing filename
-    while final_destination.exists():
-        counter += 1
-        final_destination = destination.parent / f"{destination.stem} ({counter}){destination.suffix}"
-        
-    return final_destination
-```
+# The function being tested is in infrastructure/file_system.py
+# It performs I/O, so it's impure.
 
-### 1.2. Testing Impure Functions
+def test_transfer_file_with_conflict(tmp_path):
+    # Setup test environment with conflict
+    source_dir = tmp_path / "source"
+    source_dir.mkdir()
+    test_file = source_dir / "test.txt"
+    test_file.write_text("test content")
 
-For functions that interact with external systems (file system, network, etc.), we use the following strategies:
+    dest_dir = tmp_path / "destination"
+    dest_dir.mkdir()
+    existing_file = dest_dir / "test.txt"
+    existing_file.write_text("existing content")
 
-* **Dependency Injection**: Pass external dependencies as parameters to make functions testable.
-* **Mocking**: Use `unittest.mock` or `pytest-mock` to simulate external dependencies.
-* **Test Fixtures**: Create controlled environments (e.g., temporary directories) for testing file operations.
+    # The FileContext would be defined in core/types.py
+    context = FileContext(
+        source_path=str(test_file),
+        final_destination_path=str(dest_dir / "test.txt"),
+        # ... other context fields
+    ) #
 
-**Example from ClassifAI**:
+    # Execute function from infrastructure.file_system
+    result = transfer_file(context, "move") #
 
-```python
-@contextmanager
-def create_test_env():
-    """
-    Creates a temporary directory structure for testing file operations.
-    Yields the source directory path and the path to a test file.
-    """
-    with tempfile.TemporaryDirectory() as tmpdir:
-        source_dir = Path(tmpdir) / "source"
-        source_dir.mkdir()
-        test_file = source_dir / "test.txt"
-        test_file.write_text("test content")
-        yield source_dir, test_file
-```
+    # Verify result is successful
+    assert result.is_successful() #
+    updated_context = result.unwrap()
+    assert Path(updated_context.final_destination_path).name == "test (1).txt" #
+    assert not test_file.exists()
 
 ### 1.3. Testing Functional Containers
 

@@ -2,8 +2,6 @@
 Tests for the background_watcher module.
 """
 
-from unittest.mock import MagicMock, patch
-
 import pytest
 from returns.result import Failure, Success
 
@@ -39,65 +37,73 @@ def mock_file_context(test_env):
     )
 
 
-@patch("classifai.background_watcher.process_file_pipeline")
-@patch("classifai.background_watcher.transfer_file")
-def test_new_file_handler_move(mock_transfer, mock_process_pipeline, test_env, mock_file_context):
+def test_new_file_handler_move(mocker, test_env, mock_file_context):
     """
     Tests that the NewFileHandler correctly processes a new file in 'move' mode.
     """
     # Arrange
     source_dir, dest_dir = test_env
     handler = NewFileHandler(str(dest_dir), "move", {})
-    mock_process_pipeline.return_value = Success(mock_file_context)
-    mock_transfer.return_value = Success(mock_file_context)
+    mock_process_pipeline = mocker.patch(
+        "classifai.background_watcher.process_file_pipeline", return_value=Success(mock_file_context)
+    )
+    mock_transfer = mocker.patch(
+        "classifai.background_watcher.transfer_file", return_value=Success(mock_file_context)
+    )
 
     # Act
     test_file = source_dir / "test.txt"
     test_file.write_text("content")
-    handler.on_created(MagicMock(is_directory=False, src_path=str(test_file)))
+    mock_event = mocker.MagicMock(is_directory=False, src_path=str(test_file))
+    handler.on_created(mock_event)
 
     # Assert
     mock_process_pipeline.assert_called_once()
     mock_transfer.assert_called_once_with(mock_file_context, "move")
 
 
-@patch("classifai.background_watcher.process_file_pipeline")
-@patch("classifai.background_watcher.transfer_file")
-def test_new_file_handler_copy(mock_transfer, mock_process_pipeline, test_env, mock_file_context):
+def test_new_file_handler_copy(mocker, test_env, mock_file_context):
     """
     Tests that the NewFileHandler correctly processes a new file in 'copy' mode.
     """
     # Arrange
     source_dir, dest_dir = test_env
     handler = NewFileHandler(str(dest_dir), "copy", {})
-    mock_process_pipeline.return_value = Success(mock_file_context)
-    mock_transfer.return_value = Success(mock_file_context)
+    mock_process_pipeline = mocker.patch(
+        "classifai.background_watcher.process_file_pipeline", return_value=Success(mock_file_context)
+    )
+    mock_transfer = mocker.patch(
+        "classifai.background_watcher.transfer_file", return_value=Success(mock_file_context)
+    )
 
     # Act
     test_file = source_dir / "test.txt"
     test_file.write_text("content")
-    handler.on_created(MagicMock(is_directory=False, src_path=str(test_file)))
+    mock_event = mocker.MagicMock(is_directory=False, src_path=str(test_file))
+    handler.on_created(mock_event)
 
     # Assert
     mock_process_pipeline.assert_called_once()
     mock_transfer.assert_called_once_with(mock_file_context, "copy")
 
 
-@patch("classifai.background_watcher.process_file_pipeline")
-@patch("classifai.background_watcher.transfer_file")
-def test_new_file_handler_failure(mock_transfer, mock_process_pipeline, test_env):
+def test_new_file_handler_failure(mocker, test_env):
     """
     Tests that no file operation occurs if the pipeline returns a Failure.
     """
     # Arrange
     source_dir, dest_dir = test_env
     handler = NewFileHandler(str(dest_dir), "move", {})
-    mock_process_pipeline.return_value = Failure("Test Failure")
+    mock_process_pipeline = mocker.patch(
+        "classifai.background_watcher.process_file_pipeline", return_value=Failure("Test Failure")
+    )
+    mock_transfer = mocker.patch("classifai.background_watcher.transfer_file")
 
     # Act
     test_file = source_dir / "test.txt"
     test_file.write_text("content")
-    handler.on_created(MagicMock(is_directory=False, src_path=str(test_file)))
+    mock_event = mocker.MagicMock(is_directory=False, src_path=str(test_file))
+    handler.on_created(mock_event)
 
     # Assert
     mock_process_pipeline.assert_called_once()

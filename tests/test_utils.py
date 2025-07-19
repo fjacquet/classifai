@@ -8,7 +8,7 @@ from classifai.utils import detect_language
 
 
 @pytest.mark.parametrize(
-    "text, expected_lang",
+    ("text", "expected_lang"),
     [
         ("This is a test sentence in English.", "en"),
         ("Ceci est une phrase de test en français.", "fr"),

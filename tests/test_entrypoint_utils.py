@@ -9,7 +9,7 @@ from returns.result import Success
 from classifai.entrypoint_utils import generate_file_operations, perform_operations
 
 
-@pytest.fixture()
+@pytest.fixture
 def sample_df(tmp_path: Path) -> pd.DataFrame:
     """Return a DataFrame similar to `run_scan` output."""
     src1 = tmp_path / "a.txt"

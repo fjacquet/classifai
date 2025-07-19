@@ -14,12 +14,13 @@ from rich.console import Console
 from rich.table import Table
 
 from classifai.background_watcher import start_watcher
-from classifai.config import app_config
+from classifai.config import app_config, load_app_config
 from classifai.entrypoint_utils import generate_file_operations, perform_operations
 from classifai.infrastructure.history import get_last_operation, remove_last_operation
 from classifai.localization import Language, get_text, set_language
 from classifai.logging_module import setup_logger
 from classifai.pipeline import run_scan
+from classifai.validation import validate_rules_against_categories
 
 app = typer.Typer()
 console = Console()
@@ -102,7 +103,7 @@ def run(
     ] = False,
     verbose: Annotated[bool, typer.Option("--verbose", "-v", help="Enable verbose output.")] = False,
     log_file: Annotated[Path, typer.Option("--log-file", help="Path to save the log file.")] = Path(
-        "logs/main.log"
+        "logs/main.log",
     ),
 ):
     """
@@ -133,6 +134,10 @@ def run(
     table.add_column(get_text("issuer"), style="blue")
     table.add_column(get_text("new_filename"), style="blue")
     table.add_column(get_text("destination_path"), style="green")
+
+    # Load and validate configuration
+    app_config = load_app_config()
+    validate_rules_against_categories(app_config.rules, app_config.categories)
 
     results_df = run_scan(
         str(source_dir),
@@ -206,7 +211,7 @@ def undo():
                     remove_last_operation()
             except Exception as e:
                 console.print(f"[bold red]An error occurred during undo: {e}[/bold red]")
-        case Success(Nothing):
+        case Success(_):
             console.print(get_text("no_history_found"))
             console.print("[bold yellow]No history found. Nothing to undo.[/bold yellow]")
         case Failure(error):
@@ -271,7 +276,7 @@ def list_unknown_issuers(
             unknown_issuers = yaml.safe_load(f)
         except yaml.YAMLError as e:
             console.print(f"[bold red]Error reading YAML file: {e}[/bold red]")
-            raise typer.Exit(code=1)
+            raise typer.Exit(code=1) from e
 
     if not unknown_issuers:
         console.print("[bold green]No unknown issuers found.[/bold green]")

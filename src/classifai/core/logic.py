@@ -29,44 +29,45 @@ def _get_final_filename(context: FileContext) -> str:
         return final_filename
 
     # Si l'option rename_files est activée mais qu'aucun nom n'est fourni, créer un nom descriptif
-    elif context.rename_files:
-        # Extraire les composants pour le nom de fichier
+    if context.rename_files:
+        # Extraire les composants pour le nom de fichier selon la spécification: Date_Titre.ext
         date = context.ai_results.get("date", "")
         short_title = context.ai_results.get("short_title", "")
         category = context.category or context.ai_results.get("category", "")
-        issuer = context.issuer or context.ai_results.get("issuer", "")
+        category_suggestion = context.ai_results.get("category_suggestion", "")
 
         # Nettoyer les composants
         safe_date = "".join(c for c in date if c.isalnum() or c in "-_").rstrip() if date else ""
         safe_title = (
             "".join(c for c in short_title if c.isalnum() or c in " -_").rstrip() if short_title else ""
         )
-        safe_category = "".join(c for c in category if c.isalnum() or c in " -_").rstrip() if category else ""
-        safe_issuer = "".join(c for c in issuer if c.isalnum() or c in " -_").rstrip() if issuer else ""
 
-        # Construire le nom de fichier
+        # Construire le nom de fichier selon la convention Date_Titre.ext
         components = []
         if safe_date:
             components.append(safe_date)
-        if safe_category:
-            components.append(safe_category.lower().replace(" ", "_"))
         if safe_title:
             components.append(safe_title.replace(" ", "_"))
-        if safe_issuer:
-            components.append(safe_issuer.replace(" ", "_"))
+
+        # Pour les documents _UNKNOWN_, ajouter la suggestion de catégorie
+        if category == "_UNKNOWN_" and category_suggestion:
+            safe_suggestion = "".join(c for c in category_suggestion if c.isalnum() or c in "-_").rstrip()
+            if safe_suggestion:
+                components.append(f"suggested-{safe_suggestion}")
+                logger.debug(f"Added category suggestion to filename: suggested-{safe_suggestion}")
 
         # Si aucun composant n'est disponible, utiliser le nom original
         if not components:
             return context.source_path.name
 
-        # Joindre les composants avec des tirets
-        final_filename = "-".join(components)
+        # Joindre les composants avec des underscores selon la spécification
+        final_filename = "_".join(components)
 
         # Ajouter l'extension
         if not final_filename.endswith(context.source_path.suffix):
             final_filename += context.source_path.suffix
 
-        logger.debug(f"Generated descriptive filename: {final_filename}")
+        logger.debug(f"Generated filename following Date_Titre.ext convention: {final_filename}")
         return final_filename
 
     # Si l'option rename_files n'est pas activée, conserver le nom original
@@ -86,7 +87,9 @@ def _calculate_photo_destination(context: FileContext) -> Path:
         # This logic can fail if date is not present or format is wrong
         date_str = context.metadata.get("date")
         if date_str:
-            date = datetime.strptime(date_str, "%Y:%m:%d %H:%M:%S")
+            from datetime import timezone
+
+            date = datetime.strptime(date_str, "%Y:%m:%d %H:%M:%S").replace(tzinfo=timezone.utc)
             year = date.strftime("%Y")
             month = date.strftime("%m_%B")
             dest = photo_path / year / month
@@ -132,7 +135,7 @@ def _calculate_general_destination(context: FileContext) -> Path:
     # Journaliser les valeurs utilisées pour le chemin de destination
     logger.debug(
         f"Destination path components: lang={lang_folder}, sector={sector_folder}, "
-        f"issuer={safe_issuer}, category={category}"
+        f"issuer={safe_issuer}, category={category}",
     )
 
     # Construire et retourner le chemin de destination
@@ -147,7 +150,7 @@ def determine_final_path(context: FileContext) -> FileContext:
     # Journaliser l'état du contexte avant de déterminer le chemin final
     logger.debug(
         f"Context before path determination: language={context.language}, sector={context.sector}, "
-        f"category={context.category}, issuer={context.issuer}"
+        f"category={context.category}, issuer={context.issuer}",
     )
 
     # Handle rule-based match first
@@ -178,7 +181,7 @@ def determine_final_path(context: FileContext) -> FileContext:
     # Journaliser l'état du contexte après la mise à jour
     logger.debug(
         f"Updated context with final path: sector={updated_context.sector}, "
-        f"final_path={updated_context.final_destination_path}"
+        f"final_path={updated_context.final_destination_path}",
     )
 
     return updated_context

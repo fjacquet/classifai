@@ -46,3 +46,7 @@ def setup_logger(log_level="INFO", log_file=None):
             diagnose=True,  # Adds exception variable values
         )
     return logger
+
+
+# Alias for setup_logger to maintain backward compatibility
+setup_logging = setup_logger

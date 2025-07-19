@@ -166,9 +166,31 @@ def parse_eml(file_path: str) -> tuple[str, dict]:
 
 @parsing_handler
 def parse_msg(file_path: str) -> tuple[str, dict]:
-    """Extracts text from an MSG file."""
+    """Extracts text and metadata from an MSG file."""
     with extract_msg.openMsg(file_path) as msg:
-        return msg.body, {}
+        # Extract basic content
+        body = msg.body or ""
+
+        # Extract metadata
+        metadata = {
+            "subject": msg.subject or "",
+            "sender": msg.sender or "",
+            "date": msg.date or "",
+            "to": msg.to or "",
+            "cc": msg.cc or "",
+        }
+
+        # Add attachment information if available
+        if msg.attachments:
+            attachment_names = [att.longFilename or att.shortFilename for att in msg.attachments]
+            metadata["attachments"] = ", ".join(attachment_names)
+
+        # Combine header information with body for better context
+        header = f"Subject: {metadata['subject']}\nFrom: {metadata['sender']}\nTo: {metadata['to']}\nDate: {metadata['date']}\n\n"
+        full_content = header + body
+
+        logger.debug(f"Extracted metadata from MSG file: {metadata}")
+        return full_content, metadata
 
 
 @parsing_handler
@@ -198,7 +220,7 @@ def parse_with_pandoc(file_path: str) -> tuple[str, dict]:
         return result.stdout, {}
     except FileNotFoundError:
         logger.error(
-            "Pandoc is not installed or not in your PATH. Please install it for advanced document parsing."
+            "Pandoc is not installed or not in your PATH. Please install it for advanced document parsing.",
         )
         raise
     except subprocess.CalledProcessError as e:
@@ -224,7 +246,7 @@ def parse_archive(file_path: str) -> tuple[str, dict]:
         else:
             return "", {}
 
-        for root, _, files in os.walk(temp_dir):
+        for _root, _, files in os.walk(temp_dir):
             for name in files:
                 text_content.append(f"--- File: {name} ---")
 

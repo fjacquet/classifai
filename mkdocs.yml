@@ -1,0 +1,66 @@
+site_name: ClassifAI Documentation
+site_description: Documentation for the ClassifAI document classification and organization tool
+site_author: ClassifAI Team
+repo_url: https://github.com/fjacquet/classifai
+repo_name: fjacquet/classifai
+
+# Configuration
+docs_dir: docs
+site_dir: site
+
+# Theme configuration
+theme:
+  name: material
+  palette:
+    primary: indigo
+    accent: blue
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true
+
+# Plugins
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+  - git-revision-date-localized:
+      type: date
+
+# Navigation structure
+nav:
+  - Home: index.md
+  - Architecture:
+    - Overview: ARCHITECTURE_AND_DESIGN.md
+    - Document Types: DOCUMENTS_TYPES.md
+  - Specifications:
+    - Functional Specification: FUNCTIONAL_SPECIFICATION.md
+    - Impact Analysis: IMPACT_ANALYSIS.md
+  - Development:
+    - Testing & Error Handling: TESTING_AND_ERROR_HANDLING.md
+    - LLM Integration: GEMINI.md

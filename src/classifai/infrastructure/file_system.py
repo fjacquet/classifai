@@ -17,6 +17,25 @@ from classifai.core.types import FileContext
 from classifai.infrastructure.history import log_operation
 
 
+def read_file_content(file_path: Path) -> Result[str, str]:
+    """
+    Reads the content of a file as text.
+    This is an impure function that performs file I/O.
+
+    Args:
+        file_path: Path to the file to read
+
+    Returns:
+        Result containing either the file content or an error message
+    """
+    try:
+        with open(file_path, encoding="utf-8", errors="replace") as f:
+            content = f.read()
+        return Success(content)
+    except Exception as e:
+        return Failure(f"Failed to read file {file_path.name}: {e}")
+
+
 def read_and_parse_file(context: FileContext) -> Result[FileContext, str]:
     """
     Parses the file content and metadata. This is an impure step
@@ -43,7 +62,7 @@ def read_and_parse_file(context: FileContext) -> Result[FileContext, str]:
                 "content": content,
                 "metadata": metadata,
                 "file_type": file_type,
-            }
+            },
         )
         return Success(updated_context)
     except Exception as e:
@@ -86,6 +105,68 @@ def _perform_operation(source: Path, destination: Path, operation: str) -> tuple
     return source, destination
 
 
+def get_supported_files(directory: Path, recursive: bool = False) -> Result[list[Path], str]:
+    """
+    Returns a list of supported files in the given directory.
+
+    Args:
+        directory: The directory to search in
+        recursive: Whether to search recursively
+
+    Returns:
+        Result containing either a list of file paths or an error message
+    """
+    from classifai.config import app_config
+
+    try:
+        if not directory.exists():
+            return Failure(f"Directory does not exist: {directory}")
+        if not directory.is_dir():
+            return Failure(f"Not a directory: {directory}")
+
+        # Get supported extensions from config
+        supported_extensions = app_config.supported_extensions
+
+        # Find all files with supported extensions
+        files = []
+        if recursive:
+            for ext in supported_extensions:
+                files.extend(directory.glob(f"**/*{ext}"))
+        else:
+            for ext in supported_extensions:
+                files.extend(directory.glob(f"*{ext}"))
+
+        # Filter out directories and .zip files (per functional specification)
+        files = [f for f in files if f.is_file() and f.suffix.lower() != ".zip"]
+
+        # Log if any .zip files were filtered out
+        zip_files = [f for f in directory.glob("*.zip") if f.is_file()]
+        if zip_files:
+            from loguru import logger
+
+            logger.warning(
+                f"Filtered out {len(zip_files)} .zip files - these must be decompressed before processing",
+            )
+
+        return Success(files)
+    except Exception as e:
+        return Failure(f"Error listing files: {e}")
+
+
+def move_file_to_destination(context: FileContext) -> Result[FileContext, str]:
+    """
+    Moves a file to its final destination path.
+    This is a wrapper around transfer_file with operation="move".
+
+    Args:
+        context: The file context with final_destination_path set
+
+    Returns:
+        Result containing either the updated FileContext or an error message
+    """
+    return transfer_file(context, "move")
+
+
 def transfer_file(context: FileContext, operation: str) -> Result[FileContext, str]:
     """
     Moves or copies a file, handling path creation and name conflicts.
@@ -109,20 +190,20 @@ def transfer_file(context: FileContext, operation: str) -> Result[FileContext, s
         # After resolving, perform the requested operation. Keep propagating `final_dest`.
         .bind(
             lambda final_dest: _perform_operation(context.source_path, final_dest, operation).map(
-                lambda _: final_dest
-            )
+                lambda _: final_dest,
+            ),
         )
         # Log the operation and keep propagating `final_dest`.
         .bind(
             lambda final_dest: safe(log_operation)(operation, str(context.source_path), str(final_dest)).map(
-                lambda _: final_dest
-            )
+                lambda _: final_dest,
+            ),
         )
         # Return a NEW context instance that reflects the actual destination
         .map(
             lambda final_dest: context.__class__(
-                **{**context.__dict__, "final_destination_path": str(final_dest)}
-            )
+                **{**context.__dict__, "final_destination_path": str(final_dest)},
+            ),
         )
         .alt(lambda err: Failure(f"File operation failed: {err}"))
     )

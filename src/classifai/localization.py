@@ -117,6 +117,7 @@ SECTOR_MAPPINGS: dict[str, str] = {
 
 # Mappages de traduction pour les catégories spécifiques
 CATEGORY_MAPPINGS: dict[str, str] = {
+    # Standard translations
     "Letters": "Lettres",
     "Lettres": "Lettres",
     "Prescription": "Ordonnances",
@@ -142,6 +143,17 @@ CATEGORY_MAPPINGS: dict[str, str] = {
     "Certificates": "Certificats",
     "Certificat": "Certificats",
     "Certificats": "Certificats",
+    # Common typos and variations
+    "Fiichiers Spécifiques": "Fichiers Spécifiques",
+    "Fiichés Spécifiques": "Fichiers Spécifiques",
+    "Fiachiers Texte": "Fichiers Texte",
+    "Fiichiers Texte": "Fichiers Texte",
+    "Fichers Texte": "Fichiers Texte",
+    "Fiichers Texte": "Fichiers Texte",
+    "Fiichiers de Code": "Fichiers de Code",
+    "Fiichiers de Configuration": "Fichiers de Configuration",
+    "Fiichiers E-mail": "Fichiers E-mail",
+    "Fiichiers Web": "Fichiers Web",
 }
 
 # Langue actuelle
@@ -227,9 +239,12 @@ def translate_category(category: str, content: str | None = None) -> str:
         return get_default_value("unclassified")
 
     # Vérifier si c'est une ordonnance médicale basée sur le contenu
-    if content and ("ordonnance" in content.lower() or "prescription" in content.lower()):
-        if "thermal" in content.lower() or "thermale" in content.lower():
-            return "Ordonnances"
+    if (
+        content
+        and ("ordonnance" in content.lower() or "prescription" in content.lower())
+        and ("thermal" in content.lower() or "thermale" in content.lower())
+    ):
+        return "Ordonnances"
 
     # Utiliser le mappage de catégorie
     return CATEGORY_MAPPINGS.get(category, category)

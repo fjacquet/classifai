@@ -131,7 +131,7 @@ st.header("Results")
 
 if not st.session_state.scan_results.empty:
     st.info(
-        f"Found {len(st.session_state.scan_results)} files to classify. Review the proposed changes below."
+        f"Found {len(st.session_state.scan_results)} files to classify. Review the proposed changes below.",
     )
 
     # Make the DataFrame editable

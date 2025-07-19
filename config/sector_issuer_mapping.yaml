@@ -1,0 +1,139 @@
+# This file provides examples of typical issuers for each business sector.
+# It can be used as a knowledge base to help the AI classify documents
+# by associating a known issuer with its most likely sector.
+
+Banque:
+  - UBS
+  - PostFinance
+  - BCV
+  - Banques cantonales
+
+Assurance:
+  - La Mobilière
+  - AXA
+  - Swiss Life
+  - Helvetia
+
+Administration:
+  - Administration fiscale
+  - Contrôle des habitants
+  - Office des poursuites
+
+Services Publics:
+  - Services industriels
+  - La Poste
+  - Billag/Serafe
+
+Santé:
+  - Médecins
+  - Hôpitaux
+  - Pharmacies
+  - Assura
+  - Helsana
+  - Swica
+  - M-Thérapies
+
+Commerce:
+  - Migros
+  - Coop
+  - Digitec
+  - Galaxus
+  - Amazon
+  - Commerçants locaux
+
+Emploi:
+  - Agences de placement
+  - Portails d'emploi
+  - Entreprises
+
+Travail:
+  - Votre employeur
+  - Syndicats
+  - Caisses de pension
+  - Assurances sociales
+
+Immobilier:
+  - Gérances immobilières
+  - Régies
+  - Notaires
+  - Agences
+
+Logement:
+  - Fournisseurs d'électricité
+  - Services de conciergerie
+
+Télécommunications:
+  - Swisscom
+  - Salt
+  - Sunrise
+
+Médias:
+  - Le Temps
+  - 24 heures
+  - Netflix
+  - docteur stéphane mauclair
+
+Éducation:
+  - Écoles publiques
+  - Universités
+
+Formation:
+  - Centres de formation
+  - Écoles privées
+
+Transport:
+  - CFF
+  - TPF
+  - TL
+  - Compagnies aériennes
+
+Mobilité:
+  - Service des automobiles
+  - Garages
+  - TCS
+
+Loisirs:
+  - Clubs de sport
+  - Théâtres
+  - Associations culturelles
+
+Personnel:
+  - Particuliers
+  - Documents personnels scannés
+
+# Aliases section - maps alternative names to canonical issuer names
+# This allows the system to normalize different variations of the same issuer
+aliases:
+  # Banking aliases
+  "UBS AG": "UBS"
+  "UBS Switzerland AG": "UBS"
+  "Union Bank of Switzerland": "UBS"
+  "PostFinance AG": "PostFinance"
+  "La Poste - PostFinance": "PostFinance"
+  
+  # Insurance aliases
+  "AXA Winterthur": "AXA"
+  "AXA Assurances": "AXA"
+  "Swiss Life AG": "Swiss Life"
+  "Swiss Life Assurance": "Swiss Life"
+  
+  # Health sector aliases
+  "Helsana Assurance": "Helsana"
+  "Helsana AG": "Helsana"
+  "Assura SA": "Assura"
+  "SWICA Assurance": "Swica"
+  
+  # Commerce aliases
+  "Migros SA": "Migros"
+  "Coop Société Coopérative": "Coop"
+  "Digitec Galaxus AG": "Digitec"
+  "Amazon Europe": "Amazon"
+  "Amazon.ch": "Amazon"
+  
+  # Transport aliases
+  "Chemins de fer fédéraux": "CFF"
+  "SBB CFF FFS": "CFF"
+  "Transports publics fribourgeois": "TPF"
+  "Transports lausannois": "TL" 
+  "M-Thérapies": "M-Thérapies"
+  "Emilie Chollet":  "M-Thérapies"

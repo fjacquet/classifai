@@ -30,7 +30,7 @@ def test_undo_command(mocker):
     mock_get.reset_mock()
     mock_remove.reset_mock()
     mock_get.return_value = Success(
-        Some({"operation": "copy", "source": "/fake/src", "destination": "/fake/dest"})
+        Some({"operation": "copy", "source": "/fake/src", "destination": "/fake/dest"}),
     )
     result = runner.invoke(app, ["undo"], input="y\n")
     assert result.exit_code == 0

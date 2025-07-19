@@ -9,14 +9,28 @@ description = "Classify and organize your files with local AI models."
 authors = [
     {name = "ClassifAI Project", email = "fred.jacquet@gmail.com"},
 ]
+maintainers = [
+    {name = "ClassifAI Project", email = "fred.jacquet@gmail.com"},
+]
 requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "MIT"}
+keywords = ["ai", "classification", "document", "organization", "llm", "gemma"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Office/Business",
+    "Topic :: Text Processing :: General",
+]
 dependencies = [
     "beautifulsoup4",
     "extract-msg",
+    "fastapi",
     "geopy",
-    "langdetect>=1.0.9",
+    "langdetect",
     "litellm",
     "loguru",
     "ollama",
@@ -26,25 +40,31 @@ dependencies = [
     "pytesseract",
     "python-docx",
     "python-dotenv",
+    "python-multipart",
+    "returns",
     "streamlit",
     "striprtf",
     "typer",
+    "uvicorn",
     "watchdog",
-    "pytest-cov>=6.2.1",
-    "scalene>=1.5.51",
-    "hypothesis>=6.135.27",
-    "returns>=0.25.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "scalene",
-    "ruff",
-    "yamlfix",
-    "pytest",
-    "pytest-mock",
-    "pytest-cov",
     "faker",
+    "hypothesis",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "ruff",
+    "scalene",
+    "yamlfix",
+]
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+    "mkdocs-git-revision-date-localized-plugin",
 ]
 
 [project.scripts]
@@ -52,10 +72,14 @@ classifai = "classifai.classifai_cli:app"
 
 [tool.ruff]
 line-length = 110
+target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "UP"]
-ignore = ["E501"]
+select = ["E", "F", "W", "I", "UP", "N", "B", "A", "COM", "C4", "DTZ", "T20", "PT", "RET", "SIM"]
+ignore = ["E501", "COM812"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["classifai"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"

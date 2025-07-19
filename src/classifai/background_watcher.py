@@ -23,7 +23,8 @@ class NewFileHandler(FileSystemEventHandler):
         self.mode = mode
         self.scan_config = scan_config
         self.rules_engine = RulesEngine(app_config.rules)
-        self.knowledge_base = KnowledgeBase(app_config.debitors)
+        # Use deprecated KnowledgeBase constructor (no arguments)
+        self.knowledge_base = KnowledgeBase()
 
     def on_created(self, event):
         if not event.is_directory:
@@ -47,11 +48,13 @@ class NewFileHandler(FileSystemEventHandler):
             result.bind(
                 lambda context: transfer_file(context, self.mode).map(
                     lambda final_context: logger.info(
-                        f"Moved '{file_path.name}' to '{final_context.final_destination_path}'"
+                        f"Moved '{file_path.name}' to '{final_context.final_destination_path}'",
                     )
                     if self.mode == "move"
-                    else logger.info(f"Copied '{file_path.name}' to '{final_context.final_destination_path}'")
-                )
+                    else logger.info(
+                        f"Copied '{file_path.name}' to '{final_context.final_destination_path}'",
+                    ),
+                ),
             ).alt(lambda error: logger.error(f"Failed to process {file_path.name}: {error}"))
 
 

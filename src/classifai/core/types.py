@@ -21,7 +21,8 @@ class AIResponse(BaseModel):
     category: str | None = None
     date: str | None = None
     short_title: str | None = None
-    language: str | None = Field(default="N/A")
+    language: str = Field(default="N/A")
+    category_suggestion: str | None = None  # For _UNKNOWN_ workflow
 
 
 class FileContext(BaseModel):

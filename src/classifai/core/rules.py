@@ -43,7 +43,7 @@ class RulesEngine:
                 if action.get("type") == "categorize":
                     category = action.get("category")
                     logger.debug(
-                        f"Matched rule '{rule.get('name')}' for file '{file_name}'. Category: {category}"
+                        f"Matched rule '{rule.get('name')}' for file '{file_name}'. Category: {category}",
                     )
                     return category
         return None

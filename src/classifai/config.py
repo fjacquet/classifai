@@ -40,7 +40,6 @@ class AppConfig:
 
     # --- Environment-based settings ---
     ollama_model_name: str
-    ollama_embedding_model_name: str
     ollama_api_url: str
     ollama_vision_model_name: str
 
@@ -48,8 +47,8 @@ class AppConfig:
     settings: dict[str, Any]
     categories: list[str]
     rules: list[dict[str, Any]]
-    debitors: dict[str, str]
-
+    sectors: list[str]
+    sector_issuer_mapping: dict[str, str]
     # --- Derived settings ---
     generic_text_extensions: list[str] = field(init=False)
     use_vision_model: bool = field(init=False)
@@ -67,23 +66,20 @@ class AppConfig:
         object.__setattr__(self, "use_vision_model", self.settings.get("use_vision_model", False))
 
 
-def _load_debitors(data: dict | None) -> dict[str, str]:
-    """Loads debitors from the YAML data, handling aliases."""
-    if not data:
+def _load_sector_issuer_mapping(mapping_data: dict | None) -> dict[str, str]:
+    """
+    Loads and processes the sector-issuer mapping data from the YAML file.
+    It inverts the mapping to be issuer -> sector for efficient lookups.
+    """
+    if not isinstance(mapping_data, dict):
         return {}
 
-    debitors_map = {}
-    for issuer, value in data.items():
-        issuer_lower = issuer.lower()
-        if isinstance(value, str):  # Simple format: Issuer: Sector
-            debitors_map[issuer_lower] = value
-        elif isinstance(value, dict):  # Complex format with aliases
-            sector = value.get("sector")
-            if sector:
-                debitors_map[issuer_lower] = sector
-                for alias in value.get("aliases", []):
-                    debitors_map[alias.lower()] = sector
-    return debitors_map
+    issuer_to_sector_map = {}
+    for sector, issuers in mapping_data.items():
+        if isinstance(issuers, list):
+            for issuer in issuers:
+                issuer_to_sector_map[issuer.lower()] = sector
+    return issuer_to_sector_map
 
 
 def load_app_config() -> AppConfig:
@@ -94,23 +90,24 @@ def load_app_config() -> AppConfig:
     settings = _load_yaml_file(Path("config/settings.yaml")) or {}
     categories = _load_yaml_file(Path("config/categories.yaml")) or []
     rules_data = _load_yaml_file(Path("config/rules.yaml"))
-    debitors_data = _load_yaml_file(Path("config/debitors.yaml"))
 
     # Process YAML data
     rules = rules_data.get("rules", []) if isinstance(rules_data, dict) else []
-    debitors = _load_debitors(debitors_data)
+    sectors = _load_yaml_file(Path("config/sectors.yaml")) or []
+    sector_issuer_data = _load_yaml_file(Path("config/sector_issuer_mapping.yaml"))
+    sector_issuer_mapping = _load_sector_issuer_mapping(sector_issuer_data)
 
     return AppConfig(
         # Env vars
-        ollama_model_name=os.getenv("OLLAMA_MODEL_NAME", "gemma3n"),
-        ollama_embedding_model_name=os.getenv("OLLAMA_EMBEDDING_MODEL_NAME", "mxbai-embed-large"),
-        ollama_api_url=os.getenv("OLLAMA_API_URL", "http://127.0.0.1:11434"),
+        ollama_model_name=os.getenv("OLLAMA_MODEL_NAME", "gemma:2b"),
+        ollama_api_url=os.getenv("OLLAMA_API_URL", "http://localhost:11434"),
         ollama_vision_model_name=os.getenv("OLLAMA_VISION_MODEL_NAME", "llava"),
         # YAML files
         settings=settings,
         categories=categories,
         rules=rules,
-        debitors=debitors,
+        sectors=sectors,
+        sector_issuer_mapping=sector_issuer_mapping,
     )
 
 

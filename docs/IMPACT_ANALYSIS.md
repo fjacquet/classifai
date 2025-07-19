@@ -1,73 +1,64 @@
-# Analyse d'Impact (Version Finale) : Finalisation de la Stratégie d'Organisation
+# Impact Analysis (Harmonized): Finalizing the Organization Strategy
 
-**Date :** 11 juillet 2025
-**Version :** 4.0
-**Projet :** ClassifAI
-**Auteur :** Gemini
-
----
-
-## 1. Contexte
-
-Cette analyse d'impact finale se base sur l'état actuel du projet et les spécifications détaillées du document `ADDENDUM.md`. Elle identifie les dernières tâches de développement nécessaires pour aligner complètement l'application avec les exigences fonctionnelles.
-
-Les principaux écarts restants concernent la **structure de dossiers granulaire** et le **support de formats de fichiers spécifiques**.
+**Date:** July 19, 2025
+**Version:** 4.1
+**Project:** ClassifAI
+**Author:** Gemini
 
 ---
 
-## 2. Tâches Restantes et Impact Détaillé
+## 1. Context
 
-### 2.1. Finalisation de la Structure de Dossiers et du Renommage
+This impact analysis outlines the remaining development tasks required to fully align the ClassifAI application with the `FUNCTIONAL_SPECIFICATION.md`. This version has been harmonized with the project's canonical architecture and naming conventions.
 
-**Spécification Requise :** `Langue/Secteur_Activité/Émetteur/Catégorie/Date_Titre.ext`
-
-L'implémentation actuelle ne crée pas le sous-dossier `{Émetteur}` et ne passe pas les informations nécessaires pour le faire.
-
-* **Impact sur `ollama_classification_module.py` (Faible) :**
-  * **Action :** S'assurer que la clé `issuer` est systématiquement retournée dans le dictionnaire de la fonction `classify_content`. La logique de prompt existe déjà, mais la propagation des données doit être vérifiée.
-
-* **Impact sur `file_operations_module.py` (Élevé) :**
-  * **Action :** La fonction `_transfer_file` doit être modifiée pour accepter un paramètre `issuer`.
-  * **Action :** La logique de construction du chemin de destination doit être mise à jour pour insérer le sous-dossier de l'émetteur. L'ordre correct est `base_destination / language / issuer / category / filename`.
-  * **Action :** La logique de la fonction `_get_photo_destination` doit également être revue pour s'assurer qu'elle s'intègre correctement avec cette nouvelle structure (par exemple, en n'appliquant pas le dossier `issuer` pour les photos).
-
-* **Impact sur `classifai_app.py` (Moyen) :**
-  * **Action :** La fonction `process_file` doit être mise à jour pour extraire et retourner `issuer` depuis le résultat de `classify_content`.
-  * **Action :** La fonction `run_scan` doit être mise à jour pour gérer le `issuer` retourné et construire le chemin de prévisualisation correct.
-  * **Action :** La fonction `execute_file_operations` doit être mise à jour pour passer le `issuer` aux fonctions `move_file` et `copy_file`.
-
-* **Impact sur `classifai_cli.py` (Moyen) :**
-  * **Action :** Le `process_file` étant partagé, les modifications se propageront. Il faudra s'assurer que la boucle `run` du CLI gère correctement le `issuer` dans le tuple de résultats et le passe à `move_file`/`copy_file`.
-
-### 2.2. Ajout du Parser pour les Fichiers `.msg`
-
-**Spécification Requise :** Supporter le format `.msg` via la bibliothèque `extract-msg`.
-
-* **Impact sur `pyproject.toml` (Faible) :**
-  * **Action :** Ajouter la dépendance `extract-msg`.
-
-* **Impact sur `parsing_module.py` (Moyen) :**
-  * **Action :** Créer une nouvelle fonction `parse_msg(file_path)`.
-  * **Action :** Ajouter `".msg": parse_msg` au dictionnaire `specific_parsers` dans la fonction `get_parser`.
-
-* **Impact sur `tests/` (Faible) :**
-  * **Action :** Créer un nouveau fichier de test pour `parse_msg`, incluant un exemple de fichier `.msg` ou un mock.
-
-### 2.3. Transcription Audio/Vidéo (Tâche Différée)
-
-Cette tâche reste inchangée par rapport à l'analyse précédente et doit être abordée avec une stratégie d'importation conditionnelle pour garantir la stabilité.
+The primary remaining tasks concern the **final folder structure**, **support for specific file formats**, and **code cleanup**.
 
 ---
 
-## 3. Plan d'Action Recommandé
+## 2. Remaining Tasks and Detailed Impact
 
-1. **Finaliser la Structure de Dossiers (Priorité Haute) :**
-    * Modifier `file_operations_module.py`.
-    * Modifier `classifai_app.py` et `classifai_cli.py` pour propager et utiliser l'information `issuer`.
-    * Mettre à jour les tests existants pour valider la nouvelle structure de dossiers.
-2. **Ajouter le Support `.msg` (Priorité Moyenne) :**
-    * Ajouter la dépendance et implémenter la fonction de parsing et les tests associés.
-3. **Ré-évaluer la Transcription Audio/Vidéo (Priorité Basse) :**
-    * Tenter l'implémentation conditionnelle.
+### 2.1. Finalize Folder Structure and Renaming (High Priority)
 
-Cette approche structurée permettra de finaliser les fonctionnalités de base de manière robuste avant de s'attaquer à la tâche la plus risquée.
+**Required Specification:** `Langue/Secteur_Activité/Émetteur/Catégorie/Date_Titre.ext`.
+
+The current implementation logic needs to be updated to generate this complete, multi-level path.
+
+* **Impact on `core/classification.py` (Low):**
+  * **Action:** Ensure the classification function consistently returns a data structure (e.g., a frozen dataclass from `core/types.py`) containing `language`, `business_sector`, `issuer`, and `category`.
+
+* **Impact on `infrastructure/file_system.py` (High):**
+  * **Action:** The main file transfer function must be modified to accept the full classification result object.
+  * **Action:** The destination path construction logic must be updated to correctly build the full, required structure: `base_destination / Langue / Secteur_Activité / Émetteur / Catégorie / filename`. This order is critical and must be implemented precisely.
+
+* **Impact on `core/workflow.py` (Medium):**
+  * **Action:** The main processing workflow must be updated to correctly extract all required fields (`language`, `business_sector`, `issuer`, `category`) from the classification result.
+  * **Action:** The workflow must pass this complete set of information to the `infrastructure.file_system.transfer_file` function.
+
+* **Impact on `app/cli.py` and `app/web_ui.py` (Medium):**
+  * **Action:** The user interface components must be updated to correctly invoke the main workflow in `core/workflow.py` and properly display the final destination path to the user for confirmation.
+
+### 2.2. Add Parser for `.msg` Files (Medium Priority)
+
+**Required Specification:** Support the `.msg` format via the `extract-msg` library.
+
+* **Impact on `pyproject.toml` (Low):**
+  * **Action:** Add the `extract-msg` dependency using `uv`.
+
+* **Impact on `infrastructure/parsing.py` (Medium):**
+  * **Action:** Create a new function `parse_msg(file_path)` that uses the `extract-msg` library to pull content.
+  * **Action:** Add `".msg": parse_msg` to the dictionary of specific parsers.
+
+* **Impact on `tests/` (Low):**
+  * **Action:** Create a new test file for `parse_msg`, including a sample `.msg` file or a mock, to ensure it functions correctly.
+
+### 2.3. Code Refactoring and Cleanup (Low Priority)
+
+**Required Specification:** Removal of deprecated features as per `FUNCTIONAL_SPECIFICATION.md`.
+
+* **Impact on entire codebase (Medium):**
+  * **Action:** Perform a global search for any logic related to "embeddings" or vector databases and remove it entirely. This feature has been formally deprecated.
+  * **Action:** Delete the `config/debitors.yaml` and `config/debitors.yaml.example` files and remove any code that references them, as they are no longer used.
+
+### 2.4. Audio/Video Transcription (Deferred Task)
+
+This task remains unchanged. It should be approached with a conditional import strategy to ensure stability if the required libraries are not installed.
