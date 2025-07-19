@@ -46,15 +46,15 @@ jobs:
           fail_ci_if_error: false
       - name: Run ruff linter
         run: |
-          uv run ruff check .
+          uv run ruff check . --fix
       - name: Run ruff formatter check
         run: |-
           uv run ruff format --check .
+
   deploy-docs:
     name: Deploy Documentation
     needs: test
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -70,7 +70,7 @@ jobs:
           prune-cache: false
       - name: Install project dependencies with uv for docs
         run: |
-          uv sync -U
+          uv sync --all-extras --update
       - name: Deploy docs
         run: |
           uv run mkdocs gh-deploy --force
