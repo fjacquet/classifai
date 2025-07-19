@@ -2,6 +2,8 @@
 
 ClassifAI is a tool to automatically organize files in a directory using a hybrid of rule-based logic and local AI models with Ollama.
 
+[![codecov](https://codecov.io/gh/fjacquet/classifai/graph/badge.svg?token=TS8PKVYX1V)](https://codecov.io/gh/fjacquet/classifai)
+
 ## Features
 
 * **Hybrid Classification**: Uses a rule-based engine and a knowledge base (`sector_issuer_mapping.yaml`) for fast, accurate classification, falling back to powerful, user-selectable language models for semantic analysis.
