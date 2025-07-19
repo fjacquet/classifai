@@ -70,7 +70,7 @@ jobs:
           prune-cache: false
       - name: Install project dependencies with uv for docs
         run: |
-          uv sync --all-extras --update
+          uv sync --all-extras --upgrade
       - name: Deploy docs
         run: |
           uv run mkdocs gh-deploy --force
