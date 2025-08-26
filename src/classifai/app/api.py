@@ -90,7 +90,9 @@ async def classify_file(
                     issuer=context.issuer,
                     sector=context.sector,
                     language=context.language,
-                    final_path=str(context.final_destination_path) if context.final_destination_path else None,
+                    final_path=str(context.final_destination_path)
+                    if context.final_destination_path
+                    else None,
                     ai_results=context.ai_results,
                 )
             error = result.failure()
