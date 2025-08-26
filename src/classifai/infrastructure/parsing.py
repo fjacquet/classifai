@@ -236,13 +236,35 @@ def parse_archive(file_path: str) -> tuple[str, dict]:
     text_content = []
     file_path_lower = file_path.lower()
 
+    def _is_within_dir(base: str | os.PathLike, target: str | os.PathLike) -> bool:
+        base_path = os.path.realpath(base)
+        target_path = os.path.realpath(target)
+        return os.path.commonpath([base_path]) == os.path.commonpath([base_path, target_path])
+
+    def _safe_extract_tar(tf: tarfile.TarFile, dest: str) -> None:
+        for member in tf.getmembers():
+            # Skip absolute paths and parent traversal
+            member_path = os.path.join(dest, member.name)
+            if not _is_within_dir(dest, member_path):
+                logger.warning(f"Blocked unsafe tar member path: {member.name}")
+                continue
+            tf.extract(member, dest)
+
+    def _safe_extract_zip(zf: zipfile.ZipFile, dest: str) -> None:
+        for member in zf.infolist():
+            member_path = os.path.join(dest, member.filename)
+            if not _is_within_dir(dest, member_path):
+                logger.warning(f"Blocked unsafe zip member path: {member.filename}")
+                continue
+            zf.extract(member, dest)
+
     with tempfile.TemporaryDirectory() as temp_dir:
         if file_path_lower.endswith(".zip"):
             with zipfile.ZipFile(file_path, "r") as archive:
-                archive.extractall(temp_dir)
+                _safe_extract_zip(archive, temp_dir)
         elif file_path_lower.endswith((".tar", ".gz", ".bz2", ".xz")):
             with tarfile.open(file_path, "r:*") as archive:
-                archive.extractall(temp_dir)
+                _safe_extract_tar(archive, temp_dir)
         else:
             return "", {}
 

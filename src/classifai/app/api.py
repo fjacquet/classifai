@@ -5,7 +5,6 @@ This module provides a RESTful API for ClassifAI using FastAPI.
 It allows programmatic access to ClassifAI's classification functionality.
 """
 
-import os
 import tempfile
 from pathlib import Path
 
@@ -62,52 +61,49 @@ async def classify_file(
     setup_logging()
     logger.info(f"API: Classifying file {file.filename}")
 
-    # Create a temporary file to process
-    with tempfile.NamedTemporaryFile(delete=False, suffix=Path(file.filename).suffix) as tmp_file:
+    # Create a temporary directory to safely store the uploaded file
+    # The directory auto-cleans on exit, avoiding manual unlink on potentially influenced paths
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_dir_path = Path(tmp_dir)
+        safe_suffix = Path(file.filename).suffix  # only use suffix, not the full (potentially unsafe) name
+        tmp_path = tmp_dir_path / f"upload{safe_suffix}"
         content = await file.read()
-        tmp_file.write(content)
-        tmp_path = Path(tmp_file.name)
+        tmp_path.write_bytes(content)
 
-    try:
-        # Process the file
-        result = process_single_file(
-            file_path=tmp_path,
-            dest_dir=Path(options.dest_dir),
-            rename_files=options.rename_files,
-            use_vision=options.use_vision,
-            language_subfolders=options.language_subfolders,
-        )
-
-        # Clean up temporary file
         try:
-            os.unlink(tmp_path)
-        except Exception as e:
-            logger.error(f"Failed to delete temporary file: {e}")
-
-        # Return appropriate response
-        if isinstance(result, Success):
-            context = result.unwrap()
-            return ClassificationResponse(
-                success=True,
-                message="File classified successfully",
-                category=context.category,
-                issuer=context.issuer,
-                sector=context.sector,
-                language=context.language,
-                final_path=str(context.final_destination_path) if context.final_destination_path else None,
-                ai_results=context.ai_results,
+            # Process the file
+            result = process_single_file(
+                file_path=tmp_path,
+                dest_dir=Path(options.dest_dir),
+                rename_files=options.rename_files,
+                use_vision=options.use_vision,
+                language_subfolders=options.language_subfolders,
             )
-        error = result.failure()
-        return ClassificationResponse(
-            success=False,
-            message=f"Classification failed: {error}",
-        )
-    except Exception as e:
-        logger.error(f"API error: {e}")
-        return ClassificationResponse(
-            success=False,
-            message=f"An error occurred: {str(e)}",
-        )
+
+            # Return appropriate response
+            if isinstance(result, Success):
+                context = result.unwrap()
+                return ClassificationResponse(
+                    success=True,
+                    message="File classified successfully",
+                    category=context.category,
+                    issuer=context.issuer,
+                    sector=context.sector,
+                    language=context.language,
+                    final_path=str(context.final_destination_path) if context.final_destination_path else None,
+                    ai_results=context.ai_results,
+                )
+            error = result.failure()
+            return ClassificationResponse(
+                success=False,
+                message=f"Classification failed: {error}",
+            )
+        except Exception as e:
+            logger.error(f"API error: {e}")
+            return ClassificationResponse(
+                success=False,
+                message=f"An error occurred: {str(e)}",
+            )
 
 
 @app.get("/health")
