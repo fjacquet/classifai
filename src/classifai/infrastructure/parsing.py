@@ -3,6 +3,7 @@
 import email
 import functools
 import os
+import stat
 import subprocess
 import tarfile
 import tempfile
@@ -243,20 +244,84 @@ def parse_archive(file_path: str) -> tuple[str, dict]:
 
     def _safe_extract_tar(tf: tarfile.TarFile, dest: str) -> None:
         for member in tf.getmembers():
-            # Skip absolute paths and parent traversal
-            member_path = os.path.join(dest, member.name)
-            if not _is_within_dir(dest, member_path):
-                logger.warning(f"Blocked unsafe tar member path: {member.name}")
+            # Normalize and validate path
+            name = member.name
+            norm_name = os.path.normpath(name)
+            if os.path.isabs(norm_name) or norm_name.startswith(".." + os.sep) or ".." + os.sep in norm_name:
+                logger.warning(f"Blocked unsafe tar member path: {name}")
                 continue
-            tf.extract(member, dest)
+
+            dest_path = os.path.join(dest, norm_name)
+            if not _is_within_dir(dest, dest_path):
+                logger.warning(f"Blocked traversal outside dest for tar member: {name}")
+                continue
+
+            # Directories
+            if member.isdir():
+                os.makedirs(dest_path, exist_ok=True)
+                continue
+
+            # Block symlinks and hardlinks
+            if member.issym() or member.islnk():
+                logger.warning(f"Skipping link in tar archive: {name}")
+                continue
+
+            # Skip special files (devices, fifos, etc.)
+            if not member.isreg():
+                logger.warning(f"Skipping non-regular tar member: {name}")
+                continue
+
+            # Ensure directory exists
+            os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+
+            # Extract file content safely without following symlinks
+            src = tf.extractfile(member)
+            if src is None:
+                logger.warning(f"Could not read tar member (None): {name}")
+                continue
+            with src as s, open(dest_path, "wb") as f:
+                while True:
+                    chunk = s.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    f.write(chunk)
 
     def _safe_extract_zip(zf: zipfile.ZipFile, dest: str) -> None:
         for member in zf.infolist():
-            member_path = os.path.join(dest, member.filename)
-            if not _is_within_dir(dest, member_path):
-                logger.warning(f"Blocked unsafe zip member path: {member.filename}")
+            name = member.filename
+            norm_name = os.path.normpath(name)
+            if os.path.isabs(norm_name) or norm_name.startswith(".." + os.sep) or ".." + os.sep in norm_name:
+                logger.warning(f"Blocked unsafe zip member path: {name}")
                 continue
-            zf.extract(member, dest)
+
+            dest_path = os.path.join(dest, norm_name)
+            if not _is_within_dir(dest, dest_path):
+                logger.warning(f"Blocked traversal outside dest for zip member: {name}")
+                continue
+
+            # Detect symlink in zip (POSIX) via external attributes
+            is_symlink = False
+            try:
+                external_attr = member.external_attr >> 16
+                is_symlink = stat.S_ISLNK(external_attr)
+            except Exception:
+                is_symlink = False
+
+            if is_symlink:
+                logger.warning(f"Skipping symlink in zip archive: {name}")
+                continue
+
+            if name.endswith("/") or member.is_dir():
+                os.makedirs(dest_path, exist_ok=True)
+                continue
+
+            os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+            with zf.open(member, "r") as s, open(dest_path, "wb") as f:
+                while True:
+                    chunk = s.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    f.write(chunk)
 
     with tempfile.TemporaryDirectory() as temp_dir:
         if file_path_lower.endswith(".zip"):
