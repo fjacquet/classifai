@@ -1,91 +1,142 @@
 """
 Main pipeline orchestration for ClassifAI.
 
-This module uses a functional approach with the `returns` library to create a
-data processing pipeline. It orchestrates functions from the `core` and
-`infrastructure` modules to process files.
+This module orchestrates the data processing pipeline for file classification.
+It coordinates functions from the `core` and `infrastructure` modules to process files.
 """
 
 from pathlib import Path
 
 import pandas as pd
 from loguru import logger
-from returns.maybe import Nothing
-from returns.pipeline import flow
-from returns.pointfree import bind
-from returns.result import Failure, Result, Success
 
 from classifai.config import app_config
 from classifai.core.logic import create_summary, determine_final_path
-from classifai.core.rules import RulesEngine, apply_rules
+from classifai.core.rules import RulesEngine, apply_early_rules, apply_full_rules
 from classifai.core.types import FileContext
+from classifai.exceptions import ClassifAIError
 from classifai.infrastructure.file_system import read_and_parse_file
-from classifai.infrastructure.knowledge import KnowledgeBase
+from classifai.infrastructure.knowledge_base import get_sector_for_issuer
 from classifai.infrastructure.llm import enrich_with_ai
 
 
-def enrich_with_knowledge(context: FileContext, knowledge_base: KnowledgeBase) -> Result[FileContext, str]:
+def enrich_with_knowledge(context: FileContext) -> FileContext:
     """
     Enriches the file context with knowledge from the knowledge base.
     Specifically, it tries to find the sector for the issuer if available.
 
     Args:
         context: The file context to enrich
-        knowledge_base: The knowledge base to use for enrichment
 
     Returns:
-        A Result containing the enriched context or an error message
+        The enriched FileContext
     """
-    try:
-        # If we have an issuer but no sector, try to find the sector from the knowledge base
-        if context.issuer and not context.sector:
-            sector = knowledge_base.get_sector_for_issuer(context.issuer)
-            if sector:
-                # Create a new context with the sector information
-                updated_context = context.__class__(**{**context.__dict__, "sector": sector})
-                return Success(updated_context)
+    # If we have an issuer but no sector, try to find the sector
+    if context.issuer and not context.sector:
+        sector = get_sector_for_issuer(context.issuer)
+        if sector:
+            return context.model_copy(update={"sector": sector})
 
-        # If no enrichment was needed or possible, return the original context
-        return Success(context)
-    except Exception as e:
-        return Failure(f"Error enriching context with knowledge: {str(e)}")
+    # If no enrichment was needed or possible, return the original context
+    return context
 
 
 def process_file_pipeline(
     file_path: Path,
     scan_config: dict,
     rules_engine: RulesEngine,
-    knowledge_base: KnowledgeBase,
-) -> Result[FileContext, str]:
+) -> FileContext | None:
     """
-    Orchestrates the full processing pipeline for a single file using `flow`.
+    Orchestrates the full processing pipeline for a single file.
+
+    Args:
+        file_path: Path to the file to process
+        scan_config: Configuration dictionary for the scan
+        rules_engine: The rules engine to use for classification
+
+    Returns:
+        The processed FileContext, or None if processing failed
     """
     # File type validation - reject .zip files per functional specification
     if file_path.suffix.lower() == ".zip":
-        error_msg = (
+        logger.error(
             f"ZIP files are not supported for direct processing: {file_path.name}. "
             "Please decompress the archive before submitting files for classification."
         )
-        logger.error(error_msg)
-        return Failure(error_msg)
+        return None
 
-    initial_context = FileContext(
-        source_path=file_path,
-        destination_dir=Path(scan_config["dest_dir_str"]),
-        rename_files=scan_config["rename_files"],
-        use_vision=scan_config["use_vision"],
-        language_subfolders=scan_config["language_subfolders"],
-        categories=scan_config["categories"],
-    )
+    try:
+        # Create initial context
+        context = FileContext(
+            source_path=file_path,
+            destination_dir=Path(scan_config["dest_dir_str"]),
+            rename_files=scan_config["rename_files"],
+            use_vision=scan_config["use_vision"],
+            language_subfolders=scan_config["language_subfolders"],
+            categories=scan_config["categories"],
+        )
 
-    return flow(
-        Success(initial_context),
-        bind(lambda ctx: apply_rules(ctx, rules_engine)),
-        bind(read_and_parse_file),
-        bind(enrich_with_ai),
-        bind(lambda ctx: enrich_with_knowledge(ctx, knowledge_base)),
-        bind(lambda ctx: Success(determine_final_path(ctx))),
-    )
+        # Step 1: Apply early rules (filename/path only - before parsing)
+        context = apply_early_rules(context, rules_engine)
+
+        # Step 2: Parse file (includes MIME detection and metadata extraction)
+        context = read_and_parse_file(context)
+
+        # Step 3: Apply full rules (MIME/metadata - only if no early match)
+        if not context.rule_match_category:
+            context = apply_full_rules(context, rules_engine)
+
+        # Step 4: AI enrichment (only if no rule match)
+        context = enrich_with_ai(context)
+
+        # Step 5: Knowledge base enrichment
+        context = enrich_with_knowledge(context)
+
+        # Step 6: Determine final path and return
+        return determine_final_path(context)
+
+    except ClassifAIError as e:
+        logger.error(f"Pipeline failed for {file_path.name}: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"Unexpected error processing {file_path.name}: {e}")
+        return None
+
+
+def process_single_file(
+    file_path: Path,
+    dest_dir: Path,
+    rename_files: bool = False,
+    use_vision: bool = False,
+    language_subfolders: bool = True,
+) -> FileContext | None:
+    """
+    Process a single file through the classification pipeline.
+
+    This is a convenience function for API/UI that wraps process_file_pipeline
+    with a simpler interface.
+
+    Args:
+        file_path: Path to the file to process
+        dest_dir: Destination directory for classified files
+        rename_files: Whether to rename files based on AI-extracted information
+        use_vision: Whether to use vision model for image classification
+        language_subfolders: Whether to create language subfolders
+
+    Returns:
+        The processed FileContext, or None if processing failed
+    """
+    rules_engine = RulesEngine(app_config.rules)
+
+    scan_config = {
+        "dest_dir_str": str(dest_dir),
+        "rename_files": rename_files,
+        "use_vision": use_vision,
+        "language_subfolders": language_subfolders,
+        "categories": app_config.categories,
+    }
+
+    return process_file_pipeline(file_path, scan_config, rules_engine)
 
 
 def run_scan(
@@ -100,14 +151,25 @@ def run_scan(
     """
     Scans the source directory, classifies files using the pipeline,
     and returns a DataFrame of the results.
+
+    Args:
+        source_dir_str: Path to the source directory
+        dest_dir_str: Path to the destination directory
+        rename_files: Whether to rename files based on content
+        use_vision: Whether to use vision models for images
+        language_subfolders: Whether to create language-based subfolders
+        recursive: Whether to search recursively
+        categories: List of valid categories
+
+    Returns:
+        DataFrame with classification results
     """
     source_path = Path(source_dir_str)
     if not source_path.is_dir():
         return pd.DataFrame()
 
-    # Initialize engines once per scan, using the centralized config
+    # Initialize rules engine once per scan, using the centralized config
     rules_engine = RulesEngine(app_config.rules)
-    knowledge_base = KnowledgeBase()  # Deprecated class, use module-level functions instead
 
     scan_config = {
         "dest_dir_str": dest_dir_str,
@@ -122,15 +184,13 @@ def run_scan(
 
     results = []
     for item in file_paths:
-        result: Result[FileContext, str] = process_file_pipeline(
+        context = process_file_pipeline(
             item,
             scan_config,
             rules_engine,
-            knowledge_base,
         )
-        summary = create_summary(result)
-        # Use isinstance check instead of identity comparison for better reliability
-        if not isinstance(summary, Nothing):
-            results.append(summary.unwrap())
+        summary = create_summary(context)
+        if summary is not None:
+            results.append(summary)
 
     return pd.DataFrame(results)

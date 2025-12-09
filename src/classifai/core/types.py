@@ -47,6 +47,7 @@ class FileContext(BaseModel):
     # --- Fields populated during the pipeline ---
     content: str = ""
     file_type: str = ""
+    mime_type: str = ""  # True MIME type from python-magic or extension fallback
     metadata: dict[str, Any] = Field(default_factory=dict)
     language: str = "N/A"
     category: str | None = None

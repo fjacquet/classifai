@@ -5,9 +5,8 @@ Tests for the refactored core logic and pipeline.
 from pathlib import Path
 
 import pytest
-from returns.result import Success
 
-# Code under test is now in `core.logic` and `core_logic` (orchestrator)
+# Code under test is now in `core.logic` and `pipeline`
 from classifai.core.logic import (
     _calculate_general_destination,
     _calculate_photo_destination,
@@ -114,18 +113,25 @@ def test_determine_final_path_dispatches_to_general(mocker, base_context):
 def test_process_file_pipeline_orchestration(mocker):
     """
     Tests that the pipeline calls all steps in the correct order.
-    The patch targets are now in `core_logic`, the orchestrator.
+    Now using native Python with two-phase rule matching.
     """
-    # Arrange
-    mock_apply_rules = mocker.patch("classifai.pipeline.apply_rules", return_value=Success(FileContext))
-    mock_read_parse = mocker.patch(
-        "classifai.pipeline.read_and_parse_file", return_value=Success(FileContext)
+    # Arrange - create a mock FileContext that can be returned by each step
+    mock_context = mocker.MagicMock(spec=FileContext)
+    mock_context.source_path = Path("/source/file.txt")
+    mock_context.rule_match_category = None  # No early rule match
+
+    mock_apply_early_rules = mocker.patch(
+        "classifai.pipeline.apply_early_rules", return_value=mock_context
     )
-    mock_enrich_ai = mocker.patch("classifai.pipeline.enrich_with_ai", return_value=Success(FileContext))
+    mock_apply_full_rules = mocker.patch(
+        "classifai.pipeline.apply_full_rules", return_value=mock_context
+    )
+    mock_read_parse = mocker.patch("classifai.pipeline.read_and_parse_file", return_value=mock_context)
+    mock_enrich_ai = mocker.patch("classifai.pipeline.enrich_with_ai", return_value=mock_context)
     mock_enrich_knowledge = mocker.patch(
-        "classifai.pipeline.enrich_with_knowledge", return_value=Success(FileContext)
+        "classifai.pipeline.enrich_with_knowledge", return_value=mock_context
     )
-    mock_determine_path = mocker.patch("classifai.pipeline.determine_final_path", return_value=FileContext)
+    mock_determine_path = mocker.patch("classifai.pipeline.determine_final_path", return_value=mock_context)
 
     scan_config = {
         "dest_dir_str": "/dest",
@@ -135,14 +141,14 @@ def test_process_file_pipeline_orchestration(mocker):
         "categories": ["Test"],
     }
     mock_rules_engine = mocker.MagicMock()
-    mock_kb = mocker.MagicMock()
 
     # Act
-    process_file_pipeline(Path("/source/file.txt"), scan_config, mock_rules_engine, mock_kb)
+    process_file_pipeline(Path("/source/file.txt"), scan_config, mock_rules_engine)
 
-    # Assert
-    mock_apply_rules.assert_called_once()
+    # Assert - two-phase rule matching
+    mock_apply_early_rules.assert_called_once()
     mock_read_parse.assert_called_once()
+    mock_apply_full_rules.assert_called_once()  # Called because no early match
     mock_enrich_ai.assert_called_once()
     mock_enrich_knowledge.assert_called_once()
     mock_determine_path.assert_called_once()

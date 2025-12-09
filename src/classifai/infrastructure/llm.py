@@ -4,14 +4,16 @@ This module provides functions for interacting with the Ollama API.
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import httpx
 from loguru import logger
-from returns.result import Failure, Result, Success
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from classifai.config import app_config
 from classifai.core.types import AIResponse, FileContext
+from classifai.exceptions import LLMError
 from classifai.localization import translate_category, translate_sector
 
 # --- Constants ---
@@ -19,35 +21,45 @@ MAX_RETRIES = 3
 TIMEOUT = 60  # seconds
 
 
+@retry(
+    stop=stop_after_attempt(MAX_RETRIES),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    retry=retry_if_exception_type(httpx.RequestError),
+    reraise=True,
+)
 def _make_request(
     endpoint: str,
     payload: dict[str, Any],
     logger_instance: Any | None = logger,
 ) -> dict[str, Any]:
     """
-    Makes a request to the Ollama API with retry logic.
+    Makes a request to the Ollama API with retry logic using tenacity.
+
+    Args:
+        endpoint: API endpoint path
+        payload: Request payload
+        logger_instance: Logger instance for logging
+
+    Returns:
+        API response as dictionary
+
+    Raises:
+        LLMError: If the request fails after all retries
     """
-    for attempt in range(MAX_RETRIES):
-        try:
-            with httpx.Client(timeout=TIMEOUT) as client:
-                response = client.post(f"{app_config.ollama_api_url}{endpoint}", json=payload)
-                response.raise_for_status()
-                return response.json()
-        except httpx.RequestError as e:
-            if logger_instance:
-                logger_instance.warning(
-                    f"Request to Ollama failed on attempt {attempt + 1}/{MAX_RETRIES}: {e}",
-                )
-            if attempt == MAX_RETRIES - 1:
-                if logger_instance:
-                    logger_instance.error("Ollama API request failed after all retries.")
-                raise
-        except httpx.HTTPStatusError as e:
-            if logger_instance:
-                logger_instance.error(f"Ollama API returned an error: {e.response.status_code}")
-                logger_instance.error(f"Response body: {e.response.text}")
-            raise
-    return {}
+    try:
+        with httpx.Client(timeout=TIMEOUT) as client:
+            response = client.post(f"{app_config.ollama_api_url}{endpoint}", json=payload)
+            response.raise_for_status()
+            return response.json()
+    except httpx.HTTPStatusError as e:
+        if logger_instance:
+            logger_instance.error(f"Ollama API returned an error: {e.response.status_code}")
+            logger_instance.error(f"Response body: {e.response.text}")
+        raise LLMError(f"Ollama API error: {e.response.status_code}") from e
+    except httpx.RequestError as e:
+        if logger_instance:
+            logger_instance.warning(f"Request to Ollama failed: {e}")
+        raise  # Let tenacity handle the retry
 
 
 def get_completion(
@@ -110,8 +122,6 @@ def get_sector_with_ai(issuer_name: str, content: str, logger_instance: Any | No
         # Parse the JSON string from response['response']
         if "response" in api_response and isinstance(api_response["response"], str):
             try:
-                import json
-
                 response = json.loads(api_response["response"])
                 logger_instance.debug(f"Parsed JSON from sector API response: {response}")
                 sector = response.get("sector", None)
@@ -133,6 +143,64 @@ def get_sector_with_ai(issuer_name: str, content: str, logger_instance: Any | No
         if logger_instance:
             logger_instance.error(f"AI sector classification failed for '{issuer_name}': {e}")
     return None
+
+
+def _build_metadata_hints(metadata: dict[str, Any]) -> str:
+    """
+    Build metadata hints section for the LLM prompt.
+
+    Extracts useful metadata fields and formats them as hints
+    to help the LLM with classification.
+
+    Args:
+        metadata: Dictionary of file metadata
+
+    Returns:
+        Formatted metadata hints string, or empty string if no useful metadata
+    """
+    if not metadata:
+        return ""
+
+    hints: list[str] = []
+
+    # Author/creator information
+    if metadata.get("author"):
+        hints.append(f"- Author/Creator: {metadata['author']}")
+
+    # Title information
+    if metadata.get("title"):
+        hints.append(f"- Document Title: {metadata['title']}")
+
+    # Subject/description
+    if metadata.get("subject"):
+        hints.append(f"- Subject: {metadata['subject']}")
+    if metadata.get("description"):
+        hints.append(f"- Description: {metadata['description']}")
+
+    # Keywords
+    keywords = metadata.get("keywords")
+    if keywords:
+        if isinstance(keywords, list):
+            keywords = ", ".join(keywords)
+        hints.append(f"- Keywords: {keywords}")
+
+    # Creation date
+    if metadata.get("creation_date"):
+        hints.append(f"- Creation Date: {metadata['creation_date']}")
+
+    # Location information (for photos)
+    if metadata.get("city") or metadata.get("country"):
+        location_parts = []
+        if metadata.get("city"):
+            location_parts.append(metadata["city"])
+        if metadata.get("country"):
+            location_parts.append(metadata["country"])
+        hints.append(f"- Location: {', '.join(location_parts)}")
+
+    if not hints:
+        return ""
+
+    return "\n        # DOCUMENT METADATA (use as hints)\n" + "\n".join(f"        {h}" for h in hints) + "\n"
 
 
 def _get_category_suggestion(
@@ -182,17 +250,26 @@ def _get_category_suggestion(
     return None
 
 
-def enrich_with_ai(context: FileContext) -> Result[FileContext, str]:
+def enrich_with_ai(context: FileContext) -> FileContext:
     """
     Enriches the file context with AI-powered classification.
     This is an impure function that makes a network call.
     Implements strict category enforcement with _UNKNOWN_ handling per functional specification.
+
+    Args:
+        context: The file context to enrich
+
+    Returns:
+        Updated FileContext with AI classification results
+
+    Raises:
+        LLMError: If AI processing fails
     """
     logger.debug(f"Starting AI enrichment for {context.source_path.name}")
 
     if context.rule_match_category:
         logger.debug(f"Skipping AI enrichment for {context.source_path.name} due to rule match")
-        return Success(context)
+        return context
 
     # Choose the right prompt and model based on file type
     if context.file_type == "image" and context.use_vision:
@@ -214,8 +291,6 @@ def enrich_with_ai(context: FileContext) -> Result[FileContext, str]:
             # Parse the JSON string from response['response']
             if "response" in api_response and isinstance(api_response["response"], str):
                 try:
-                    import json
-
                     response = json.loads(api_response["response"])
                     logger.debug(f"Parsed JSON from vision API response: {response}")
 
@@ -231,7 +306,7 @@ def enrich_with_ai(context: FileContext) -> Result[FileContext, str]:
                 response = api_response
         except Exception as e:
             logger.error(f"Vision model processing failed for {context.source_path.name}: {e}")
-            return Failure(f"Vision model processing failed: {e}")
+            raise LLMError(f"Vision model processing failed: {e}") from e
     else:
         # prompt = f"""
         # Analyze the following document text and provide the following information in a JSON object:
@@ -245,6 +320,9 @@ def enrich_with_ai(context: FileContext) -> Result[FileContext, str]:
         # 5.  `language`: The primary language of the document (e.g., 'en', 'fr', 'de', etc.). Use ISO 639-1 codes.
 
         # Document Text:
+        # Build metadata hints if available
+        metadata_hints = _build_metadata_hints(context.metadata)
+
         prompt = f"""
         # ROLE
         You are a highly accurate data extraction service.
@@ -252,7 +330,7 @@ def enrich_with_ai(context: FileContext) -> Result[FileContext, str]:
         # TASK
         Analyze the provided document text and return a single, well-formed JSON object containing the extracted information.
         Adhere strictly to the rules and formats defined below.
-
+{metadata_hints}
         # RULES
         1.  **Issuer Priority:** To determine the `issuer`, check in this order:
             1) The company on the letterhead.
@@ -295,8 +373,6 @@ def enrich_with_ai(context: FileContext) -> Result[FileContext, str]:
             # Parse the JSON string from response['response']
             if "response" in api_response and isinstance(api_response["response"], str):
                 try:
-                    import json
-
                     response = json.loads(api_response["response"])
                     logger.debug(f"Parsed JSON from LLM API response: {response}")
 
@@ -333,7 +409,7 @@ def enrich_with_ai(context: FileContext) -> Result[FileContext, str]:
                 response = api_response
         except Exception as e:
             logger.error(f"LLM processing failed for {context.source_path.name}: {e}")
-            return Failure(f"LLM processing failed: {e}")
+            raise LLMError(f"LLM processing failed: {e}") from e
 
     # Create a validated AIResponse object from the LLM response
     try:
@@ -356,10 +432,9 @@ def enrich_with_ai(context: FileContext) -> Result[FileContext, str]:
             # First try knowledge base lookup (step 1 of two-step process)
             from classifai.infrastructure.knowledge_base import get_sector_for_issuer
 
-            sector_result = get_sector_for_issuer(ai_response.issuer)
+            sector = get_sector_for_issuer(ai_response.issuer)
 
-            if isinstance(sector_result, Success):
-                sector = sector_result.unwrap()
+            if sector:
                 logger.debug(f"Found sector in knowledge base: {sector}")
             else:
                 # Fallback to AI classification (step 2 of two-step process)
@@ -367,7 +442,7 @@ def enrich_with_ai(context: FileContext) -> Result[FileContext, str]:
                 sector = get_sector_with_ai(ai_response.issuer, context.content)
                 logger.debug(f"AI determined sector: {sector}")
 
-        updated_context = context.copy(
+        updated_context = context.model_copy(
             update={
                 "ai_results": ai_results,
                 "issuer": ai_response.issuer,
@@ -399,10 +474,9 @@ def enrich_with_ai(context: FileContext) -> Result[FileContext, str]:
             # First try knowledge base lookup (step 1 of two-step process)
             from classifai.infrastructure.knowledge_base import get_sector_for_issuer
 
-            sector_result = get_sector_for_issuer(issuer)
+            sector = get_sector_for_issuer(issuer)
 
-            if isinstance(sector_result, Success):
-                sector = sector_result.unwrap()
+            if sector:
                 logger.debug(f"Found sector in knowledge base: {sector}")
             else:
                 # Fallback to AI classification (step 2 of two-step process)
@@ -410,7 +484,7 @@ def enrich_with_ai(context: FileContext) -> Result[FileContext, str]:
                 sector = get_sector_with_ai(issuer, context.content)
                 logger.debug(f"AI determined sector: {sector}")
 
-        updated_context = context.copy(
+        updated_context = context.model_copy(
             update={
                 "ai_results": ai_results,
                 "issuer": response.get("issuer"),
@@ -423,4 +497,4 @@ def enrich_with_ai(context: FileContext) -> Result[FileContext, str]:
             f"Updated FileContext (fallback): issuer={updated_context.issuer}, language={updated_context.language}, category={updated_context.category}, sector={updated_context.sector}",
         )
     logger.debug(f"AI enrichment complete for {context.source_path.name}")
-    return Success(updated_context)
+    return updated_context
