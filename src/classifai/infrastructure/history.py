@@ -7,74 +7,80 @@ This module contains impure functions for interacting with the history file.
 import json
 from pathlib import Path
 
-from returns.maybe import Maybe, Nothing, Some
-from returns.result import safe
+from loguru import logger
 
 HISTORY_FILE = Path("logs/history.json")
 
 
-@safe
 def log_operation(operation: str, source_path: str, dest_path: str) -> None:
     """
     Logs a file operation to the history file.
-    """
-    HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
-    history_entry = {
-        "operation": operation,
-        "source": source_path,
-        "destination": dest_path,
-    }
 
-    history = []
-    if HISTORY_FILE.exists() and HISTORY_FILE.stat().st_size > 0:
+    Args:
+        operation: The operation type (e.g., "move", "copy")
+        source_path: The source file path
+        dest_path: The destination file path
+    """
+    try:
+        HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        history_entry = {
+            "operation": operation,
+            "source": source_path,
+            "destination": dest_path,
+        }
+
+        history = []
+        if HISTORY_FILE.exists() and HISTORY_FILE.stat().st_size > 0:
+            with open(HISTORY_FILE) as f:
+                history = json.load(f)
+
+        history.append(history_entry)
+
+        with open(HISTORY_FILE, "w") as f:
+            json.dump(history, f, indent=4)
+    except Exception as e:
+        logger.error(f"Failed to log operation: {e}")
+        raise
+
+
+def get_last_operation() -> dict | None:
+    """
+    Retrieves the last operation from the history file.
+
+    Returns:
+        The last operation entry as a dict, or None if no history exists
+    """
+    try:
+        if not HISTORY_FILE.exists() or HISTORY_FILE.stat().st_size == 0:
+            return None
+
         with open(HISTORY_FILE) as f:
             history = json.load(f)
 
-    history.append(history_entry)
-
-    with open(HISTORY_FILE, "w") as f:
-        json.dump(history, f, indent=4)
-
-
-@safe
-def get_last_operation() -> Maybe[dict]:
-    """
-    Retrieves the last operation from the history file as a Maybe.
-    """
-    if not HISTORY_FILE.exists() or HISTORY_FILE.stat().st_size == 0:
-        # Always return an *instance* of `Nothing` so that `isinstance(..., Nothing)`
-        # works regardless of whether ``Nothing`` is a class (after our monkey patch)
-        # or a singleton instance (stock behaviour).
-        try:
-            return Nothing() if callable(Nothing) else Nothing  # type: ignore[misc]
-        except TypeError:
-            # If `Nothing` is a singleton instance, fall back to returning it directly.
-            return Nothing
-
-    with open(HISTORY_FILE) as f:
-        history = json.load(f)
-
-    if not history:
-        try:
-            return Nothing() if callable(Nothing) else Nothing  # type: ignore[misc]
-        except TypeError:
-            return Nothing
-    return Some(history[-1])
+        if not history:
+            return None
+        return history[-1]
+    except Exception as e:
+        logger.error(f"Failed to get last operation: {e}")
+        return None
 
 
-@safe
 def remove_last_operation() -> None:
     """
     Removes the last operation from the history file.
     """
-    if not HISTORY_FILE.exists() or HISTORY_FILE.stat().st_size == 0:
-        return
+    try:
+        if not HISTORY_FILE.exists() or HISTORY_FILE.stat().st_size == 0:
+            return
 
-    with open(HISTORY_FILE) as f:
-        history = json.load(f)
+        with open(HISTORY_FILE) as f:
+            history = json.load(f)
 
-    if history:
-        history.pop()
+        if history:
+            history.pop()
 
-    with open(HISTORY_FILE, "w") as f:
-        json.dump(history, f, indent=4)
+        with open(HISTORY_FILE, "w") as f:
+            json.dump(history, f, indent=4)
+    except Exception as e:
+        logger.error(f"Failed to remove last operation: {e}")
+        raise

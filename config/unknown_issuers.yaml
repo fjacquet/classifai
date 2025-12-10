@@ -1,1 +1,35 @@
----
+dell inc:
+  count: 2
+  first_seen: '2025-12-09T20:55:27.019276+00:00'
+  last_seen: '2025-12-09T21:12:41.954864+00:00'
+  original_name: Dell Inc.
+dell technologies:
+  count: 2
+  first_seen: '2025-12-09T20:55:11.864485+00:00'
+  last_seen: '2025-12-09T21:12:22.862367+00:00'
+  original_name: Dell Technologies
+facebook:
+  count: 6
+  first_seen: '2025-12-09T20:01:07.022961+00:00'
+  last_seen: '2025-12-09T21:09:04.102958+00:00'
+  original_name: Facebook
+nvidia:
+  count: 4
+  first_seen: '2025-12-09T20:02:08.264813+00:00'
+  last_seen: '2025-12-09T21:10:04.196451+00:00'
+  original_name: NVIDIA
+patrick ellis:
+  count: 1
+  first_seen: '2025-12-09T21:30:07.927456+00:00'
+  last_seen: '2025-12-09T21:30:07.927456+00:00'
+  original_name: Patrick Ellis
+ubs ag:
+  count: 8
+  first_seen: '2025-12-09T06:23:49.706170+00:00'
+  last_seen: '2025-12-09T20:46:19.781368+00:00'
+  original_name: UBS AG
+unknown company:
+  count: 8
+  first_seen: '2025-12-09T06:23:49.708912+00:00'
+  last_seen: '2025-12-09T20:46:19.786554+00:00'
+  original_name: Unknown Company

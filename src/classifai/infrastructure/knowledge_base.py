@@ -6,14 +6,14 @@ which includes categories, sector-issuer mappings, and other reference data.
 """
 
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
 from loguru import logger
-from returns.result import Failure, Result, Success
 
 from classifai.config import app_config
+from classifai.exceptions import ConfigurationError, KnowledgeBaseError
 
 # Path for recording unknown issuers
 UNKNOWN_ISSUERS_PATH = Path("config/unknown_issuers.yaml")
@@ -38,15 +38,15 @@ def normalize_issuer_name(issuer: str) -> str:
     return re.sub(r"\s+", " ", normalized).strip()
 
 
-def record_unknown_issuer(issuer: str) -> Result[None, str]:
+def record_unknown_issuer(issuer: str) -> None:
     """
     Record an unknown issuer with timestamp for manual review.
 
     Args:
         issuer: The unknown issuer name
 
-    Returns:
-        Result indicating success or failure
+    Raises:
+        KnowledgeBaseError: If recording fails
     """
     try:
         unknown_issuers_file = Path(app_config.config_dir) / "unknown_issuers.yaml"
@@ -60,8 +60,6 @@ def record_unknown_issuer(issuer: str) -> Result[None, str]:
                     unknown_issuers = yaml.safe_load(content) or {}
 
         # Add new unknown issuer with timestamp
-        from datetime import timezone
-
         timestamp = datetime.now(timezone.utc).isoformat()
         normalized_issuer = normalize_issuer_name(issuer)
 
@@ -87,11 +85,9 @@ def record_unknown_issuer(issuer: str) -> Result[None, str]:
         with open(unknown_issuers_file, "w", encoding="utf-8") as f:
             yaml.dump(unknown_issuers, f, default_flow_style=False, allow_unicode=True)
 
-        return Success(None)
-
     except Exception as e:
         logger.error(f"Failed to record unknown issuer {issuer}: {e}")
-        return Failure(f"Failed to record unknown issuer: {e}")
+        raise KnowledgeBaseError(f"Failed to record unknown issuer: {e}") from e
 
 
 class KnowledgeBase:
@@ -99,8 +95,10 @@ class KnowledgeBase:
     Knowledge base for ClassifAI.
 
     Provides access to sector-issuer mappings and other reference data.
-    This class is deprecated and will be removed in future versions.
-    Use the module-level functions instead.
+
+    .. deprecated::
+        This class is deprecated and will be removed in future versions.
+        Use the module-level functions instead.
     """
 
     def __init__(self):
@@ -126,58 +124,54 @@ class KnowledgeBase:
         logger.warning(
             "KnowledgeBase.get_sector_for_issuer is deprecated. Use module-level function instead.",
         )
-        result = get_sector_for_issuer(issuer)
-        return result.unwrap() if isinstance(result, Success) else None
+        return get_sector_for_issuer(issuer)
 
 
-# Note: record_unknown_issuer function is implemented above with the new signature
-
-
-def load_categories() -> Result[dict[str, list[str]], str]:
+def load_categories() -> list[str]:
     """
-    Load categories from the configuration file.
+    Load categories from the configuration.
 
     Returns:
-        Result containing either the categories dictionary or an error message
+        List of categories from configuration
+
+    Raises:
+        ConfigurationError: If no categories are configured
     """
-    try:
-        categories_path = app_config.config_dir / "categories.yaml"
-
-        if not categories_path.exists():
-            return Failure(f"Categories file not found: {categories_path}")
-
-        with open(categories_path, encoding="utf-8") as f:
-            categories = yaml.safe_load(f)
-
-        logger.debug(f"Loaded {len(categories)} categories")
-        return Success(categories)
-    except Exception as e:
-        return Failure(f"Failed to load categories: {e}")
+    categories = app_config.categories
+    if not categories:
+        raise ConfigurationError("No categories configured")
+    logger.debug(f"Loaded {len(categories)} categories")
+    return categories
 
 
-def load_sector_issuer_mapping() -> Result[dict[str, list[str]], str]:
+def load_sector_issuer_mapping() -> dict[str, list[str]]:
     """
     Load sector-issuer mappings from the configuration file.
 
     Returns:
-        Result containing either the mapping dictionary or an error message
+        Dictionary mapping sectors to lists of issuers
+
+    Raises:
+        ConfigurationError: If the mapping file cannot be loaded
     """
     try:
         mapping_path = app_config.config_dir / "sector_issuer_mapping.yaml"
 
         if not mapping_path.exists():
-            return Failure(f"Sector-issuer mapping file not found: {mapping_path}")
+            raise ConfigurationError(f"Sector-issuer mapping file not found: {mapping_path}")
 
         with open(mapping_path, encoding="utf-8") as f:
             mapping = yaml.safe_load(f)
 
         logger.debug(f"Loaded sector-issuer mappings for {len(mapping)} sectors")
-        return Success(mapping)
+        return mapping
+    except ConfigurationError:
+        raise
     except Exception as e:
-        return Failure(f"Failed to load sector-issuer mapping: {e}")
+        raise ConfigurationError(f"Failed to load sector-issuer mapping: {e}") from e
 
 
-def get_sector_for_issuer(issuer: str) -> Result[str, str]:
+def get_sector_for_issuer(issuer: str) -> str | None:
     """
     Find the sector for a given issuer with alias support and normalization.
     Records unknown issuers for manual review.
@@ -186,18 +180,19 @@ def get_sector_for_issuer(issuer: str) -> Result[str, str]:
         issuer: The issuer name
 
     Returns:
-        Result containing either the sector name or an error message
+        The sector name if found, None otherwise
     """
     try:
         if not issuer or not issuer.strip():
-            return Failure("Empty issuer name provided")
+            return None
 
         # Load the sector-issuer mapping
-        mapping_result = load_sector_issuer_mapping()
-        if isinstance(mapping_result, Failure):
-            return mapping_result
+        try:
+            mapping = load_sector_issuer_mapping()
+        except ConfigurationError as e:
+            logger.warning(f"Could not load sector mapping: {e}")
+            return None
 
-        mapping = mapping_result.unwrap()
         normalized_issuer = normalize_issuer_name(issuer)
 
         # Search through all sectors and their issuers with normalization
@@ -207,7 +202,7 @@ def get_sector_for_issuer(issuer: str) -> Result[str, str]:
                     normalized_mapped = normalize_issuer_name(mapped_issuer)
                     if normalized_mapped == normalized_issuer:
                         logger.debug(f"Found sector '{sector}' for issuer '{issuer}' (normalized match)")
-                        return Success(sector)
+                        return sector
 
                     # Also check for partial matches (issuer contains mapped issuer or vice versa)
                     if (
@@ -216,50 +211,49 @@ def get_sector_for_issuer(issuer: str) -> Result[str, str]:
                         logger.debug(
                             f"Found sector '{sector}' for issuer '{issuer}' (partial match with '{mapped_issuer}')",
                         )
-                        return Success(sector)
+                        return sector
 
         # No match found - record as unknown issuer
         logger.info(f"No sector found for issuer '{issuer}'. Recording as unknown.")
-        record_result = record_unknown_issuer(issuer)
-        if isinstance(record_result, Failure):
-            logger.warning(f"Failed to record unknown issuer: {record_result.failure()}")
+        try:
+            record_unknown_issuer(issuer)
+        except KnowledgeBaseError as e:
+            logger.warning(f"Failed to record unknown issuer: {e}")
 
-        return Failure(f"No sector found for issuer: {issuer}")
+        return None
 
     except Exception as e:
         logger.error(f"Error finding sector for issuer '{issuer}': {e}")
-        return Failure(f"Error finding sector for issuer: {e}")
+        return None
 
 
-def get_category_suggestions(text: str, max_suggestions: int = 3) -> Result[list[str], str]:
+def get_category_suggestions(text: str, max_suggestions: int = 3) -> list[str]:
     """
     Get category suggestions based on document content.
+
+    Matches category names against the document text using simple substring matching.
 
     Args:
         text: The document text
         max_suggestions: Maximum number of suggestions to return
 
     Returns:
-        Result containing either a list of category suggestions or an error message
+        List of category suggestions (may be empty if no matches or no categories)
     """
-    categories_result = load_categories()
+    categories = app_config.categories
+    if not categories:
+        return []
 
-    if isinstance(categories_result, Failure):
-        return categories_result
-
-    categories = categories_result.unwrap()
-
-    # Simple keyword-based matching for now
-    # In a real implementation, this would use more sophisticated techniques
+    text_lower = text.lower()
     matches = []
 
-    for category, keywords in categories.items():
-        for keyword in keywords:
-            if keyword.lower() in text.lower():
-                matches.append((category, text.lower().count(keyword.lower())))
+    # Simple matching: check if category name appears in text
+    for category in categories:
+        category_lower = category.lower()
+        count = text_lower.count(category_lower)
+        if count > 0:
+            matches.append((category, count))
 
     # Sort by match count and take top suggestions
     matches.sort(key=lambda x: x[1], reverse=True)
-    suggestions = [category for category, _ in matches[:max_suggestions]]
-
-    return Success(suggestions)
+    return [category for category, _ in matches[:max_suggestions]]

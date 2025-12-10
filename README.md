@@ -7,9 +7,22 @@ ClassifAI is a tool to automatically organize files in a directory using a hybri
 ## Features
 
 - **Hybrid Classification**: Uses a rule-based engine and a knowledge base (`sector_issuer_mapping.yaml`) for fast, accurate classification, falling back to powerful, user-selectable language models for semantic analysis.
-- **Robust Parsing**: Supports a wide range of file types, including PDFs, Office documents, images (with OCR), and generic text files, with a fallback to `pandoc` for maximum compatibility.
+- **Robust Parsing**: Supports a wide range of file types with a fallback to Pandoc for maximum compatibility.
 - **Web Interface**: An intuitive Streamlit UI for easy configuration, previewing, and execution.
 - **Command-Line Interface**: A powerful CLI for scripting and advanced users.
+
+### Supported File Types
+
+| Category | Extensions | Parser |
+|----------|------------|--------|
+| Documents | `.pdf`, `.docx`, `.doc`, `.txt`, `.rtf`, `.odt` | Native |
+| Spreadsheets | `.xlsx`, `.xls`, `.ods` | Native |
+| Presentations | `.pptx`, `.ppt`, `.odp` | Pandoc |
+| Images (OCR) | `.png`, `.jpg`, `.jpeg`, `.tiff`, `.bmp` | Tesseract |
+| Email | `.msg`, `.eml` | Native |
+| Web | `.html` | Native |
+| E-books | `.epub` | Pandoc |
+| Technical docs | `.md`, `.rst`, `.tex`, `.org` | Pandoc |
 
 ## Installation
 
@@ -89,11 +102,49 @@ streamlit run src/classifai/classifai_app.py
 
 ### Command-Line Interface (CLI)
 
-**Example:**
+**Basic usage:**
 
 ```bash
-uv run main.py --source-dir /path/to/your/files
+uv run classifai run --source-dir /path/to/your/files --mode dry-run
 ```
+
+**Common options:**
+
+```bash
+# Preview without making changes
+uv run classifai run -s /path/to/files -m dry-run
+
+# Move files to destination
+uv run classifai run -s /path/to/files -d /path/to/dest -m move
+
+# Copy files instead of moving
+uv run classifai run -s /path/to/files -d /path/to/dest -m copy
+
+# Verbose logging (DEBUG level)
+uv run classifai run -s /path/to/files -v
+
+# Verbose but suppress noisy LLM logs
+uv run classifai run -s /path/to/files -v --quiet-llm
+
+# Scan subdirectories recursively
+uv run classifai run -s /path/to/files -R
+```
+
+**All CLI options:**
+
+| Option | Short | Description | Default |
+|--------|-------|-------------|---------|
+| `--source-dir` | `-s` | Source directory to organize | Required |
+| `--destination-dir` | `-d` | Destination directory | Same as source |
+| `--mode` | `-m` | Operation mode: dry-run, move, copy | dry-run |
+| `--recursive` | `-R` | Scan subdirectories | False |
+| `--rename-files` | `-r` | Enable AI-powered file renaming | False |
+| `--use-vision` | `-uv` | Use vision model for images | False |
+| `--language-subfolders` | `-ls` | Create language-based subfolders | False |
+| `--verbose` | `-v` | Enable DEBUG logging | False |
+| `--quiet-llm` | `-ql` | Suppress LLM DEBUG logs | False |
+| `--ollama-model` | `-ai` | Ollama model name | From config |
+| `--log-file` | | Path to log file | logs/main.log |
 
 ## Configuration
 

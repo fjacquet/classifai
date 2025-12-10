@@ -3,6 +3,7 @@ Module de localisation pour ClassifAI.
 Permet de traduire les textes de l'application dans différentes langues.
 """
 
+from contextvars import ContextVar
 from enum import Enum
 
 
@@ -156,19 +157,30 @@ CATEGORY_MAPPINGS: dict[str, str] = {
     "Fiichiers Web": "Fichiers Web",
 }
 
-# Langue actuelle
-current_language = DEFAULT_LANGUAGE
+# Thread-safe current language using contextvars (no global mutable state)
+_current_language: ContextVar[Language] = ContextVar("language", default=DEFAULT_LANGUAGE)
 
 
 def set_language(language: Language) -> None:
     """
     Définit la langue actuelle de l'application.
 
+    This function is thread-safe - each thread/async context gets its own value.
+
     Args:
         language: La langue à utiliser
     """
-    global current_language
-    current_language = language
+    _current_language.set(language)
+
+
+def get_current_language() -> Language:
+    """
+    Récupère la langue actuelle.
+
+    Returns:
+        La langue actuelle
+    """
+    return _current_language.get()
 
 
 def get_text(key: str, **kwargs) -> str:
@@ -182,7 +194,8 @@ def get_text(key: str, **kwargs) -> str:
     Returns:
         Le texte traduit et formaté
     """
-    translations = TRANSLATIONS.get(current_language, TRANSLATIONS[DEFAULT_LANGUAGE])
+    current_lang = _current_language.get()
+    translations = TRANSLATIONS.get(current_lang, TRANSLATIONS[DEFAULT_LANGUAGE])
     text = translations.get(key, TRANSLATIONS[DEFAULT_LANGUAGE].get(key, key))
 
     if kwargs:

@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from returns.result import Success
 
 from classifai.entrypoint_utils import generate_file_operations, perform_operations
 
@@ -59,7 +58,7 @@ def test_perform_operations_move(monkeypatch, sample_df):
 
     def fake_transfer(context, operation):
         processed.append(context.source_path)
-        return Success(context)
+        return context
 
     monkeypatch.setattr("classifai.entrypoint_utils.transfer_file", fake_transfer)
 
@@ -74,7 +73,7 @@ def test_perform_operations_copy(monkeypatch, sample_df):
 
     def fake_transfer(context, operation):
         processed.append(context.source_path)
-        return Success(context)
+        return context
 
     monkeypatch.setattr("classifai.entrypoint_utils.transfer_file", fake_transfer)
 

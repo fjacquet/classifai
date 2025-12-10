@@ -8,13 +8,19 @@ from typing import Annotated
 
 import typer
 import yaml
-from returns.maybe import Some
-from returns.result import Failure, Success
 from rich.console import Console
 from rich.table import Table
 
 from classifai.background_watcher import start_watcher
 from classifai.config import app_config, load_app_config
+from classifai.defaults import (
+    DEFAULT_LANGUAGE_SUBFOLDERS,
+    DEFAULT_LOG_FILE,
+    DEFAULT_QUIET_LLM,
+    DEFAULT_RECURSIVE,
+    DEFAULT_RENAME_FILES,
+    DEFAULT_VERBOSE,
+)
 from classifai.entrypoint_utils import generate_file_operations, perform_operations
 from classifai.infrastructure.history import get_last_operation, remove_last_operation
 from classifai.localization import Language, get_text, set_language
@@ -76,7 +82,7 @@ def run(
             "-r",
             help="Enable AI-powered file renaming.",
         ),
-    ] = False,
+    ] = DEFAULT_RENAME_FILES,
     use_vision: Annotated[
         bool,
         typer.Option(
@@ -92,7 +98,7 @@ def run(
             "-ls",
             help="Create language-based subfolders (e.g., /en, /fr).",
         ),
-    ] = False,
+    ] = DEFAULT_LANGUAGE_SUBFOLDERS,
     recursive: Annotated[
         bool,
         typer.Option(
@@ -100,11 +106,19 @@ def run(
             "-R",
             help="Scan subdirectories recursively.",
         ),
-    ] = False,
-    verbose: Annotated[bool, typer.Option("--verbose", "-v", help="Enable verbose output.")] = False,
-    log_file: Annotated[Path, typer.Option("--log-file", help="Path to save the log file.")] = Path(
-        "logs/main.log",
-    ),
+    ] = DEFAULT_RECURSIVE,
+    verbose: Annotated[
+        bool, typer.Option("--verbose", "-v", help="Enable verbose output.")
+    ] = DEFAULT_VERBOSE,
+    quiet_llm: Annotated[
+        bool,
+        typer.Option(
+            "--quiet-llm", "-ql", help="Suppress DEBUG logs from LLM module (useful with --verbose)."
+        ),
+    ] = DEFAULT_QUIET_LLM,
+    log_file: Annotated[
+        Path, typer.Option("--log-file", help="Path to save the log file.")
+    ] = DEFAULT_LOG_FILE,
 ):
     """
     Organize files in a directory using an Ollama language model.
@@ -114,7 +128,8 @@ def run(
         log_file.parent.mkdir(parents=True, exist_ok=True)
 
     log_level = "DEBUG" if verbose else "INFO"
-    logger = setup_logger(log_level, log_file)
+    quiet_modules = ["classifai.infrastructure.llm"] if quiet_llm else []
+    logger = setup_logger(log_level, log_file, quiet_modules=quiet_modules)
 
     if destination_dir is None:
         destination_dir = source_dir
@@ -179,43 +194,41 @@ def undo():
     """
     Undoes the last file operation.
     """
-    last_op_result = get_last_operation()
+    last_op = get_last_operation()
 
-    match last_op_result:
-        case Success(Some(last_op)):
-            op_type = last_op["operation"]
-            source = last_op["source"]
-            dest = last_op["destination"]
+    if last_op is None:
+        console.print(get_text("no_history_found"))
+        console.print("[bold yellow]No history found. Nothing to undo.[/bold yellow]")
+        raise typer.Exit()
 
-            console.print(f"Last operation: {op_type} '{source}' to '{dest}'")
-            if not typer.confirm("Do you want to undo this operation?"):
-                raise typer.Exit()
+    op_type = last_op["operation"]
+    source = last_op["source"]
+    dest = last_op["destination"]
 
-            try:
-                if op_type == "move":
-                    # Move the file back to its original location
-                    original_path = Path(source)
-                    shutil.move(dest, original_path)
-                    console.print(f"[green]Moved '{dest}' back to '{original_path}'[/green]")
-                elif op_type == "copy":
-                    # Delete the copied file
-                    Path(dest).unlink()
-                    console.print(f"[green]Deleted copied file '{dest}'[/green]")
+    console.print(f"Last operation: {op_type} '{source}' to '{dest}'")
+    if not typer.confirm("Do you want to undo this operation?"):
+        raise typer.Exit()
 
-                remove_last_operation()
-                console.print(get_text("undo_successful"))
+    try:
+        if op_type == "move":
+            # Move the file back to its original location
+            original_path = Path(source)
+            shutil.move(dest, original_path)
+            console.print(f"[green]Moved '{dest}' back to '{original_path}'[/green]")
+        elif op_type == "copy":
+            # Delete the copied file
+            Path(dest).unlink()
+            console.print(f"[green]Deleted copied file '{dest}'[/green]")
 
-            except FileNotFoundError:
-                console.print(f"[bold red]Error: File not found at '{dest}'. Cannot undo.[/bold red]")
-                if typer.confirm(get_text("remove_from_history")):
-                    remove_last_operation()
-            except Exception as e:
-                console.print(f"[bold red]An error occurred during undo: {e}[/bold red]")
-        case Success(_):
-            console.print(get_text("no_history_found"))
-            console.print("[bold yellow]No history found. Nothing to undo.[/bold yellow]")
-        case Failure(error):
-            console.print(f"[bold red]Error reading history file: {error}[/bold red]")
+        remove_last_operation()
+        console.print(get_text("undo_successful"))
+
+    except FileNotFoundError:
+        console.print(f"[bold red]Error: File not found at '{dest}'. Cannot undo.[/bold red]")
+        if typer.confirm(get_text("remove_from_history")):
+            remove_last_operation()
+    except Exception as e:
+        console.print(f"[bold red]An error occurred during undo: {e}[/bold red]")
 
 
 @app.command()

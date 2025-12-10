@@ -8,11 +8,8 @@ constructs and avoids side effects.
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 from loguru import logger
-from returns.maybe import Maybe, Nothing, Some
-from returns.result import Result, Success
 
 from classifai.core.types import FileContext
 from classifai.localization import get_default_value
@@ -176,7 +173,7 @@ def determine_final_path(context: FileContext) -> FileContext:
             final_path = _calculate_general_destination(context)
 
     # Créer une copie mise à jour du contexte avec le chemin final
-    updated_context = context.__class__(**{**context.__dict__, "final_destination_path": final_path})
+    updated_context = context.model_copy(update={"final_destination_path": final_path})
 
     # Journaliser l'état du contexte après la mise à jour
     logger.debug(
@@ -187,28 +184,33 @@ def determine_final_path(context: FileContext) -> FileContext:
     return updated_context
 
 
-def create_summary(result: Result[FileContext, Any]) -> Maybe[dict]:
+def create_summary(context: FileContext | None) -> dict | None:
     """
-    Creates a summary dictionary from a successful result.
-    Returns Nothing if the result is a Failure.
+    Creates a summary dictionary from a FileContext.
+    Returns None if context is None.
+
+    Args:
+        context: The file context to summarize, or None
+
+    Returns:
+        Summary dictionary or None if context is None
     """
+    if context is None:
+        return None
 
-    def _format(context: FileContext) -> dict:
-        return {
-            "File Name": context.source_path.name,
-            "Language": context.language,
-            "Category": context.rule_match_category
-            or context.ai_results.get("category", get_default_value("unclassified")),
-            "Issuer": context.issuer or get_default_value("unknown_issuer"),
-            "New Filename": Maybe.from_optional(context.final_destination_path)
-            .map(lambda p: Path(p).name)
-            .value_or(context.source_path.name),
-            "Destination Path": str(context.final_destination_path),
-            "Source Path": str(context.source_path.absolute()),
-            "Metadata": context.metadata,
-        }
+    # Determine the new filename from final_destination_path
+    new_filename = context.source_path.name
+    if context.final_destination_path:
+        new_filename = Path(context.final_destination_path).name
 
-    # Convert Result to Maybe (Success -> Some, Failure -> Nothing)
-    if isinstance(result, Success):
-        return Some(_format(result.unwrap()))
-    return Nothing
+    return {
+        "File Name": context.source_path.name,
+        "Language": context.language,
+        "Category": context.rule_match_category
+        or context.ai_results.get("category", get_default_value("unclassified")),
+        "Issuer": context.issuer or get_default_value("unknown_issuer"),
+        "New Filename": new_filename,
+        "Destination Path": str(context.final_destination_path) if context.final_destination_path else "",
+        "Source Path": str(context.source_path.absolute()),
+        "Metadata": context.metadata,
+    }

@@ -6,13 +6,12 @@ It applies rule-based classification and prepares documents for AI classificatio
 """
 
 from loguru import logger
-from returns.result import Result, Success
 
 from classifai.core.rules import RulesEngine, apply_rules
 from classifai.core.types import FileContext
 
 
-def classify_document(context: FileContext) -> Result[FileContext, str]:
+def classify_document(context: FileContext) -> FileContext:
     """
     Classify a document based on its content and metadata.
     This is a pure function that returns an updated context.
@@ -21,7 +20,7 @@ def classify_document(context: FileContext) -> Result[FileContext, str]:
         context: The current file context
 
     Returns:
-        Result containing either the updated FileContext or an error message
+        Updated FileContext with classification applied
     """
     logger.debug(f"Classifying document: {context.source_path.name}")
 
@@ -31,23 +30,18 @@ def classify_document(context: FileContext) -> Result[FileContext, str]:
     rules_engine = RulesEngine(app_config.rules)
 
     # First try rule-based classification
-    rule_result = apply_rules(context, rules_engine)
+    updated_context = apply_rules(context, rules_engine)
 
-    if isinstance(rule_result, Success):
-        updated_context = rule_result.unwrap()
-        # If a rule matched, update the context
-        if updated_context.rule_match_category:
-            logger.info(f"Rule-based classification: {updated_context.rule_match_category}")
-            updated_context = context.copy(
-                update={
-                    "category": updated_context.rule_match_category,
-                },
-            )
-            return Success(updated_context)
+    # If a rule matched, update the context with the category
+    if updated_context.rule_match_category:
+        logger.info(f"Rule-based classification: {updated_context.rule_match_category}")
+        return context.model_copy(
+            update={"category": updated_context.rule_match_category},
+        )
 
     # No rule matched, return the original context for AI classification
     logger.debug("No rule match, will use AI classification")
-    return Success(context)
+    return context
 
 
 def detect_language(text: str) -> str:

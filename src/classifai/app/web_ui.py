@@ -12,11 +12,10 @@ from pathlib import Path
 
 import streamlit as st
 from loguru import logger
-from returns.result import Success
 
 from classifai.config import app_config
-from classifai.core.workflow import process_single_file
 from classifai.logging_module import setup_logging
+from classifai.pipeline import process_single_file
 
 
 def setup_streamlit_page():
@@ -99,11 +98,9 @@ def handle_file_upload():
     return None, None
 
 
-def display_classification_results(result, original_filename, options):
+def display_classification_results(context, original_filename, options):
     """Display classification results."""
-    if isinstance(result, Success):
-        context = result.unwrap()
-
+    if context is not None:
         st.success("File classified successfully!")
 
         col1, col2 = st.columns(2)
@@ -121,7 +118,7 @@ def display_classification_results(result, original_filename, options):
             final_path = context.final_destination_path
             if final_path:
                 st.write(f"**Final Path:** {final_path}")
-                st.write(f"**Filename:** {final_path.name}")
+                st.write(f"**Filename:** {Path(final_path).name}")
             else:
                 st.warning("File was not moved to a destination.")
 
@@ -132,8 +129,7 @@ def display_classification_results(result, original_filename, options):
                 if key not in ["category", "issuer", "sector", "language"]:
                     st.write(f"**{key.capitalize()}:** {value}")
     else:
-        error = result.failure()
-        st.error(f"Classification failed: {error}")
+        st.error("Classification failed: unable to process file")
 
 
 def main():

@@ -1,5 +1,3 @@
-from returns.maybe import Some
-from returns.result import Success
 from typer.testing import CliRunner
 
 from classifai.classifai_cli import app
@@ -18,7 +16,7 @@ def test_undo_command(mocker):
     # 1. Test move
     mock_get = mocker.patch(
         "classifai.classifai_cli.get_last_operation",
-        return_value=Success(Some({"operation": "move", "source": "/fake/src", "destination": "/fake/dest"})),
+        return_value={"operation": "move", "source": "/fake/src", "destination": "/fake/dest"},
     )
     result = runner.invoke(app, ["undo"], input="y\n")
     assert result.exit_code == 0
@@ -29,9 +27,7 @@ def test_undo_command(mocker):
     # 2. Test copy
     mock_get.reset_mock()
     mock_remove.reset_mock()
-    mock_get.return_value = Success(
-        Some({"operation": "copy", "source": "/fake/src", "destination": "/fake/dest"}),
-    )
+    mock_get.return_value = {"operation": "copy", "source": "/fake/src", "destination": "/fake/dest"}
     result = runner.invoke(app, ["undo"], input="y\n")
     assert result.exit_code == 0
     assert "Deleted copied file" in result.stdout

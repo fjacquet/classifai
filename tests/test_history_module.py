@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 
 import pytest
-from returns.result import Success
 
 from classifai.infrastructure.history import (
     get_last_operation,
@@ -28,9 +27,8 @@ def test_log_and_get_history(mock_history_file: Path):
     log_operation("move", "/src/file.txt", "/dest/file.txt")
     log_operation("copy", "/src/image.jpg", "/dest/image.jpg")
 
-    last_op_result = get_last_operation()
-    assert isinstance(last_op_result, Success)
-    last_op = last_op_result.unwrap().unwrap()
+    last_op = get_last_operation()
+    assert last_op is not None
     assert last_op["operation"] == "copy"
     assert last_op["source"] == "/src/image.jpg"
 
@@ -48,22 +46,17 @@ def test_remove_last_operation(mock_history_file: Path):
 
     remove_last_operation()
 
-    last_op_result = get_last_operation()
-    assert isinstance(last_op_result, Success)
-    last_op = last_op_result.unwrap().unwrap()
+    last_op = get_last_operation()
+    assert last_op is not None
     assert last_op["operation"] == "move"
 
     remove_last_operation()
-    from returns.maybe import Nothing
-
-    assert isinstance(get_last_operation().unwrap(), Nothing)
+    assert get_last_operation() is None
 
 
 def test_empty_history(mock_history_file: Path):
     """
     Tests that functions handle an empty or non-existent history file.
     """
-    from returns.maybe import Nothing
-
-    assert isinstance(get_last_operation().unwrap(), Nothing)
+    assert get_last_operation() is None
     remove_last_operation()  # Should not raise an error

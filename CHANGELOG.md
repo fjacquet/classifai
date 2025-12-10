@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **CLI/Streamlit Consistency**
+  - New `defaults.py` module with shared default values between CLI and Streamlit
+  - `--quiet-llm` / `-ql` flag to suppress DEBUG logs from LLM module
+  - Confirmation dialog in Streamlit before move/copy operations
+  - File logging support in Streamlit (logs to `logs/main.log`)
 - **MIME Type Detection & Rich Metadata Extraction**
   - `python-magic>=0.4.27` for accurate content-based MIME type detection
   - `pyexiftool>=0.5.6` for rich metadata extraction (PDF author, title, EXIF data, etc.)
@@ -21,6 +26,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Enhanced LLM Classification**
   - Metadata hints added to LLM prompts (author, title, keywords, creation date)
   - Improves classification accuracy by providing document context
+  - **Improved Category Selection Accuracy**
+    - Categories now presented as a numbered list in prompts for better LLM comprehension
+    - Explicit instructions to copy categories exactly without modification
+    - Fuzzy matching fallback using `difflib.get_close_matches` with 85% threshold
+    - Catches common LLM typos like 'Fichieurs Texte' → 'Fichiers Texte'
+    - Logs corrections transparently for monitoring
+- **Expanded Pandoc Support**
+  - PowerPoint presentations (`.pptx`, `.ppt`)
+  - OpenDocument presentations (`.odp`)
+  - reStructuredText (`.rst`) for Python documentation
+  - LaTeX documents (`.tex`, `.latex`)
+  - Emacs Org-mode (`.org`)
+  - E-books (`.epub`) and Markdown (`.md`) now in default extensions
 - **New Packages**
   - `tenacity>=8.2.0` for declarative retry with exponential backoff
   - `pydantic-settings>=2.0` for type-safe configuration management
@@ -48,6 +66,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Pipeline Enhancement** - Added `process_single_file()` convenience function
 
 ### Changed
+- **CLI/Streamlit Defaults Aligned**
+  - `recursive` now defaults to `False` in both (was `True` in Streamlit)
+  - `quiet_llm` now defaults to `False` in both (was `True` in Streamlit)
+  - Destination directory now falls back to source directory in both interfaces
 - **BREAKING**: Removed `returns` library - replaced with native Python exceptions
   - `Result[T, E]` replaced with direct returns or exception raising
   - `Success(value)` replaced with `return value`

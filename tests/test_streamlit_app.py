@@ -5,7 +5,6 @@ Tests for the Streamlit web application's interaction with the core logic.
 from pathlib import Path
 
 import pytest
-from returns.result import Success
 
 from classifai.core.types import FileContext
 
@@ -29,15 +28,14 @@ def mock_pipeline(mocker):
     )
 
     def pipeline_side_effect(file_path, *args, **kwargs):
-        # Create a new context for each file processed
-        context = mock_context.__class__(
+        # Create a new context for each file processed and return directly
+        return mock_context.__class__(
             **{
                 **mock_context.__dict__,
                 "source_path": file_path,
                 "final_destination_path": f"/sorted/Documents/{file_path.name}",
             },
         )
-        return Success(context)
 
     # Patch the pipeline function within the run_scan's module scope
     return mocker.patch(

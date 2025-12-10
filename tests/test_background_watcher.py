@@ -3,7 +3,6 @@ Tests for the background_watcher module.
 """
 
 import pytest
-from returns.result import Failure, Success
 
 from classifai.background_watcher import NewFileHandler
 from classifai.core.types import FileContext
@@ -45,11 +44,9 @@ def test_new_file_handler_move(mocker, test_env, mock_file_context):
     source_dir, dest_dir = test_env
     handler = NewFileHandler(str(dest_dir), "move", {})
     mock_process_pipeline = mocker.patch(
-        "classifai.background_watcher.process_file_pipeline", return_value=Success(mock_file_context)
+        "classifai.background_watcher.process_file_pipeline", return_value=mock_file_context
     )
-    mock_transfer = mocker.patch(
-        "classifai.background_watcher.transfer_file", return_value=Success(mock_file_context)
-    )
+    mock_transfer = mocker.patch("classifai.background_watcher.transfer_file", return_value=mock_file_context)
 
     # Act
     test_file = source_dir / "test.txt"
@@ -70,11 +67,9 @@ def test_new_file_handler_copy(mocker, test_env, mock_file_context):
     source_dir, dest_dir = test_env
     handler = NewFileHandler(str(dest_dir), "copy", {})
     mock_process_pipeline = mocker.patch(
-        "classifai.background_watcher.process_file_pipeline", return_value=Success(mock_file_context)
+        "classifai.background_watcher.process_file_pipeline", return_value=mock_file_context
     )
-    mock_transfer = mocker.patch(
-        "classifai.background_watcher.transfer_file", return_value=Success(mock_file_context)
-    )
+    mock_transfer = mocker.patch("classifai.background_watcher.transfer_file", return_value=mock_file_context)
 
     # Act
     test_file = source_dir / "test.txt"
@@ -89,13 +84,13 @@ def test_new_file_handler_copy(mocker, test_env, mock_file_context):
 
 def test_new_file_handler_failure(mocker, test_env):
     """
-    Tests that no file operation occurs if the pipeline returns a Failure.
+    Tests that no file operation occurs if the pipeline returns None.
     """
     # Arrange
     source_dir, dest_dir = test_env
     handler = NewFileHandler(str(dest_dir), "move", {})
     mock_process_pipeline = mocker.patch(
-        "classifai.background_watcher.process_file_pipeline", return_value=Failure("Test Failure")
+        "classifai.background_watcher.process_file_pipeline", return_value=None
     )
     mock_transfer = mocker.patch("classifai.background_watcher.transfer_file")
 

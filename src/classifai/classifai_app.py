@@ -10,11 +10,21 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
-from returns.result import Success
+from loguru import logger
 
 from classifai.config import app_config
+from classifai.defaults import (
+    DEFAULT_LANGUAGE_SUBFOLDERS,
+    DEFAULT_LOG_FILE,
+    DEFAULT_QUIET_LLM,
+    DEFAULT_RECURSIVE,
+    DEFAULT_RENAME_FILES,
+    DEFAULT_VERBOSE,
+)
 from classifai.entrypoint_utils import generate_file_operations
+from classifai.exceptions import FileOperationError
 from classifai.infrastructure.file_system import transfer_file
+from classifai.logging_module import setup_logger
 from classifai.pipeline import run_scan
 
 # --- Page Configuration ---
@@ -31,7 +41,10 @@ if "scan_results" not in st.session_state:
 if "source_dir" not in st.session_state:
     st.session_state.source_dir = str(Path.home() / "Downloads")
 if "destination_dir" not in st.session_state:
-    st.session_state.destination_dir = str(Path.home() / "Documents" / "Classified")
+    # Default to source_dir for consistency with CLI behavior
+    st.session_state.destination_dir = st.session_state.source_dir
+if "confirm_operation" not in st.session_state:
+    st.session_state.confirm_operation = None
 
 
 def execute_file_operations(df: pd.DataFrame, operation: str):
@@ -48,9 +61,11 @@ def execute_file_operations(df: pd.DataFrame, operation: str):
     for i, op in enumerate(ops):
         file_name = Path(op["source"]).name
         progress_bar.progress((i + 1) / total_ops, text=f"{operation.capitalize()}ing: {file_name}")
-        result = transfer_file(op["context"], operation)
-        if isinstance(result, Success):
+        try:
+            transfer_file(op["context"], operation)
             success_count += 1
+        except FileOperationError as e:
+            logger.error(f"Failed to {operation} {file_name}: {e}")
 
     progress_bar.empty()
 
@@ -94,15 +109,17 @@ with st.sidebar:
 
     # --- Other Options ---
     st.subheader("⚙️ Other Options")
-    recursive = st.checkbox("Recursive Scan", value=True, help="Scan subdirectories recursively.")
+    recursive = st.checkbox(
+        "Recursive Scan", value=DEFAULT_RECURSIVE, help="Scan subdirectories recursively."
+    )
     language_subfolders = st.checkbox(
         "Create Language Subfolders",
-        value=False,
+        value=DEFAULT_LANGUAGE_SUBFOLDERS,
         help="Organize files into subfolders based on detected language (e.g., /en, /fr).",
     )
     rename_files = st.checkbox(
         "Enable AI-Powered Renaming",
-        value=False,
+        value=DEFAULT_RENAME_FILES,
         help="Allow the AI to suggest new, descriptive filenames.",
     )
     use_vision = st.checkbox(
@@ -110,6 +127,20 @@ with st.sidebar:
         value=app_config.use_vision_model,
         help="Enable image analysis with a vision-capable model for more accurate classification.",
     )
+
+    # --- Logging Options ---
+    st.subheader("📋 Logging")
+    verbose = st.checkbox("Verbose Logging", value=DEFAULT_VERBOSE, help="Enable DEBUG level logging.")
+    quiet_llm = st.checkbox(
+        "Quiet LLM Logs",
+        value=DEFAULT_QUIET_LLM,
+        help="Suppress DEBUG logs from the LLM module (reduces noise).",
+    )
+
+    # Configure logging based on options
+    log_level = "DEBUG" if verbose else "INFO"
+    quiet_modules = ["classifai.infrastructure.llm"] if quiet_llm else []
+    setup_logger(log_level, DEFAULT_LOG_FILE, quiet_modules=quiet_modules)
 
     # --- Action Button ---
     st.divider()
@@ -146,11 +177,28 @@ if not st.session_state.scan_results.empty:
 
     with col2:
         if st.button("Copy Files", use_container_width=True):
-            execute_file_operations(edited_df, "copy")
+            st.session_state.confirm_operation = "copy"
 
     with col3:
         if st.button("Move Files", type="primary", use_container_width=True):
-            execute_file_operations(edited_df, "move")
+            st.session_state.confirm_operation = "move"
+
+    # Confirmation dialog
+    if st.session_state.confirm_operation:
+        operation = st.session_state.confirm_operation
+        st.warning(
+            f"⚠️ You are about to **{operation}** {len(edited_df)} files. This action cannot be undone easily."
+        )
+        confirm_col1, confirm_col2 = st.columns(2)
+        with confirm_col1:
+            if st.button(f"✅ Confirm {operation.capitalize()}", use_container_width=True):
+                execute_file_operations(edited_df, operation)
+                st.session_state.confirm_operation = None
+                st.rerun()
+        with confirm_col2:
+            if st.button("❌ Cancel", use_container_width=True):
+                st.session_state.confirm_operation = None
+                st.rerun()
 
 else:
     st.info("Click 'Scan Directory' in the sidebar to begin.")

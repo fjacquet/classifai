@@ -5,6 +5,7 @@ This module provides functions for interacting with the Ollama API.
 from __future__ import annotations
 
 import json
+from difflib import get_close_matches
 from typing import Any
 
 import httpx
@@ -19,6 +20,45 @@ from classifai.localization import translate_category, translate_sector
 # --- Constants ---
 MAX_RETRIES = 3
 TIMEOUT = 60  # seconds
+FUZZY_MATCH_CUTOFF = 0.85  # Threshold for fuzzy category matching
+
+
+def _format_categories_for_prompt(categories: list[str]) -> str:
+    """
+    Format categories as a numbered list for better LLM comprehension.
+
+    Presenting categories as a numbered list instead of a Python list
+    helps the LLM copy exact strings without introducing typos.
+
+    Args:
+        categories: List of allowed category names
+
+    Returns:
+        Formatted string with numbered categories
+    """
+    lines = ["ALLOWED CATEGORIES (copy EXACTLY as shown - do NOT modify spelling):"]
+    for i, cat in enumerate(categories, 1):
+        lines.append(f"    {i}. {cat}")
+    return "\n".join(lines)
+
+
+def _fuzzy_match_category(category: str, allowed: list[str], cutoff: float = FUZZY_MATCH_CUTOFF) -> str | None:
+    """
+    Try to fuzzy match an invalid category to the allowed list.
+
+    When the LLM returns a category with typos (e.g., 'Fichieurs Texte'),
+    this function attempts to find the closest valid match.
+
+    Args:
+        category: The category string to match
+        allowed: List of allowed category names
+        cutoff: Minimum similarity ratio (0.0 to 1.0) for a match
+
+    Returns:
+        The matched category name, or None if no close match found
+    """
+    matches = get_close_matches(category, allowed, n=1, cutoff=cutoff)
+    return matches[0] if matches else None
 
 
 @retry(
@@ -273,15 +313,37 @@ def enrich_with_ai(context: FileContext) -> FileContext:
 
     # Choose the right prompt and model based on file type
     if context.file_type == "image" and context.use_vision:
+        # Format categories as numbered list for better LLM comprehension
+        formatted_categories = _format_categories_for_prompt(context.categories)
+
         prompt = f"""
-        Analyze the image and provide the following information in a JSON object:
-        1.  `issuer`: The name of the company or person that created the document.
-        2.  `category`: Classify the image into ONE of the following categories EXACTLY as written
-        - do not modify, translate or add typos: {context.categories}.
-        - IMPORTANT: You must select a category from the list above EXACTLY as written.
-         Do not modify the spelling or add any typos.
-        3.  `short_title`: A very short, descriptive title for the image.
-        4.  `language`: The primary language of the document (e.g., 'en', 'fr', 'de', etc.). Use ISO 639-1 codes.
+        # ROLE
+        You are a highly accurate image analysis service.
+
+        # TASK
+        Analyze the image and return a single, well-formed JSON object.
+
+        # {formatted_categories}
+
+        # CRITICAL RULES FOR CATEGORY
+        - Copy the category string EXACTLY as shown in the numbered list above
+        - Do NOT translate the category name
+        - Do NOT modify the spelling or add accents
+        - Do NOT create new categories that are not in the list
+        - If you are unsure or no category fits, set category to `null`
+
+        # OTHER FIELDS TO EXTRACT
+        1. `issuer`: The name of the company or person that created the document.
+        2. `short_title`: A very short, descriptive title for the image.
+        3. `language`: The primary language (ISO 639-1 code: 'en', 'fr', 'de', etc.).
+
+        # JSON OUTPUT SPECIFICATION
+        {{
+            "issuer": "string or null",
+            "category": "string from the ALLOWED CATEGORIES list or null",
+            "short_title": "string or null",
+            "language": "string in ISO 639-1 format or null"
+        }}
         """
         try:
             logger.debug(f"Calling vision model API for {context.source_path.name}")
@@ -294,11 +356,29 @@ def enrich_with_ai(context: FileContext) -> FileContext:
                     response = json.loads(api_response["response"])
                     logger.debug(f"Parsed JSON from vision API response: {response}")
 
-                    # Traduire la catégorie en français si nécessaire
-                    if "category" in response:
+                    # Validate and translate category
+                    if "category" in response and response["category"]:
                         original_category = response["category"]
-                        response["category"] = translate_category(original_category, context.content)
-                        logger.debug(f"Translated category: {original_category} -> {response['category']}")
+                        translated_category = translate_category(original_category, context.content)
+                        logger.debug(f"Translated category: {original_category} -> {translated_category}")
+
+                        # Validate category is in the allowed list
+                        if translated_category not in context.categories:
+                            # Try fuzzy matching before giving up
+                            fuzzy_match = _fuzzy_match_category(translated_category, context.categories)
+                            if fuzzy_match:
+                                logger.info(
+                                    f"Fuzzy matched invalid category '{translated_category}' → '{fuzzy_match}'",
+                                )
+                                response["category"] = fuzzy_match
+                            else:
+                                logger.warning(
+                                    f"Invalid category '{translated_category}' not in allowed list "
+                                    f"and no fuzzy match found. Setting to null.",
+                                )
+                                response["category"] = None
+                        else:
+                            response["category"] = translated_category
                 except json.JSONDecodeError as e:
                     logger.error(f"Failed to parse JSON from vision API response: {e}")
                     response = {}
@@ -323,6 +403,9 @@ def enrich_with_ai(context: FileContext) -> FileContext:
         # Build metadata hints if available
         metadata_hints = _build_metadata_hints(context.metadata)
 
+        # Format categories as numbered list for better LLM comprehension
+        formatted_categories = _format_categories_for_prompt(context.categories)
+
         prompt = f"""
         # ROLE
         You are a highly accurate data extraction service.
@@ -331,28 +414,31 @@ def enrich_with_ai(context: FileContext) -> FileContext:
         Analyze the provided document text and return a single, well-formed JSON object containing the extracted information.
         Adhere strictly to the rules and formats defined below.
 {metadata_hints}
-        # RULES
+        # {formatted_categories}
+
+        # CRITICAL RULES FOR CATEGORY
+        - Copy the category string EXACTLY as shown in the numbered list above
+        - Do NOT translate the category name
+        - Do NOT modify the spelling or add accents
+        - Do NOT create new categories that are not in the list
+        - If you are unsure or no category fits, set category to `null`
+
+        # OTHER RULES
         1.  **Issuer Priority:** To determine the `issuer`, check in this order:
             1) The company on the letterhead.
             2) The signatory of the document.
             3) The main company the document is about.
-        2.  **CRITICAL - Strict Categorization:** The `category` value MUST be an EXACT match to one of these options:
-            {context.categories}
-            - You MUST select from this list EXACTLY as written
-            - Do NOT translate, modify, or add typos
-            - Do NOT create new categories
-            - If NONE of these categories fit the document, set category to `null`
-        3.  **Date Logic:** Find the main document date. Convert it to `YYYY-MM-DD` format.
+        2.  **Date Logic:** Find the main document date. Convert it to `YYYY-MM-DD` format.
             If there are multiple dates, use the issue date.
-        4.  **Title Conciseness:** The `short_title` should be a concise summary of 5-10 words.
-        5.  **Language Code:** The `language` must be a valid ISO 639-1 code.
-        6.  **Missing Data:** If any piece of information cannot be reliably determined from the text,
+        3.  **Title Conciseness:** The `short_title` should be a concise summary of 5-10 words.
+        4.  **Language Code:** The `language` must be a valid ISO 639-1 code.
+        5.  **Missing Data:** If any piece of information cannot be reliably determined from the text,
             its corresponding value in the JSON must be `null`. Do not omit the key.
 
         # JSON OUTPUT SPECIFICATION
         {{
             "issuer": "string or null",
-            "category": "string or null",
+            "category": "string from the ALLOWED CATEGORIES list or null",
             "date": "string in YYYY-MM-DD format or null",
             "short_title": "string or null",
             "language": "string in ISO 639-1 format or null"
@@ -381,10 +467,19 @@ def enrich_with_ai(context: FileContext) -> FileContext:
                         category = response["category"]
                         # Validate category is in the allowed list
                         if category not in context.categories:
-                            logger.warning(
-                                f"Invalid category '{category}' not in allowed list. Setting to null.",
-                            )
-                            response["category"] = None
+                            # Try fuzzy matching before giving up
+                            fuzzy_match = _fuzzy_match_category(category, context.categories)
+                            if fuzzy_match:
+                                logger.info(
+                                    f"Fuzzy matched invalid category '{category}' → '{fuzzy_match}'",
+                                )
+                                response["category"] = fuzzy_match
+                            else:
+                                logger.warning(
+                                    f"Invalid category '{category}' not in allowed list "
+                                    f"and no fuzzy match found. Setting to null.",
+                                )
+                                response["category"] = None
                         else:
                             logger.debug(f"Valid category selected: {category}")
 
@@ -414,7 +509,7 @@ def enrich_with_ai(context: FileContext) -> FileContext:
     # Create a validated AIResponse object from the LLM response
     try:
         # Add language detection to prompt in future iterations
-        response["language"] = response.get("language", "N/A")
+        response["language"] = response.get("language") or "N/A"
         logger.debug(f"Creating AIResponse from: {response}")
         ai_response = AIResponse(**response)
 
@@ -488,7 +583,7 @@ def enrich_with_ai(context: FileContext) -> FileContext:
             update={
                 "ai_results": ai_results,
                 "issuer": response.get("issuer"),
-                "language": response.get("language", "N/A"),
+                "language": response.get("language") or "N/A",
                 "category": response.get("category"),  # Ensure category is also transferred
                 "sector": sector,  # Set the sector field
             },

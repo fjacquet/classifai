@@ -11,11 +11,10 @@ from pathlib import Path
 from fastapi import FastAPI, File, Form, UploadFile
 from loguru import logger
 from pydantic import BaseModel
-from returns.result import Success
 
 from classifai.config import app_config
-from classifai.core.workflow import process_single_file
 from classifai.logging_module import setup_logging
+from classifai.pipeline import process_single_file
 
 # Create FastAPI app
 app = FastAPI(
@@ -72,7 +71,7 @@ async def classify_file(
 
         try:
             # Process the file
-            result = process_single_file(
+            context = process_single_file(
                 file_path=tmp_path,
                 dest_dir=Path(options.dest_dir),
                 rename_files=options.rename_files,
@@ -81,8 +80,7 @@ async def classify_file(
             )
 
             # Return appropriate response
-            if isinstance(result, Success):
-                context = result.unwrap()
+            if context is not None:
                 return ClassificationResponse(
                     success=True,
                     message="File classified successfully",
@@ -95,10 +93,9 @@ async def classify_file(
                     else None,
                     ai_results=context.ai_results,
                 )
-            error = result.failure()
             return ClassificationResponse(
                 success=False,
-                message=f"Classification failed: {error}",
+                message="Classification failed: unable to process file",
             )
         except Exception as e:
             logger.error(f"API error: {e}")

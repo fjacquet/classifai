@@ -14,8 +14,8 @@ import sys
 from loguru import logger
 
 from classifai.app.api import start_api_server
-from classifai.app.cli import app as cli_app
 from classifai.app.web_ui import main as web_ui_main
+from classifai.classifai_cli import app as cli_app
 from classifai.logging_module import setup_logging
 
 

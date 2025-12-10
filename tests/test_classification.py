@@ -10,7 +10,6 @@ This module tests the core classification functionality including:
 from pathlib import Path
 
 import pytest
-from returns.result import Success
 
 from classifai.core.classification import classify_document, detect_language, translate_category
 from classifai.core.types import FileContext
@@ -49,10 +48,9 @@ def test_rule_based_classification(mocker, test_context):
     # Call the classify_document function
     result = classify_document(test_context)
 
-    # Check that the result is a Success and contains the expected category
-    assert isinstance(result, Success)
-    updated_context = result.unwrap()
-    assert updated_context.category == "Invoice"
+    # Check that the result is a FileContext with the expected category
+    assert isinstance(result, FileContext)
+    assert result.category == "Invoice"
 
 
 def test_no_rule_match(mocker, test_context):
@@ -72,10 +70,9 @@ def test_no_rule_match(mocker, test_context):
     # Call the classify_document function
     result = classify_document(test_context)
 
-    # Check that the result is a Success but no category was assigned
-    assert isinstance(result, Success)
-    updated_context = result.unwrap()
-    assert getattr(updated_context, "category", None) is None
+    # Check that the result is a FileContext but no category was assigned
+    assert isinstance(result, FileContext)
+    assert getattr(result, "category", None) is None
 
 
 def test_language_detection_english():

@@ -9,14 +9,25 @@ import sys
 from loguru import logger
 
 
-def setup_logger(log_level="INFO", log_file=None):
+def setup_logger(log_level="INFO", log_file=None, quiet_modules=None):
     """
     Set up the logger for the application.
 
     Args:
         log_level (str): The logging level (e.g., "INFO", "DEBUG").
         log_file (str, optional): Path to a file to save logs. Defaults to None.
+        quiet_modules (list, optional): List of module names to suppress DEBUG logs from.
+            These modules will only show INFO and above.
     """
+    quiet_modules = quiet_modules or []
+
+    def module_filter(record):
+        """Filter to suppress DEBUG logs from specified modules."""
+        if record["level"].name == "DEBUG":
+            for module in quiet_modules:
+                if module in record["name"]:
+                    return False
+        return True
 
     logger.remove()  # Remove default handler
 
@@ -31,6 +42,7 @@ def setup_logger(log_level="INFO", log_file=None):
             "<level>{message}</level>"
         ),
         colorize=True,
+        filter=module_filter,
     )
 
     # File handler
@@ -44,6 +56,7 @@ def setup_logger(log_level="INFO", log_file=None):
             enqueue=True,  # Makes logging thread-safe
             backtrace=True,  # Shows full stack trace on exceptions
             diagnose=True,  # Adds exception variable values
+            filter=module_filter,
         )
     return logger
 

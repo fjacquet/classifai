@@ -41,55 +41,46 @@ def test_normalize_issuer_name():
 def test_get_sector_for_issuer_exact_match(mocker):
     """Tests a successful exact match for an issuer."""
     # Mock the sector mapping data
-    from returns.result import Success
-
     mock_mapping = {"Finance": ["Company A", "UBS"], "Technology": ["company b", "Tech Corp"]}
     mocker.patch(
         "classifai.infrastructure.knowledge_base.load_sector_issuer_mapping",
-        return_value=Success(mock_mapping),
+        return_value=mock_mapping,
     )
 
     result = get_sector_for_issuer("Company A")
-    assert result.unwrap() == "Finance"
+    assert result == "Finance"
     result = get_sector_for_issuer("company b")
-    assert result.unwrap() == "Technology"
+    assert result == "Technology"
 
 
 def test_get_sector_for_issuer_with_aliases(mocker):
     """Tests sector lookup with alias support."""
-    from returns.result import Success
-
     mock_mapping = {
         "Finance": ["UBS", "PostFinance"],
         "aliases": {"UBS AG": "UBS", "PostFinance AG": "PostFinance"},
     }
     mocker.patch(
         "classifai.infrastructure.knowledge_base.load_sector_issuer_mapping",
-        return_value=Success(mock_mapping),
+        return_value=mock_mapping,
     )
 
-    # Test alias resolution - these should fail since aliases aren't in the main sectors
+    # Test alias resolution - UBS AG is not directly in Finance list
     result = get_sector_for_issuer("UBS AG")
-    # Since UBS AG is not directly in Finance list, this should fail
-    from returns.result import Failure
-
-    assert isinstance(result, Failure)
+    assert result is None  # No match for alias
     result = get_sector_for_issuer("UBS")
-    assert result.unwrap() == "Finance"
+    assert result == "Finance"
 
 
 def test_get_sector_for_issuer_no_match(mocker):
     """Tests when no match is found for an issuer."""
-    from returns.result import Failure, Success
-
     mock_mapping = {"Finance": ["Company A"]}
     mocker.patch(
         "classifai.infrastructure.knowledge_base.load_sector_issuer_mapping",
-        return_value=Success(mock_mapping),
+        return_value=mock_mapping,
     )
 
     result = get_sector_for_issuer("Unknown Company")
-    assert isinstance(result, Failure)
+    assert result is None
 
 
 def test_record_unknown_issuer(mocker, tmp_path):
@@ -105,9 +96,8 @@ def test_record_unknown_issuer(mocker, tmp_path):
     # Start with an empty file
     unknown_issuers_file.write_text("[]\n")
 
-    # Record a new issuer
-    result = record_unknown_issuer("New Company")
-    assert result.is_successful()
+    # Record a new issuer - function now returns None
+    record_unknown_issuer("New Company")
 
     with open(unknown_issuers_file) as f:
         content = f.read().strip()
@@ -122,8 +112,7 @@ def test_record_unknown_issuer(mocker, tmp_path):
             assert data["new company"]["original_name"] == "New Company"
 
     # Try to record the same issuer again (should be ignored)
-    result = record_unknown_issuer("New Company")
-    assert result.is_successful()
+    record_unknown_issuer("New Company")
 
     with open(unknown_issuers_file) as f:
         content = f.read().strip()

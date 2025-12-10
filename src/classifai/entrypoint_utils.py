@@ -30,9 +30,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
-from returns.result import Success
+from loguru import logger
 
 from classifai.core.types import FileContext
+from classifai.exceptions import FileOperationError
 from classifai.infrastructure.file_system import transfer_file
 
 __all__ = [
@@ -183,9 +184,12 @@ def perform_operations(
     success_count = 0
 
     for i, op in enumerate(ops):
-        result = transfer_file(op["context"], operation)
-        if isinstance(result, Success):
+        try:
+            transfer_file(op["context"], operation)
             success_count += 1
+        except FileOperationError as e:
+            logger.error(f"Failed to {operation} {op['source']}: {e}")
+
         if progress_cb is not None:
             progress_cb(i + 1, total, Path(op["source"]).name)
 

@@ -43,9 +43,10 @@ def test_move_file():
         )
 
         result = transfer_file(context, "move")
-        assert result.is_successful()
+        # transfer_file now returns FileContext directly (or raises exception)
+        assert isinstance(result, FileContext)
 
-        moved_path = Path(context.final_destination_path)
+        moved_path = Path(result.final_destination_path)
         assert moved_path.exists()
         assert moved_path.name == "test.txt"
         assert not test_file.exists()
@@ -72,9 +73,10 @@ def test_copy_file():
         )
 
         result = transfer_file(context, "copy")
-        assert result.is_successful()
+        # transfer_file now returns FileContext directly (or raises exception)
+        assert isinstance(result, FileContext)
 
-        copied_path = Path(context.final_destination_path)
+        copied_path = Path(result.final_destination_path)
         assert copied_path.exists()
         assert copied_path.name == "test.txt"
         assert test_file.exists()  # Original file should still exist
@@ -108,11 +110,10 @@ def test_name_conflict_resolution():
         )
 
         result = transfer_file(context, "move")
-        assert result.is_successful()
+        # transfer_file now returns FileContext directly (or raises exception)
+        assert isinstance(result, FileContext)
 
-        # Get the updated context from the result
-        updated_context = result.unwrap()
-        moved_path = Path(updated_context.final_destination_path)
+        moved_path = Path(result.final_destination_path)
         assert moved_path.exists()
         assert moved_path.name == "test (1).txt"
         assert moved_path.parent == dest_dir.absolute()

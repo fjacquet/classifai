@@ -9,14 +9,35 @@ wheels/
 .ruff_cache/
 
 # Virtual environments
-.venv
-# others
+.venv/
+
+# Environment and config
 .env
-# config/debitors.yaml
+
+# OS files
 .DS_Store
+
+# Coverage reports
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Test artifacts
+.hypothesis/
+
+# Documentation build
+site/
+
+# Logs
 logs/
-.coverage*
-.hypothesis
-.git
-old/ 
+
+# IDE/Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Misc
 .python-version
+.claude

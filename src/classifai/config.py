@@ -31,6 +31,45 @@ def _load_yaml_file(path: Path) -> dict | list | None:
         return None
 
 
+# Default supported file extensions
+DEFAULT_SUPPORTED_EXTENSIONS = [
+    # Documents
+    ".pdf",
+    ".docx",
+    ".doc",
+    ".txt",
+    ".rtf",
+    ".odt",
+    ".md",
+    # Spreadsheets
+    ".xlsx",
+    ".xls",
+    ".ods",
+    # Presentations
+    ".pptx",
+    ".ppt",
+    ".odp",
+    # Images (OCR)
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".tiff",
+    ".bmp",
+    # Email
+    ".msg",
+    ".eml",
+    # Web
+    ".html",
+    # E-books
+    ".epub",
+    # Technical documentation (via Pandoc)
+    ".rst",
+    ".tex",
+    ".latex",
+    ".org",
+]
+
+
 @dataclass(frozen=True)
 class AppConfig:
     """
@@ -49,9 +88,14 @@ class AppConfig:
     rules: list[dict[str, Any]]
     sectors: list[str]
     sector_issuer_mapping: dict[str, str]
+
+    # --- Path settings ---
+    config_dir: Path = field(default=Path("config"))
+
     # --- Derived settings ---
     generic_text_extensions: list[str] = field(init=False)
     use_vision_model: bool = field(init=False)
+    supported_extensions: list[str] = field(init=False)
 
     def __post_init__(self):
         """
@@ -64,6 +108,11 @@ class AppConfig:
             self.settings.get("generic_text_extensions", []),
         )
         object.__setattr__(self, "use_vision_model", self.settings.get("use_vision_model", False))
+        object.__setattr__(
+            self,
+            "supported_extensions",
+            self.settings.get("supported_extensions", DEFAULT_SUPPORTED_EXTENSIONS),
+        )
 
 
 def _load_sector_issuer_mapping(mapping_data: dict | None) -> dict[str, str]:

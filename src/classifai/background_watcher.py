@@ -12,8 +12,8 @@ from watchdog.observers import Observer
 
 from classifai.config import app_config
 from classifai.core.rules import RulesEngine
+from classifai.exceptions import FileOperationError
 from classifai.infrastructure.file_system import transfer_file
-from classifai.infrastructure.knowledge import KnowledgeBase
 from classifai.pipeline import process_file_pipeline
 
 
@@ -23,8 +23,6 @@ class NewFileHandler(FileSystemEventHandler):
         self.mode = mode
         self.scan_config = scan_config
         self.rules_engine = RulesEngine(app_config.rules)
-        # Use deprecated KnowledgeBase constructor (no arguments)
-        self.knowledge_base = KnowledgeBase()
 
     def on_created(self, event):
         if not event.is_directory:
@@ -38,24 +36,24 @@ class NewFileHandler(FileSystemEventHandler):
                 "categories": app_config.categories,
             }
 
-            result = process_file_pipeline(
+            context = process_file_pipeline(
                 file_path,
                 current_scan_config,
                 self.rules_engine,
-                self.knowledge_base,
             )
 
-            result.bind(
-                lambda context: transfer_file(context, self.mode).map(
-                    lambda final_context: logger.info(
-                        f"Moved '{file_path.name}' to '{final_context.final_destination_path}'",
-                    )
-                    if self.mode == "move"
-                    else logger.info(
-                        f"Copied '{file_path.name}' to '{final_context.final_destination_path}'",
-                    ),
-                ),
-            ).alt(lambda error: logger.error(f"Failed to process {file_path.name}: {error}"))
+            if context is None:
+                logger.error(f"Failed to process {file_path.name}")
+                return
+
+            try:
+                final_context = transfer_file(context, self.mode)
+                if self.mode == "move":
+                    logger.info(f"Moved '{file_path.name}' to '{final_context.final_destination_path}'")
+                else:
+                    logger.info(f"Copied '{file_path.name}' to '{final_context.final_destination_path}'")
+            except FileOperationError as e:
+                logger.error(f"Failed to transfer {file_path.name}: {e}")
 
 
 def start_watcher(source_dir: Path, destination_dir: Path, mode: str, **kwargs):
