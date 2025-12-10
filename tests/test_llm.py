@@ -217,9 +217,8 @@ class TestFuzzyMatchCategory:
         categories = ["Fichiers Texte", "Factures"]
 
         # Different case might still match if similar enough
-        result = _fuzzy_match_category("fichiers texte", categories)
-        # Due to the cutoff, this might not match - behavior depends on similarity
         # The key is it won't incorrectly match to something unrelated
+        _fuzzy_match_category("fichiers texte", categories)  # Result varies by similarity
 
     def test_fuzzy_match_respects_cutoff(self):
         """Fuzzy matching should not match below the cutoff threshold."""

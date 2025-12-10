@@ -7,8 +7,6 @@ Tests MIME type detection, ExifTool metadata extraction, and metadata merging.
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 
 class TestGetMimeType:
     """Tests for get_mime_type function."""
@@ -22,13 +20,15 @@ class TestGetMimeType:
         mock_magic = MagicMock()
         mock_magic.from_file.return_value = "application/pdf"
 
-        with patch.dict("sys.modules", {"magic": mock_magic}):
-            with patch("classifai.infrastructure.metadata._MAGIC_AVAILABLE", True):
-                with patch("classifai.infrastructure.metadata.magic", mock_magic):
-                    from classifai.infrastructure.metadata import get_mime_type
+        with (
+            patch.dict("sys.modules", {"magic": mock_magic}),
+            patch("classifai.infrastructure.metadata._MAGIC_AVAILABLE", True),
+            patch("classifai.infrastructure.metadata.magic", mock_magic),
+        ):
+            from classifai.infrastructure.metadata import get_mime_type
 
-                    result = get_mime_type(test_file)
-                    assert result == "application/pdf"
+            result = get_mime_type(test_file)
+            assert result == "application/pdf"
 
     def test_mime_type_fallback_to_extension(self, tmp_path: Path):
         """Test MIME detection falls back to extension when magic unavailable."""
@@ -181,7 +181,6 @@ class TestExtractRichMetadata:
         """
         from classifai.infrastructure.metadata import (
             _normalize_metadata,
-            is_exiftool_available,
         )
 
         # Test the normalization logic directly (this doesn't require ExifTool)
@@ -307,7 +306,6 @@ class TestAvailabilityChecks:
     def test_is_magic_available(self):
         """Test is_magic_available returns correct value."""
         with patch("classifai.infrastructure.metadata._MAGIC_AVAILABLE", True):
-            from classifai.infrastructure.metadata import is_magic_available
 
             # Need to reimport to get the patched value
             import importlib
