@@ -110,30 +110,30 @@ aliases:
   "Union Bank of Switzerland": "UBS"
   "PostFinance AG": "PostFinance"
   "La Poste - PostFinance": "PostFinance"
-  
+
   # Insurance aliases
   "AXA Winterthur": "AXA"
   "AXA Assurances": "AXA"
   "Swiss Life AG": "Swiss Life"
   "Swiss Life Assurance": "Swiss Life"
-  
+
   # Health sector aliases
   "Helsana Assurance": "Helsana"
   "Helsana AG": "Helsana"
   "Assura SA": "Assura"
   "SWICA Assurance": "Swica"
-  
+
   # Commerce aliases
   "Migros SA": "Migros"
   "Coop Société Coopérative": "Coop"
   "Digitec Galaxus AG": "Digitec"
   "Amazon Europe": "Amazon"
   "Amazon.ch": "Amazon"
-  
+
   # Transport aliases
   "Chemins de fer fédéraux": "CFF"
   "SBB CFF FFS": "CFF"
   "Transports publics fribourgeois": "TPF"
-  "Transports lausannois": "TL" 
+  "Transports lausannois": "TL"
   "M-Thérapies": "M-Thérapies"
-  "Emilie Chollet":  "M-Thérapies"
+  "Emilie Chollet": "M-Thérapies"

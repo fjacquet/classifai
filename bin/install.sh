@@ -31,4 +31,3 @@ uv add \
 uv add beautifulsoup4 striprtf extract-msg
 
 brew install poppler-qt5 antiword tesseract ffmpeg pandoc
-

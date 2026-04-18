@@ -177,7 +177,7 @@ def get_supported_files(directory: Path, recursive: bool = False) -> list[Path]:
         supported_extensions = app_config.supported_extensions
 
         # Find all files with supported extensions
-        files = []
+        files: list[Path] = []
         if recursive:
             for ext in supported_extensions:
                 files.extend(directory.glob(f"**/*{ext}"))

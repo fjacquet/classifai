@@ -1,0 +1,16 @@
+formatter:
+  type: basic
+  indent: 2
+  line_ending: lf
+  retain_line_breaks: true
+  scan_folded_as_literal: true
+  trim_trailing_whitespace: true
+  eof_newline: true
+include:
+  - "**/*.yaml"
+  - "**/*.yml"
+exclude:
+  - ".venv/**"
+  - "node_modules/**"
+  - "dist/**"
+  - "build/**"

@@ -8,6 +8,7 @@ which includes categories, sector-issuer mappings, and other reference data.
 import re
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 import yaml
 from loguru import logger
@@ -52,12 +53,14 @@ def record_unknown_issuer(issuer: str) -> None:
         unknown_issuers_file = Path(app_config.config_dir) / "unknown_issuers.yaml"
 
         # Load existing unknown issuers or create empty dict
-        unknown_issuers = {}
+        unknown_issuers: dict[str, dict[str, Any]] = {}
         if unknown_issuers_file.exists():
             with open(unknown_issuers_file, encoding="utf-8") as f:
                 content = f.read().strip()
                 if content:
-                    unknown_issuers = yaml.safe_load(content) or {}
+                    loaded = yaml.safe_load(content)
+                    if isinstance(loaded, dict):
+                        unknown_issuers = loaded
 
         # Add new unknown issuer with timestamp
         timestamp = datetime.now(timezone.utc).isoformat()

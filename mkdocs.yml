@@ -56,11 +56,11 @@ plugins:
 nav:
   - Home: index.md
   - Architecture:
-    - Overview: ARCHITECTURE_AND_DESIGN.md
-    - Document Types: DOCUMENTS_TYPES.md
+      - Overview: ARCHITECTURE_AND_DESIGN.md
+      - Document Types: DOCUMENTS_TYPES.md
   - Specifications:
-    - Functional Specification: FUNCTIONAL_SPECIFICATION.md
-    - Impact Analysis: IMPACT_ANALYSIS.md
+      - Functional Specification: FUNCTIONAL_SPECIFICATION.md
+      - Impact Analysis: IMPACT_ANALYSIS.md
   - Development:
-    - Testing & Error Handling: TESTING_AND_ERROR_HANDLING.md
-    - LLM Integration: GEMINI.md
+      - Testing & Error Handling: TESTING_AND_ERROR_HANDLING.md
+      - LLM Integration: GEMINI.md

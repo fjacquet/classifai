@@ -44,7 +44,7 @@ def run(
         ),
     ],
     destination_dir: Annotated[
-        Path,
+        Path | None,
         typer.Option(
             "--destination-dir",
             "-d",

@@ -158,10 +158,14 @@ def parse_eml(file_path: str) -> tuple[str, dict]:
         if msg.is_multipart():
             for part in msg.walk():
                 if part.get_content_type() == "text/plain":
-                    body = part.get_payload(decode=True).decode()
+                    payload = part.get_payload(decode=True)
+                    if isinstance(payload, bytes):
+                        body = payload.decode()
                     break
         else:
-            body = msg.get_payload(decode=True).decode()
+            payload = msg.get_payload(decode=True)
+            if isinstance(payload, bytes):
+                body = payload.decode()
         return body, {}
 
 
@@ -325,11 +329,11 @@ def parse_archive(file_path: str) -> tuple[str, dict]:
 
     with tempfile.TemporaryDirectory() as temp_dir:
         if file_path_lower.endswith(".zip"):
-            with zipfile.ZipFile(file_path, "r") as archive:
-                _safe_extract_zip(archive, temp_dir)
+            with zipfile.ZipFile(file_path, "r") as zip_archive:
+                _safe_extract_zip(zip_archive, temp_dir)
         elif file_path_lower.endswith((".tar", ".gz", ".bz2", ".xz")):
-            with tarfile.open(file_path, "r:*") as archive:
-                _safe_extract_tar(archive, temp_dir)
+            with tarfile.open(file_path, "r:*") as tar_archive:
+                _safe_extract_tar(tar_archive, temp_dir)
         else:
             return "", {}
 

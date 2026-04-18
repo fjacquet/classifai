@@ -144,6 +144,7 @@ def get_sector_with_ai(issuer_name: str, content: str, logger_instance: Any | No
     """
     Uses an AI model to determine the business sector of an issuer.
     """
+    log = logger_instance or logger
     prompt = f"""
     Based on the issuer name '{issuer_name}' and the following document text,
     what is the most likely business sector for this issuer?
@@ -159,13 +160,13 @@ def get_sector_with_ai(issuer_name: str, content: str, logger_instance: Any | No
     """
     try:
         api_response = get_completion(prompt, logger_instance=logger_instance)
-        logger_instance.debug(f"Sector API response: {api_response}")
+        log.debug(f"Sector API response: {api_response}")
 
         # Parse the JSON string from response['response']
         if "response" in api_response and isinstance(api_response["response"], str):
             try:
                 response = json.loads(api_response["response"])
-                logger_instance.debug(f"Parsed JSON from sector API response: {response}")
+                log.debug(f"Parsed JSON from sector API response: {response}")
                 sector = response.get("sector", None)
                 logger.debug(f"Parsed JSON from sector API response: {sector}")
                 # Traduire le secteur en français
@@ -173,7 +174,7 @@ def get_sector_with_ai(issuer_name: str, content: str, logger_instance: Any | No
                 logger.debug(f"Translated sector: {sector} -> {translated_sector}")
                 return translated_sector
             except json.JSONDecodeError as e:
-                logger_instance.error(f"Failed to parse JSON from sector API response: {e}")
+                log.error(f"Failed to parse JSON from sector API response: {e}")
         elif "sector" in api_response:
             sector = api_response["sector"]
             logger.debug(f"Parsed JSON from sector API response: {sector}")
@@ -349,7 +350,8 @@ def enrich_with_ai(context: FileContext) -> FileContext:
         """
         try:
             logger.debug(f"Calling vision model API for {context.source_path.name}")
-            api_response = get_vision_completion(prompt, context.content)
+            image_bytes = context.source_path.read_bytes()
+            api_response = get_vision_completion(prompt, image_bytes)
             logger.debug(f"Vision model API response: {api_response}")
 
             # Parse the JSON string from response['response']

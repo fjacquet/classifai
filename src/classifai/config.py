@@ -135,15 +135,20 @@ def load_app_config() -> AppConfig:
     """
     Loads all configurations and returns a frozen AppConfig object.
     """
-    # Load YAML files
-    settings = _load_yaml_file(Path("config/settings.yaml")) or {}
-    categories = _load_yaml_file(Path("config/categories.yaml")) or []
-    rules_data = _load_yaml_file(Path("config/rules.yaml"))
+    raw_settings = _load_yaml_file(Path("config/settings.yaml"))
+    settings: dict[str, Any] = raw_settings if isinstance(raw_settings, dict) else {}
 
-    # Process YAML data
+    raw_categories = _load_yaml_file(Path("config/categories.yaml"))
+    categories: list[str] = raw_categories if isinstance(raw_categories, list) else []
+
+    rules_data = _load_yaml_file(Path("config/rules.yaml"))
     rules = rules_data.get("rules", []) if isinstance(rules_data, dict) else []
-    sectors = _load_yaml_file(Path("config/sectors.yaml")) or []
-    sector_issuer_data = _load_yaml_file(Path("config/sector_issuer_mapping.yaml"))
+
+    raw_sectors = _load_yaml_file(Path("config/sectors.yaml"))
+    sectors: list[str] = raw_sectors if isinstance(raw_sectors, list) else []
+
+    raw_mapping = _load_yaml_file(Path("config/sector_issuer_mapping.yaml"))
+    sector_issuer_data = raw_mapping if isinstance(raw_mapping, dict) else None
     sector_issuer_mapping = _load_sector_issuer_mapping(sector_issuer_data)
 
     return AppConfig(

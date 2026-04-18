@@ -81,7 +81,7 @@ def test_name_conflict_resolution():
         existing_file = dest_dir / "test.txt"
         existing_file.write_text("existing content")
         dest_path = dest_dir / "test.txt"
-        
+
         context = FileContext(
             source_path=test_file,
             destination_dir=dest_dir,
@@ -91,17 +91,17 @@ def test_name_conflict_resolution():
             categories=[],
             final_destination_path=dest_path,
         )
-        
+
         # Execute function under test
         result = transfer_file(context, "move")
-        
+
         # Verify result is successful
         assert result.is_successful()
-        
+
         # Get the updated context from the result
         updated_context = result.unwrap()
         moved_path = Path(updated_context.final_destination_path)
-        
+
         # Verify file was moved with correct name
         assert moved_path.exists()
         assert moved_path.name == "test (1).txt"
@@ -138,7 +138,7 @@ def transfer_file(context: FileContext, operation: str) -> Result[FileContext, s
     # Pipeline: resolve conflicts → perform operation → log → return updated context
     # First, resolve any name conflicts
     resolved_path_result = _resolve_name_conflict(destination)
-    
+
     # The rest of the pipeline needs to work with the resolved path
     return (
         resolved_path_result
