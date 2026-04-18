@@ -120,12 +120,8 @@ def test_process_file_pipeline_orchestration(mocker):
     mock_context.source_path = Path("/source/file.txt")
     mock_context.rule_match_category = None  # No early rule match
 
-    mock_apply_early_rules = mocker.patch(
-        "classifai.pipeline.apply_early_rules", return_value=mock_context
-    )
-    mock_apply_full_rules = mocker.patch(
-        "classifai.pipeline.apply_full_rules", return_value=mock_context
-    )
+    mock_apply_early_rules = mocker.patch("classifai.pipeline.apply_early_rules", return_value=mock_context)
+    mock_apply_full_rules = mocker.patch("classifai.pipeline.apply_full_rules", return_value=mock_context)
     mock_read_parse = mocker.patch("classifai.pipeline.read_and_parse_file", return_value=mock_context)
     mock_enrich_ai = mocker.patch("classifai.pipeline.enrich_with_ai", return_value=mock_context)
     mock_enrich_knowledge = mocker.patch(

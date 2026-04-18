@@ -312,7 +312,6 @@ class TestAvailabilityChecks:
     def test_is_magic_available(self):
         """Test is_magic_available returns correct value."""
         with patch("classifai.infrastructure.metadata._MAGIC_AVAILABLE", True):
-
             # Need to reimport to get the patched value
             import importlib
 

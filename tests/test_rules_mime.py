@@ -234,9 +234,7 @@ class TestMatchCategoryFull:
         ]
         engine = RulesEngine(rules)
 
-        context = base_context.model_copy(
-            update={"metadata": {"author": "UBS Switzerland AG"}}
-        )
+        context = base_context.model_copy(update={"metadata": {"author": "UBS Switzerland AG"}})
 
         result = engine.match_category_full(context)
         assert result == "Factures"
@@ -272,9 +270,7 @@ class TestMatchCategoryFull:
         ]
         engine = RulesEngine(rules)
 
-        context = base_context.model_copy(
-            update={"metadata": {"title": "Invoice #12345 - January 2024"}}
-        )
+        context = base_context.model_copy(update={"metadata": {"title": "Invoice #12345 - January 2024"}})
 
         result = engine.match_category_full(context)
         assert result == "Factures"
@@ -292,9 +288,7 @@ class TestMatchCategoryFull:
         ]
         engine = RulesEngine(rules)
 
-        context = base_context.model_copy(
-            update={"metadata": {"title": "Employment Contract"}}
-        )
+        context = base_context.model_copy(update={"metadata": {"title": "Employment Contract"}})
 
         result = engine.match_category_full(context)
         assert result == "Contrats"
@@ -312,9 +306,7 @@ class TestMatchCategoryFull:
         ]
         engine = RulesEngine(rules)
 
-        context = base_context.model_copy(
-            update={"metadata": {"title": "Monthly invoice statement"}}
-        )
+        context = base_context.model_copy(update={"metadata": {"title": "Monthly invoice statement"}})
 
         result = engine.match_category_full(context)
         assert result == "Factures"

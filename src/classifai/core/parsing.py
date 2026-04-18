@@ -58,20 +58,20 @@ def get_parser(file_extension: str) -> Callable | None:
     # As a last resort for document-like files, try Pandoc
     pandoc_supported = [
         # Current
-        ".odt",      # OpenDocument Text
-        ".epub",     # E-books
-        ".md",       # Markdown
+        ".odt",  # OpenDocument Text
+        ".epub",  # E-books
+        ".md",  # Markdown
         # Presentations
-        ".pptx",     # PowerPoint 2007+
-        ".ppt",      # Legacy PowerPoint
-        ".odp",      # OpenDocument Presentation
+        ".pptx",  # PowerPoint 2007+
+        ".ppt",  # Legacy PowerPoint
+        ".odp",  # OpenDocument Presentation
         # Technical documentation
-        ".rst",      # reStructuredText
-        ".tex",      # LaTeX
-        ".latex",    # LaTeX (alt extension)
+        ".rst",  # reStructuredText
+        ".tex",  # LaTeX
+        ".latex",  # LaTeX (alt extension)
         # Wiki/markup formats
-        ".wiki",     # MediaWiki
-        ".org",      # Emacs Org-mode
+        ".wiki",  # MediaWiki
+        ".org",  # Emacs Org-mode
         ".textile",  # Textile
     ]
     if file_extension in pandoc_supported:

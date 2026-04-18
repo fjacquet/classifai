@@ -42,7 +42,9 @@ def _format_categories_for_prompt(categories: list[str]) -> str:
     return "\n".join(lines)
 
 
-def _fuzzy_match_category(category: str, allowed: list[str], cutoff: float = FUZZY_MATCH_CUTOFF) -> str | None:
+def _fuzzy_match_category(
+    category: str, allowed: list[str], cutoff: float = FUZZY_MATCH_CUTOFF
+) -> str | None:
     """
     Try to fuzzy match an invalid category to the allowed list.
 
