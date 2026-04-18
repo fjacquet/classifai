@@ -30,29 +30,33 @@ class TestGetMimeType:
             result = get_mime_type(test_file)
             assert result == "application/pdf"
 
-    def test_mime_type_fallback_to_extension(self, tmp_path: Path):
+    def test_mime_type_fallback_to_extension(self, tmp_path: Path, monkeypatch):
         """Test MIME detection falls back to extension when magic unavailable."""
         test_file = tmp_path / "test.pdf"
         test_file.write_text("dummy content")
 
-        with patch("classifai.infrastructure.metadata._MAGIC_AVAILABLE", False):
-            from classifai.infrastructure.metadata import get_mime_type
+        from classifai.infrastructure import metadata
 
-            result = get_mime_type(test_file)
-            assert result == "application/pdf"
+        monkeypatch.setattr(metadata, "_MAGIC_AVAILABLE", False)
+        monkeypatch.setattr(metadata, "magic", None, raising=False)
 
-    def test_mime_type_unknown_extension(self, tmp_path: Path):
+        result = metadata.get_mime_type(test_file)
+        assert result == "application/pdf"
+
+    def test_mime_type_unknown_extension(self, tmp_path: Path, monkeypatch):
         """Test MIME detection returns octet-stream for unknown extensions."""
         test_file = tmp_path / "test.xyz123"
         test_file.write_text("dummy content")
 
-        with patch("classifai.infrastructure.metadata._MAGIC_AVAILABLE", False):
-            from classifai.infrastructure.metadata import get_mime_type
+        from classifai.infrastructure import metadata
 
-            result = get_mime_type(test_file)
-            assert result == "application/octet-stream"
+        monkeypatch.setattr(metadata, "_MAGIC_AVAILABLE", False)
+        monkeypatch.setattr(metadata, "magic", None, raising=False)
 
-    def test_mime_type_image_extensions(self, tmp_path: Path):
+        result = metadata.get_mime_type(test_file)
+        assert result == "application/octet-stream"
+
+    def test_mime_type_image_extensions(self, tmp_path: Path, monkeypatch):
         """Test MIME detection for various image extensions."""
         extensions = {
             ".jpg": "image/jpeg",
@@ -63,14 +67,16 @@ class TestGetMimeType:
             ".tiff": "image/tiff",
         }
 
-        with patch("classifai.infrastructure.metadata._MAGIC_AVAILABLE", False):
-            from classifai.infrastructure.metadata import get_mime_type
+        from classifai.infrastructure import metadata
 
-            for ext, expected_mime in extensions.items():
-                test_file = tmp_path / f"test{ext}"
-                test_file.write_text("dummy")
-                result = get_mime_type(test_file)
-                assert result == expected_mime, f"Failed for extension {ext}"
+        monkeypatch.setattr(metadata, "_MAGIC_AVAILABLE", False)
+        monkeypatch.setattr(metadata, "magic", None, raising=False)
+
+        for ext, expected_mime in extensions.items():
+            test_file = tmp_path / f"test{ext}"
+            test_file.write_text("dummy")
+            result = metadata.get_mime_type(test_file)
+            assert result == expected_mime, f"Failed for extension {ext}"
 
 
 class TestNormalizeMetadata:
