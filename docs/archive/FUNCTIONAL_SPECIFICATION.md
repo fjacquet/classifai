@@ -1,3 +1,5 @@
+> **⚠️ ARCHIVED — Superseded by [`docs/PRD.md`](../PRD.md).** References modules that no longer exist (`core/workflow.py`, `app/cli.py`, `app/web_ui.py`). Feature content remains largely accurate but has been refreshed in the PRD. Kept for historical reference.
+
 # ClassifAI: Functional Specification
 
 This document provides a functional specification for the ClassifAI tool. It outlines the current capabilities of the system and details the new feature for intelligent document classification.

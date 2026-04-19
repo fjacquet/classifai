@@ -1,3 +1,5 @@
+> **⚠️ ARCHIVED — Superseded.** This Gemini CLI guideline doc mandates the `returns` library, which was removed (see `CHANGELOG.md` Unreleased "BREAKING"). Current agent guidance lives in `CLAUDE.md` at the repo root. Kept for historical reference.
+
 # Gemini CLI Agent Guidelines for ClassifAI Project
 
 This document outlines the specific guidelines and best practices for the Gemini CLI agent when interacting with the ClassifAI project codebase. Adhering to these principles ensures consistency, quality, and maintainability, with a strong emphasis on functional programming.

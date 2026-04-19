@@ -1,3 +1,5 @@
+> **⚠️ ARCHIVED — Superseded.** This document describes a version of the codebase that no longer exists (references `core/workflow.py`, `app/cli.py`, the `returns` library, etc., all of which were removed in the simplification pass tracked in `CHANGELOG.md`). Kept for historical context only. See [`docs/adr/`](../adr/) for current architectural decisions and [`docs/PRD.md`](../PRD.md) for current requirements.
+
 # ClassifAI: Architecture and Design Principles (Harmonized)
 
 **Date:** July 19, 2025

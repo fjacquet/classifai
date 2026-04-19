@@ -1,17 +1,35 @@
-# Welcome to MkDocs
+# ClassifAI Documentation
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+ClassifAI organizes files into a predictable folder hierarchy using a
+hybrid of YAML rules and a local LLM via [Ollama](https://ollama.ai).
+Privacy-first, offline-capable, YAML-extensible.
 
-## Commands
+## Start here
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+- 🚀 **[Quickstart](user-guide/quickstart.md)** — organize a folder in
+  5 minutes.
+- 🛠 **[Installation](user-guide/installation.md)** — system deps, Python,
+  Ollama.
+- 📖 **[User Guide](user-guide/index.md)** — CLI, Web UI, configuration,
+  troubleshooting.
 
-## Project layout
+## Understand the project
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+- 📋 **[PRD](PRD.md)** — what ClassifAI does and why.
+- 🏛 **[Architecture Decisions](adr/README.md)** — the significant
+  technical choices, each with rationale and alternatives.
+- 🗂 **[Document Types](DOCUMENTS_TYPES.md)** — categories of files
+  ClassifAI handles.
+
+## Contribute
+
+- 🤖 **[CLAUDE.md](https://github.com/fjacquet/classifai/blob/main/CLAUDE.md)**
+  — project conventions for AI-assisted contributions.
+- 📝 **[Changelog](https://github.com/fjacquet/classifai/blob/main/CHANGELOG.md)**
+  — release-by-release history.
+
+## Archive
+
+Historical/superseded docs are preserved under `docs/archive/` in the
+repository for `git blame` continuity. They are **not** part of this
+site. Prefer the current documentation above.

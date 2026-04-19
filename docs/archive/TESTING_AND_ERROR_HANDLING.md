@@ -1,3 +1,5 @@
+> **⚠️ ARCHIVED — Superseded.** Examples use the `returns` library (`Result`, `Maybe`, `.bind()`, `.unwrap()`), which was removed. Current patterns use native Python exceptions — see [`docs/adr/0004-remove-returns-library.md`](../adr/0004-remove-returns-library.md). Testing principles still broadly apply; specific code examples do not. A new testing doc will replace this when needed.
+
 # Testing and Error Handling Best Practices - ClassifAI (Harmonized)
 
 **Date:** July 19, 2025

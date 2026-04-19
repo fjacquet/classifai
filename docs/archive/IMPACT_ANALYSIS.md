@@ -1,3 +1,5 @@
+> **⚠️ ARCHIVED — Historical.** This is a one-off 2025-07 migration plan; every item listed here was either completed or dropped. Kept so that `git blame` / PR history remains interpretable. Do not use for new work.
+
 # Impact Analysis (Harmonized): Finalizing the Organization Strategy
 
 **Date:** July 19, 2025

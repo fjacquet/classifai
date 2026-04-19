@@ -7,6 +7,8 @@ repo_name: fjacquet/classifai
 # Configuration
 docs_dir: docs
 site_dir: site
+exclude_docs: |
+  archive/
 
 # Theme configuration
 theme:
@@ -55,12 +57,23 @@ plugins:
 # Navigation structure
 nav:
   - Home: index.md
-  - Architecture:
-      - Overview: ARCHITECTURE_AND_DESIGN.md
+  - User Guide:
+      - Overview: user-guide/index.md
+      - Installation: user-guide/installation.md
+      - Quickstart: user-guide/quickstart.md
+      - CLI Reference: user-guide/cli.md
+      - Web UI: user-guide/web-ui.md
+      - Configuration: user-guide/configuration.md
+      - Troubleshooting: user-guide/troubleshooting.md
+  - Product:
+      - PRD: PRD.md
       - Document Types: DOCUMENTS_TYPES.md
-  - Specifications:
-      - Functional Specification: FUNCTIONAL_SPECIFICATION.md
-      - Impact Analysis: IMPACT_ANALYSIS.md
-  - Development:
-      - Testing & Error Handling: TESTING_AND_ERROR_HANDLING.md
-      - LLM Integration: GEMINI.md
+  - Architecture Decisions:
+      - Index: adr/README.md
+      - 0001 · OCR engine (stay on Tesseract): adr/0001-ocr-engine-stay-on-tesseract.md
+      - 0002 · Hybrid rule + LLM classification: adr/0002-hybrid-rule-plus-llm-classification.md
+      - 0003 · Ollama as LLM runtime: adr/0003-ollama-as-llm-runtime.md
+      - 0004 · Remove the returns library: adr/0004-remove-returns-library.md
+      - 0005 · Three entry points (CLI / Web / API): adr/0005-three-entry-points-cli-web-api.md
+      - 0006 · YAML-driven configuration: adr/0006-yaml-driven-configuration.md
+  - Changelog: https://github.com/fjacquet/classifai/blob/main/CHANGELOG.md

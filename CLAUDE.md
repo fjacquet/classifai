@@ -11,7 +11,19 @@ ClassifAI is a Python application that automatically organizes files using hybri
 ### Development Setup
 
 ```bash
-uv pip install -e ".[dev]"   # Install with dev dependencies
+uv pip install -e ".[dev]"   # Or: make dev
+```
+
+### Makefile Shortcuts
+
+Preferred for common tasks — see `make help`:
+
+```bash
+make dev        # Install dev dependencies
+make check      # Run lint + tests
+make format     # Auto-format with ruff
+make web        # Launch Streamlit UI
+make watch SRC=/path DEST=/path   # Run watcher
 ```
 
 ### Running the Application
@@ -67,14 +79,20 @@ The codebase uses functional programming patterns with native Python exceptions 
 
 ```
 src/classifai/
-├── core/           # Pure business logic (classification, rules, path logic)
-├── infrastructure/ # I/O operations (LLM, file system, knowledge base)
-├── app/            # Entry points (API, Web UI)
-├── config.py       # Centralized config loading from YAML + env vars
-├── defaults.py     # Shared defaults for CLI and Streamlit consistency
-├── exceptions.py   # Custom exception hierarchy
-├── utils.py        # Shared utilities (sanitize_filename, date parsing)
-└── pipeline.py     # Main orchestration with sequential function calls
+├── core/                 # Pure business logic (classification, rules, path logic)
+├── infrastructure/       # I/O operations (LLM, file system, knowledge base)
+├── app/                  # FastAPI routes
+├── classifai_cli.py      # Typer CLI entry point (→ `classifai` console script)
+├── classifai_app.py      # Streamlit UI entry point
+├── pipeline.py           # Main orchestration
+├── background_watcher.py # Watchdog-based directory monitor
+├── entrypoint_utils.py   # Shared CLI/Streamlit helpers
+├── localization.py       # User-facing string translations (FR/EN)
+├── validation.py         # Input validation helpers
+├── config.py             # Centralized config loading from YAML + env vars
+├── defaults.py           # Shared defaults for CLI and Streamlit consistency
+├── exceptions.py         # Custom exception hierarchy
+└── utils.py              # Shared utilities (sanitize_filename, date parsing)
 ```
 
 ### Configuration
@@ -258,12 +276,13 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## Pre-Commit Checklist
 
-1. `ruff check .` passes
-2. `ruff format .` applied
-3. `pytest` passes
-4. No `returns` library imports
-5. Custom exceptions used for errors
-6. Proper commit message format
+1. `pre-commit run --all-files` passes (runs ruff, mypy, yamlfmt, file checks)
+2. `pytest` passes
+3. No `returns` library imports
+4. Custom exceptions used for errors
+5. Proper commit message format
+
+**Never disable a failing quality gate (mypy, ruff, hook, test) to unblock a commit.** Fix the underlying issue.
 
 <!-- code-review-graph MCP tools -->
 ## MCP Tools: code-review-graph
