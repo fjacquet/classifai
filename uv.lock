@@ -473,6 +473,26 @@ docs = [
     { name = "mkdocstrings", extra = ["python"] },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "cyclonedx-bom" },
+    { name = "faker" },
+    { name = "hypothesis" },
+    { name = "pre-commit" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-mock" },
+    { name = "ruff" },
+    { name = "scalene" },
+    { name = "yamlfix" },
+]
+docs = [
+    { name = "mkdocs" },
+    { name = "mkdocs-git-revision-date-localized-plugin" },
+    { name = "mkdocs-material" },
+    { name = "mkdocstrings", extra = ["python"] },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4" },
@@ -515,6 +535,26 @@ requires-dist = [
     { name = "yamlfix", marker = "extra == 'dev'" },
 ]
 provides-extras = ["dev", "docs"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "cyclonedx-bom" },
+    { name = "faker" },
+    { name = "hypothesis" },
+    { name = "pre-commit", specifier = ">=3.6.0" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-mock" },
+    { name = "ruff" },
+    { name = "scalene" },
+    { name = "yamlfix" },
+]
+docs = [
+    { name = "mkdocs" },
+    { name = "mkdocs-git-revision-date-localized-plugin" },
+    { name = "mkdocs-material" },
+    { name = "mkdocstrings", extras = ["python"] },
+]
 
 [[package]]
 name = "click"
