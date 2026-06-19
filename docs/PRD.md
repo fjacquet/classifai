@@ -208,6 +208,6 @@ See ADRs for full detail.
 ## 11. Reference
 
 - ADRs: [`docs/adr/`](adr/)
-- Changelog: [`CHANGELOG.md`](../CHANGELOG.md)
+- Changelog: [`CHANGELOG.md`](https://github.com/fjacquet/classifai/blob/main/CHANGELOG.md)
 - User Guide: [`docs/user-guide/`](user-guide/)
 - Archived historical specs: [`docs/archive/`](archive/)

@@ -54,6 +54,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "cyclonedx-bom",
     "faker",
     "hypothesis",
     "pre-commit>=3.6.0",
