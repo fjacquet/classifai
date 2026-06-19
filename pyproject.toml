@@ -54,6 +54,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "cyclonedx-bom",
     "faker",
     "hypothesis",
     "pre-commit>=3.6.0",
@@ -70,6 +71,32 @@ docs = [
     "mkdocstrings[python]",
     "mkdocs-git-revision-date-localized-plugin",
 ]
+
+# PEP 735 dependency-groups: synced by `uv run` (and `uv sync`) so that
+# `make docs` (uv run mkdocs) and `make sbom` (uv run cyclonedx-py) work in CI
+# without an explicit extras install. Mirrors the optional-dependencies above.
+[dependency-groups]
+dev = [
+    "cyclonedx-bom",
+    "faker",
+    "hypothesis",
+    "pre-commit>=3.6.0",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "ruff",
+    "scalene",
+    "yamlfix",
+]
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+    "mkdocs-git-revision-date-localized-plugin",
+]
+
+[tool.uv]
+default-groups = ["dev", "docs"]
 
 [project.scripts]
 classifai = "classifai.classifai_cli:app"
