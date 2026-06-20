@@ -77,3 +77,6 @@ nav:
       - 0005 · Three entry points (CLI / Web / API): adr/0005-three-entry-points-cli-web-api.md
       - 0006 · YAML-driven configuration: adr/0006-yaml-driven-configuration.md
   - Changelog: https://github.com/fjacquet/classifai/blob/main/CHANGELOG.md
+
+extra:
+  version: v0.2.0
