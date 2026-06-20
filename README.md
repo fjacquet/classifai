@@ -1,5 +1,7 @@
 # ClassifAI
 
+[![Release](https://img.shields.io/github/v/release/fjacquet/classifai?sort=semver)](https://github.com/fjacquet/classifai/releases/latest)
+
 Automatically organize files using a hybrid of YAML rules and a local LLM
 via [Ollama](https://ollama.ai). Privacy-first, offline-capable,
 extensible by editing YAML.
