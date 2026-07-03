@@ -1,10 +1,10 @@
 name: Docs
 on:
   push:
-    branches: [maincd]
+    branches: [main]
     paths: ["docs/**", "mkdocs.yml", ".github/workflows/docs.yml"]
   pull_request:
-    branches: [maincd]
+    branches: [main]
     paths: ["docs/**", "mkdocs.yml"]
   workflow_dispatch:
 permissions: {contents: read, pages: write, id-token: write}
