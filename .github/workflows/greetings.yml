@@ -11,6 +11,13 @@ jobs:
     steps:
       - uses: actions/first-interaction@v3
         with:
-          repo-token: ${{ secrets.GH_TOKEN }}
-          issue-message: "Message that will be displayed on users' first issue"
-          pr-message: "Message that will be displayed on users' first pull request"
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          issue_message: >-
+            Thanks for opening your first issue on classifai. Please include the
+            command you ran, the config you used and the full error output — that
+            is usually enough to reproduce it.
+          pr_message: >-
+            Thanks for your first pull request to classifai. CI runs lint, mypy
+            and the test suite; if something fails there, the log will point at
+            the exact check. A short note on what problem the change solves helps
+            the review along.
