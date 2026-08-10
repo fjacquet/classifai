@@ -137,6 +137,7 @@ This codebase adheres to **KISS**, **DRY**, and **FP** principles. All contribut
 # Bad: Complex inline code
 result = [transform(process(item)) for item in data if validate(item)]
 
+
 # Good: Named functions for clarity
 def process_valid_items(data):
     valid_items = filter(validate, data)
@@ -160,6 +161,7 @@ safe_name = "".join(c for c in name if c.isalnum() or c in " -_").strip()
 
 # Good: Use the utility function
 from classifai.utils import sanitize_filename
+
 safe_name = sanitize_filename(name)
 
 # Bad: Multiple context update styles
@@ -195,6 +197,7 @@ def determine_path(context: FileContext) -> Path:
     logger.debug(f"Processing {context}")  # Side effect!
     return calculate_path(context)
 
+
 # Good: Pure function, log at boundaries
 def determine_path(context: FileContext) -> Path:
     return calculate_path(context)
@@ -204,6 +207,7 @@ def determine_path(context: FileContext) -> Path:
 
 ```python
 from classifai.exceptions import ParsingError, LLMError
+
 
 def parse_file(path: Path) -> str:
     try:
@@ -217,6 +221,7 @@ def parse_file(path: Path) -> str:
 ```python
 from tenacity import retry, stop_after_attempt, wait_exponential
 
+
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=2, max=10))
 def call_ollama(prompt: str) -> dict:
     return make_request(prompt)
@@ -228,7 +233,8 @@ def call_ollama(prompt: str) -> dict:
 from contextvars import ContextVar
 
 # Thread-safe state
-_language: ContextVar[Language] = ContextVar('lang', default=Language.EN)
+_language: ContextVar[Language] = ContextVar("lang", default=Language.EN)
+
 
 def set_language(lang: Language) -> None:
     _language.set(lang)

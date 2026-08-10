@@ -1,7 +1,7 @@
 name: Security
 on:
-  push: {branches: [maincd]}
-  pull_request: {branches: [maincd]}
+  push: {branches: [main]}
+  pull_request: {branches: [main]}
 permissions:
   contents: read
 jobs:
