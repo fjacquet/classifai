@@ -18,12 +18,13 @@ This document outlines identified issues and proposed improvements for the Class
 config_dir: Path = field(default=Path("config"))
 supported_extensions: list[str] = field(init=False)
 
+
 def __post_init__(self):
     # Derive supported_extensions from settings or hardcode
     object.__setattr__(
         self,
         "supported_extensions",
-        self.settings.get("supported_extensions", [".pdf", ".docx", ".xlsx", ...])
+        self.settings.get("supported_extensions", [".pdf", ".docx", ".xlsx", ...]),
     )
 ```
 
@@ -70,7 +71,7 @@ result = subprocess.run(
     capture_output=True,
     text=True,
     check=True,
-    timeout=30  # Add timeout
+    timeout=30,  # Add timeout
 )
 ```
 
@@ -90,8 +91,10 @@ result = subprocess.run(
 **Solution:**
 ```python
 import threading
+
 _language_lock = threading.Lock()
 _current_language = Language.EN
+
 
 def set_language(lang: Language) -> None:
     global _current_language
@@ -129,12 +132,13 @@ def set_language(lang: Language) -> None:
 
 ```python
 # At module level
-_NORMALIZE_PATTERN = re.compile(r'\s+')
-_SPECIAL_CHARS_PATTERN = re.compile(r'[^\w\s-]')
+_NORMALIZE_PATTERN = re.compile(r"\s+")
+_SPECIAL_CHARS_PATTERN = re.compile(r"[^\w\s-]")
+
 
 def normalize_issuer_name(name: str) -> str:
-    name = _SPECIAL_CHARS_PATTERN.sub('', name)
-    name = _NORMALIZE_PATTERN.sub(' ', name)
+    name = _SPECIAL_CHARS_PATTERN.sub("", name)
+    name = _NORMALIZE_PATTERN.sub(" ", name)
     return name.strip().lower()
 ```
 
@@ -153,10 +157,7 @@ Move `import json` to top of file instead of inside functions.
 def get_supported_files(directory: Path, recursive: bool) -> list[Path]:
     supported_ext = set(app_config.supported_extensions)
     pattern = "**/*" if recursive else "*"
-    return [
-        f for f in directory.glob(pattern)
-        if f.is_file() and f.suffix.lower() in supported_ext
-    ]
+    return [f for f in directory.glob(pattern) if f.is_file() and f.suffix.lower() in supported_ext]
 ```
 
 #### 7.4 Add API Exponential Backoff

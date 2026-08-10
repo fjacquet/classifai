@@ -18,12 +18,13 @@ This produced code like:
 
 ```python
 return (
-    resolved_path_result
-    .bind(lambda final_dest: _perform_operation(...).map(lambda _: final_dest))
+    resolved_path_result.bind(lambda final_dest: _perform_operation(...).map(lambda _: final_dest))
     .bind(lambda final_dest: safe(log_operation)(...).map(lambda _: final_dest))
-    .map(lambda final_dest: context.__class__(
-        **{**context.__dict__, "final_destination_path": str(final_dest)}
-    ))
+    .map(
+        lambda final_dest: context.__class__(
+            **{**context.__dict__, "final_destination_path": str(final_dest)}
+        )
+    )
     .alt(lambda err: Failure(f"File operation failed: {err}"))
 )
 ```

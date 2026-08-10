@@ -146,15 +146,15 @@ def transfer_file(context: FileContext, operation: str) -> Result[FileContext, s
         resolved_path_result
         # After resolving, perform the requested operation
         .bind(
-            lambda final_dest: _perform_operation(
-                context.source_path, final_dest, operation
-            ).map(lambda _: final_dest)
+            lambda final_dest: _perform_operation(context.source_path, final_dest, operation).map(
+                lambda _: final_dest
+            )
         )
         # Log the operation
         .bind(
-            lambda final_dest: safe(log_operation)(
-                operation, str(context.source_path), str(final_dest)
-            ).map(lambda _: final_dest)
+            lambda final_dest: safe(log_operation)(operation, str(context.source_path), str(final_dest)).map(
+                lambda _: final_dest
+            )
         )
         # Return a NEW context instance that reflects the actual destination
         .map(
@@ -183,7 +183,7 @@ def get_last_operation() -> Maybe[Dict[str, Any]]:
     Returns Nothing if the history is empty.
     """
     try:
-        with open(HISTORY_FILE, 'r') as f:
+        with open(HISTORY_FILE, "r") as f:
             history = json.load(f)
             if not history:
                 return Nothing
@@ -207,9 +207,11 @@ def get_last_operation() -> Maybe[Dict[str, Any]]:
 # This allows isinstance(result, Nothing) to work correctly
 Nothing.__class_getitem__ = classmethod(lambda cls, _: cls)
 
+
 # Add is_some() method to Some class for consistent checking
 def _is_some(self):
     return True
+
 
 Some.is_some = _is_some
 ```
