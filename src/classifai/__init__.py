@@ -8,7 +8,7 @@ This module exposes the main entry points for the different interfaces:
 
 from __future__ import annotations
 
-__version__ = "0.2.0"
+__version__ = "0.2.2"
 
 # Export main entry points
 from classifai.main import run_api, run_cli, run_web_ui
