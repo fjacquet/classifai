@@ -20,7 +20,7 @@ from classifai.pipeline import process_single_file
 app = FastAPI(
     title="ClassifAI API",
     description="API for document classification using ClassifAI",
-    version="0.2.0",
+    version="0.2.2",
 )
 
 
