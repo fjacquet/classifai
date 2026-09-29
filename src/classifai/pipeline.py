@@ -19,7 +19,7 @@ from classifai.infrastructure.file_system import read_and_parse_file
 from classifai.infrastructure.llm import enrich_with_ai
 
 
-def _is_supported_file(path: Path) -> bool:
+def is_supported_file(path: Path) -> bool:
     """Return True for non-hidden, non-lock files with a supported extension."""
     if path.name.startswith((".", "~$")):
         return False
@@ -27,7 +27,7 @@ def _is_supported_file(path: Path) -> bool:
     return suffix in app_config.supported_extensions or suffix in app_config.generic_text_extensions
 
 
-def _is_in_destination(path: Path, source_dir: Path, dest_dir: Path) -> bool:
+def is_in_destination(path: Path, source_dir: Path, dest_dir: Path) -> bool:
     """True if *path* was already filed into a destination nested inside the source directory."""
     dest = dest_dir.resolve()
     if dest == source_dir.resolve():
@@ -152,9 +152,7 @@ def run_scan(
     file_paths = [
         f
         for f in files
-        if f.is_file()
-        and _is_supported_file(f)
-        and not _is_in_destination(f, source_path, Path(dest_dir_str))
+        if f.is_file() and is_supported_file(f) and not is_in_destination(f, source_path, Path(dest_dir_str))
     ]
 
     results = []
