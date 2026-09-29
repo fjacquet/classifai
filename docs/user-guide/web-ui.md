@@ -71,9 +71,8 @@ Both interfaces:
 - Write the same history file, so `classifai undo` from the terminal
   works on an operation done in the UI.
 
-Differences: the UI does not validate `rules.yaml` at startup (the CLI
-does), and unknown issuers go to `Unknown_Issuer` rather than
-`Émetteur_Inconnu`.
+- Validate `config/rules.yaml` at startup: an invalid configuration shows
+  an error and the page stops.
 
 If you notice other behavior drift between the two, it's a bug — please
 report it.

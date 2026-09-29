@@ -147,7 +147,6 @@ skipped.
 | E-books         | `.epub`                                                 | Pandoc      |
 | Technical docs  | `.md .rst .tex .latex .org`                             | Pandoc (`.md`: plain text when listed in `generic_text_extensions`) |
 | Generic text    | `generic_text_extensions` (`.log .sh .csv .json .xml .ini .conf .cfg .vcf .ics …`) | Plain text |
-| Legacy Office   | `.doc .xls .ods`                                        | Listed but no parser registered (currently fail to parse) |
 
 External tools (`pdftotext`, `pandoc`) are stopped after 60 s.
 

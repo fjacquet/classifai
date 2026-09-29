@@ -23,7 +23,7 @@ make dev        # Install dev dependencies
 make ci         # Run lint + tests + build
 make format     # Auto-format with ruff
 make web        # Launch Streamlit UI
-make watch SRC=/path DEST=/path   # Run watcher (SRC required)
+make watch SRC=/path DEST=/path   # Run watcher (SRC and DEST required)
 ```
 
 ### Running the Application

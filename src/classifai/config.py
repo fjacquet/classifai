@@ -36,15 +36,12 @@ DEFAULT_SUPPORTED_EXTENSIONS = [
     # Documents
     ".pdf",
     ".docx",
-    ".doc",
     ".txt",
     ".rtf",
     ".odt",
     ".md",
     # Spreadsheets
     ".xlsx",
-    ".xls",
-    ".ods",
     # Presentations
     ".pptx",
     ".ppt",

@@ -286,3 +286,32 @@ def test_renamed_file_uses_a_valid_date(base_context, ai_date, metadata, expecte
 
     assert name.startswith(expected_prefix)
     assert name.endswith(".txt")
+
+
+def test_every_default_supported_extension_has_a_parser():
+    """Scanned extensions must be parseable; otherwise every such file fails with ParsingError."""
+    from classifai.config import DEFAULT_SUPPORTED_EXTENSIONS
+    from classifai.infrastructure.parser_registry import get_parser
+
+    missing = [ext for ext in DEFAULT_SUPPORTED_EXTENSIONS if get_parser(ext) is None]
+
+    assert missing == []
+
+
+@pytest.mark.parametrize("language", ["EN", "FR"])
+def test_placeholder_folders_do_not_depend_on_ui_language(base_context, language):
+    """CLI (FR), Streamlit and watch (EN default) must file unknown issuers into the same folder."""
+    from classifai.localization import Language, set_language
+
+    set_language(Language[language])
+    try:
+        general = _calculate_general_destination(
+            base_context.model_copy(update={"issuer": None, "sector": None})
+        )
+        rule = determine_final_path(base_context.model_copy(update={"rule_match_category": "Factures"}))
+    finally:
+        set_language(Language.EN)
+
+    assert general.parent.parent.name == "Émetteur_Inconnu"
+    assert general.parent.parent.parent.name == "Secteur_Inconnu"
+    assert "Émetteur_Inconnu" in rule.final_destination_path.parts

@@ -81,3 +81,16 @@ def test_run_forwards_ollama_overrides(mocker, tmp_path):
     assert result.exit_code == 0, result.output
     assert mock_scan.call_args.kwargs["ollama_model"] == "llama3"
     assert mock_scan.call_args.kwargs["ollama_url"] == "http://h:1"
+
+
+def test_watch_refuses_invalid_rules(mocker, tmp_path):
+    """watch validates the configuration like run does, before watching anything."""
+    from classifai.exceptions import ConfigurationError
+
+    mocker.patch("classifai.classifai_cli.validate_app_config", side_effect=ConfigurationError("bad rule"))
+    mock_start = mocker.patch("classifai.classifai_cli.start_watcher")
+
+    result = runner.invoke(app, ["watch", "-s", str(tmp_path), "-d", str(tmp_path / "out")])
+
+    assert result.exit_code == 1
+    mock_start.assert_not_called()

@@ -21,8 +21,10 @@ from classifai.defaults import (
     DEFAULT_VERBOSE,
 )
 from classifai.entrypoint_utils import generate_file_operations, perform_operations
+from classifai.exceptions import ConfigurationError
 from classifai.logging_module import setup_logger
 from classifai.pipeline import run_scan
+from classifai.validation import validate_app_config
 
 # --- Page Configuration ---
 st.set_page_config(
@@ -31,6 +33,13 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+# --- Configuration Validation ---
+try:
+    validate_app_config(app_config.rules, app_config.categories)
+except ConfigurationError as e:
+    st.error(f"Configuration error: {e}")
+    st.stop()
 
 # --- Session State Initialization ---
 if "scan_results" not in st.session_state:

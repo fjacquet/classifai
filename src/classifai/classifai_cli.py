@@ -28,10 +28,19 @@ from classifai.infrastructure.knowledge_base import unknown_issuers_path
 from classifai.localization import Language, get_text, set_language
 from classifai.logging_module import setup_logger
 from classifai.pipeline import run_scan
-from classifai.validation import validate_rule_conditions, validate_rules_against_categories
+from classifai.validation import validate_app_config
 
 app = typer.Typer()
 console = Console()
+
+
+def _validate_config_or_exit() -> None:
+    """Stop with exit code 1 if the YAML configuration is invalid."""
+    try:
+        validate_app_config(app_config.rules, app_config.categories)
+    except ConfigurationError as e:
+        console.print(f"[bold red]Configuration error:[/bold red] {e}")
+        raise typer.Exit(code=1) from e
 
 
 @app.command()
@@ -152,13 +161,7 @@ def run(
     table.add_column(get_text("new_filename"), style="blue")
     table.add_column(get_text("destination_path"), style="green")
 
-    # Validate configuration
-    try:
-        validate_rules_against_categories(app_config.rules, app_config.categories)
-        validate_rule_conditions(app_config.rules)
-    except ConfigurationError as e:
-        logger.error(str(e))
-        raise typer.Exit(code=1) from e
+    _validate_config_or_exit()
 
     results_df = run_scan(
         str(source_dir),
@@ -294,6 +297,7 @@ def watch(
     """
     Watches a directory for new files and organizes them automatically.
     """
+    _validate_config_or_exit()
     scan_config = {
         "rename_files": rename_files,
         "use_vision": use_vision,

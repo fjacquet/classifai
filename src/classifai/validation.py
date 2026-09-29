@@ -62,3 +62,18 @@ def validate_rule_conditions(rules: list[dict[str, Any]]) -> None:
 
     if problems:
         raise ConfigurationError("Found invalid rule conditions:\n" + "\n".join(problems))
+
+
+def validate_app_config(rules: list[dict[str, Any]], categories: list[str]) -> None:
+    """
+    Runs every configuration check. Entry points call this before processing files.
+
+    Args:
+        rules: The list of rules from the configuration.
+        categories: The master list of valid categories.
+
+    Raises:
+        ConfigurationError: If any check fails.
+    """
+    validate_rules_against_categories(rules, categories)
+    validate_rule_conditions(rules)

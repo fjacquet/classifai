@@ -44,3 +44,13 @@ def test_shipped_rules_are_valid():
 
     validate_rules_against_categories(app_config.rules, app_config.categories)
     validate_rule_conditions(app_config.rules)
+
+
+def test_validate_app_config_runs_all_checks():
+    """One entry point validates categories and conditions (used by CLI run/watch and Streamlit)."""
+    from classifai.validation import validate_app_config
+
+    rules = [{"name": "r1", "conditions": [{"type": "filname"}], "action": {"category": "Factures"}}]
+
+    with pytest.raises(ConfigurationError, match="filname"):
+        validate_app_config(rules, ["Factures"])

@@ -21,6 +21,12 @@ from classifai.utils import (
 # Category whose files are filed by EXIF date (Photos/YYYY/MM_Month/...)
 PHOTO_CATEGORY = "Images"
 
+# Placeholder folder names: fixed (French, like the category tree) so the same file lands in the
+# same place whatever the UI language of the entry point (CLI, Streamlit, watch)
+UNKNOWN_SECTOR_FOLDER = "Secteur_Inconnu"
+UNKNOWN_ISSUER_FOLDER = "Émetteur_Inconnu"
+UNCLASSIFIED_FOLDER = "Non Classé"
+
 
 def _document_date(context: FileContext) -> str:
     """Pure helper: first valid date among the model's answer and the file metadata, as YYYY-MM-DD."""
@@ -127,14 +133,14 @@ def _calculate_general_destination(context: FileContext) -> Path:
 
     # Utiliser le secteur du contexte s'il est défini, sinon utiliser la valeur par défaut
     # Assurer que le secteur est en français
-    sector_folder = context.sector if context.sector else get_default_value("unknown_sector")
+    sector_folder = context.sector or UNKNOWN_SECTOR_FOLDER
 
     # Nettoyer le nom de l'émetteur pour le chemin
-    safe_issuer = sanitize_path_component(context.issuer or "") or get_default_value("unknown_issuer")
+    safe_issuer = sanitize_path_component(context.issuer or "") or UNKNOWN_ISSUER_FOLDER
 
     # Utiliser la catégorie du contexte directement si elle est définie
     # Sinon, utiliser la catégorie des résultats AI ou la valeur par défaut
-    category = context.category or context.ai_results.get("category") or get_default_value("unclassified")
+    category = context.category or context.ai_results.get("category") or UNCLASSIFIED_FOLDER
 
     # Obtenir le nom de fichier final
     final_filename = _get_final_filename(context)
@@ -156,8 +162,8 @@ def determine_final_path(context: FileContext) -> FileContext:
             dest_path = dest_path / _language_folder(context)
         final_path = (
             dest_path
-            / get_default_value("unknown_sector")
-            / get_default_value("unknown_issuer")
+            / UNKNOWN_SECTOR_FOLDER
+            / UNKNOWN_ISSUER_FOLDER
             / context.rule_match_category
             / context.source_path.name
         )

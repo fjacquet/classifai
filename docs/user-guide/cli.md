@@ -39,7 +39,7 @@ uv run classifai run --source-dir <path> [options]
 | `--quiet-llm`         | `-ql` | `False`                     | Suppress DEBUG logs from the LLM module       |
 | `--log-file`          |       | `logs/main.log`             | Log file path                                 |
 
-Before scanning, `run` validates `config/rules.yaml`: a rule whose
+Before scanning, `run` (and `watch`, before it starts watching) validates `config/rules.yaml`: a rule whose
 category is not in `categories.yaml`, or a condition with an unknown
 `type` / `match`, stops the run with an error listing the offending rules
 (exit code 1). See [Configuration → rules](configuration.md#configrulesyaml).
@@ -141,9 +141,7 @@ Makefile shortcut:
 make watch SRC=~/Inbox DEST=~/Sorted
 ```
 
-`SRC` is required. Always set `DEST` as well: when it is omitted the
-Makefile passes an empty destination, which resolves to the current
-directory (the repository root).
+`SRC` and `DEST` are both required.
 
 ---
 

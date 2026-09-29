@@ -43,6 +43,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation aligned with the code (README, user guide, PRD, ADRs, CLAUDE.md)
 
 ### Fixed
+- Placeholder folders (`Émetteur_Inconnu`, `Secteur_Inconnu`, `Non Classé`) no longer depend on
+  the UI language, so the CLI, Web UI and watch mode file unknown issuers into the same folder
+- `classifai watch` and the Web UI validate `rules.yaml` at startup, like `classifai run`
+- `.doc`, `.xls` and `.ods` are no longer scanned (no parser exists for them; they always failed)
+- `make watch` requires `DEST` instead of silently filing into the repository root
 - `classifai watch` failed on every file (incomplete scan configuration)
 - `--ollama-model` / `--ollama-url` and the Web UI model/URL inputs were ignored
 - Vision images are sent base64-encoded (Ollama rejected the previous encoding)

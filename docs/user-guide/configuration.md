@@ -40,7 +40,7 @@ A flat list of every category a document can be assigned to.
   invent new values. When it has no fitting answer the file goes to
   `_UNKNOWN_` (see [LLM behaviour](#llm-behaviour)).
 - Add new categories as you need them; remove old ones freely.
-- `classifai run` validates at startup that every category referenced in
+- `classifai run`, `classifai watch` and the Web UI validate at startup that every category referenced in
   `rules.yaml` exists here. Missing? The run stops with a clear error.
 - `Images` is special: images classified `Images` that carry an EXIF date
   are filed as photos (see [Photos](#photos)).
@@ -170,9 +170,8 @@ and land in:
 ```
 
 The `fr/` level only appears with `--language-subfolders` (no language is
-detected for rule matches). The unknown-issuer folder is
-`Émetteur_Inconnu` from `classifai run` and `Unknown_Issuer` from the Web
-UI and `classifai watch`.
+detected for rule matches). Placeholder folders (`Secteur_Inconnu`,
+`Émetteur_Inconnu`, `Non Classé`) are the same whatever the entry point.
 
 At startup `classifai run` rejects rules whose category is not in
 `categories.yaml` and conditions with an unknown `type` or `match` (see
@@ -237,7 +236,6 @@ A scan picks up files whose extension is in `supported_extensions` or
 | Images          | `.png .jpg .jpeg .tiff .bmp`                 | Tesseract OCR, EXIF date/GPS; optional vision model |
 | Email           | `.eml .msg`                                  | Headers + body (`.eml`: declared charset honoured, plain-text part preferred, HTML part otherwise) |
 | Web             | `.html`                                      | BeautifulSoup text (declared charset honoured) |
-| Legacy Office   | `.doc .xls .ods`                             | Listed, but **no parser** is registered: these files currently fail to parse and are skipped with an error |
 
 Notes:
 
@@ -287,9 +285,7 @@ ClassifAI calls Ollama's `/api/generate` endpoint directly over HTTP
   detected).
 - `<sector>` falls back to `Secteur_Inconnu`, `<category>` to
   `Non Classé`.
-- `<issuer>` falls back to the unknown-issuer folder — `Émetteur_Inconnu`
-  from `classifai run`, `Unknown_Issuer` from the Web UI and
-  `classifai watch`.
+- `<issuer>` falls back to `Émetteur_Inconnu`.
 - Rule-matched files use the layout described under
   [`config/rules.yaml`](#configrulesyaml).
 
@@ -353,7 +349,8 @@ Over time the AI sector fallback is needed less and less.
 
 ## Validation at startup
 
-Before scanning, `classifai run` calls `src/classifai/validation.py`,
+Before processing files, `classifai run`, `classifai watch` and the Web UI
+call `validate_app_config` in `src/classifai/validation.py`,
 which raises a `ConfigurationError` listing every problem found:
 
 - a rule whose category is not in `categories.yaml`
@@ -362,9 +359,8 @@ which raises a `ConfigurationError` listing every problem found:
   `metadata`, or a metadata `match` that is not one of the five operators
   (`Found invalid rule conditions: …`).
 
-The message is logged and the command exits with code 1 — fix the YAML,
-don't suppress the check. The Web UI and `classifai watch` do not run this
-validation.
+The CLI prints the message and exits with code 1; the Web UI shows it and
+stops. Fix the YAML — don't suppress the check.
 
 ## Formatting YAML
 
