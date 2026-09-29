@@ -15,8 +15,8 @@ See [ADR-0006](../adr/0006-yaml-driven-configuration.md) for the rationale.
 
 | Variable                     | Default                    | Purpose                                     |
 | ---------------------------- | -------------------------- | ------------------------------------------- |
-| `OLLAMA_MODEL_NAME`          | `gemma:2b`                 | Text LLM model (override with `--ollama-model`) |
-| `OLLAMA_VISION_MODEL_NAME`   | `llava`                    | Vision model (used with `--use-vision`)     |
+| `OLLAMA_MODEL_NAME`          | `gemma4:e4b`               | Text LLM model (override with `--ollama-model`) |
+| `OLLAMA_VISION_MODEL_NAME`   | `gemma4:e4b`               | Vision model (used with `--use-vision`)     |
 | `OLLAMA_API_URL`             | `http://localhost:11434`   | Ollama endpoint (override with `--ollama-url`) |
 
 Loaded via `python-dotenv` — drop a `.env` in the repo root.

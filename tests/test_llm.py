@@ -388,6 +388,7 @@ class TestStructuredOutputs:
         assert payload["options"]["temperature"] == 0
         assert payload["options"]["num_ctx"] >= 4096
         assert "keep_alive" in payload
+        assert payload["think"] is False  # Gemma 4 thinks by default and can exhaust the budget
 
     def test_sector_fallback_is_constrained_to_known_sectors(self, mocker):
         """Unknown sectors from the model are rejected instead of creating new folders."""

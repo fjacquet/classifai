@@ -54,8 +54,8 @@ git clone https://github.com/fjacquet/classifai.git
 cd classifai
 uv sync --all-extras --all-groups   # or: make install
 
-# Local LLM (gemma:2b is the default; set OLLAMA_MODEL_NAME to use another)
-ollama pull gemma:2b
+# Local LLM (gemma4:e4b is the default for text and images; ~10 GB download)
+ollama pull gemma4:e4b
 ```
 
 Full instructions: [User Guide → Installation](docs/user-guide/installation.md).

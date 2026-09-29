@@ -17,11 +17,11 @@ actually listening.
 
 ### `Ollama API error: 404` (model not found)
 
-You haven't pulled the model (the default is `gemma:2b`, or whatever
+You haven't pulled the model (the default is `gemma4:e4b`, or whatever
 `OLLAMA_MODEL_NAME` says):
 
 ```bash
-ollama pull gemma:2b
+ollama pull gemma4:e4b
 ```
 
 Or switch model for a run:
@@ -38,7 +38,7 @@ request may take up to 120 s — the first call of a run can be slow while
 Ollama loads the model, which then stays loaded for 10 minutes. If every
 call is slow:
 
-- Try a smaller model (`gemma:2b` on CPU, `llama3:8b` with modest GPU).
+- Try a smaller model (`gemma4:e2b`), or a larger one (`gemma4:12b`) if you have the RAM.
 - Reduce batch size by running on smaller source folders.
 - Check Ollama isn't swapped out / starved for RAM (activity monitor).
 

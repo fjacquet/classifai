@@ -61,8 +61,7 @@ uv pip install -e ".[dev]"   # or: make dev
 Install Ollama from [ollama.ai](https://ollama.ai), then pull a model:
 
 ```bash
-ollama pull gemma:2b      # text model (default when OLLAMA_MODEL_NAME is unset)
-ollama pull llava         # vision model (optional, used with --use-vision)
+ollama pull gemma4:e4b    # default text AND vision model (multimodal, ~10 GB download)
 ```
 
 Smaller models work on CPU-only laptops; larger models benefit from a GPU
@@ -74,8 +73,8 @@ Copy `.env.example` to `.env` and adjust (every variable is optional; the
 values below are the built-in defaults):
 
 ```dotenv
-OLLAMA_MODEL_NAME=gemma:2b
-OLLAMA_VISION_MODEL_NAME=llava
+OLLAMA_MODEL_NAME=gemma4:e4b
+OLLAMA_VISION_MODEL_NAME=gemma4:e4b
 OLLAMA_API_URL=http://localhost:11434
 ```
 

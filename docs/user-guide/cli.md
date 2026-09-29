@@ -29,7 +29,7 @@ uv run classifai run --source-dir <path> [options]
 | `--source-dir`        | `-s`  | **required**                | Folder to organize                            |
 | `--destination-dir`   | `-d`  | same as source              | Output folder                                 |
 | `--mode`              | `-m`  | `dry-run`                   | `dry-run` / `move` / `copy`                   |
-| `--ollama-model`      | `-ai` | `OLLAMA_MODEL_NAME` (`gemma:2b`) | Text LLM model name                      |
+| `--ollama-model`      | `-ai` | `OLLAMA_MODEL_NAME` (`gemma4:e4b`) | Text LLM model name                      |
 | `--ollama-url`        | `-url`| `OLLAMA_API_URL`            | Ollama API URL                                |
 | `--rename-files`      | `-r`  | `False`                     | Rename to `YYYY-MM-DD_Short_Title.ext`        |
 | `--use-vision`        | `-uv` | `use_vision_model` in `settings.yaml` (`False`) | Use `OLLAMA_VISION_MODEL_NAME` for images |
@@ -113,7 +113,7 @@ Runs until interrupted (Ctrl-C). Useful for scanner / download inboxes.
 | `--source-dir`          | `-s`   | **required**                     | Folder to watch                          |
 | `--destination-dir`     | `-d`   | **required**                     | Output folder                            |
 | `--mode`                | `-m`   | `move`                           | `move` / `copy` (no confirmation prompt) |
-| `--ollama-model`        | `-ai`  | `OLLAMA_MODEL_NAME` (`gemma:2b`) | Text LLM model name                      |
+| `--ollama-model`        | `-ai`  | `OLLAMA_MODEL_NAME` (`gemma4:e4b`) | Text LLM model name                      |
 | `--ollama-url`          | `-url` | `OLLAMA_API_URL`                 | Ollama API URL                           |
 | `--rename-files`        | `-r`   | `False`                          | Rename to `YYYY-MM-DD_Short_Title.ext`   |
 | `--use-vision`          | `-uv`  | `use_vision_model` (`False`)     | Use the vision model for images          |

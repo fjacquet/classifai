@@ -31,6 +31,9 @@ def _load_yaml_file(path: Path) -> dict | list | None:
         return None
 
 
+# Gemma 4 E4B: multimodal (text + images), good French, native structured JSON
+DEFAULT_OLLAMA_MODEL = "gemma4:e4b"
+
 # Default supported file extensions
 DEFAULT_SUPPORTED_EXTENSIONS = [
     # Documents
@@ -137,9 +140,9 @@ def load_app_config() -> AppConfig:
 
     return AppConfig(
         # Env vars
-        ollama_model_name=os.getenv("OLLAMA_MODEL_NAME", "gemma:2b"),
+        ollama_model_name=os.getenv("OLLAMA_MODEL_NAME", DEFAULT_OLLAMA_MODEL),
         ollama_api_url=os.getenv("OLLAMA_API_URL", "http://localhost:11434"),
-        ollama_vision_model_name=os.getenv("OLLAMA_VISION_MODEL_NAME", "llava"),
+        ollama_vision_model_name=os.getenv("OLLAMA_VISION_MODEL_NAME", DEFAULT_OLLAMA_MODEL),
         # YAML files
         settings=settings,
         categories=categories,

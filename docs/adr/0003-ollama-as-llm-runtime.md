@@ -18,8 +18,8 @@ different hardware) and selectable via environment variable. Options spanned:
 Use **Ollama** as the default LLM runtime for both text and vision models.
 Model identity is controlled by environment variables:
 
-- `OLLAMA_MODEL_NAME` (text, defaults to `gemma:2b`)
-- `OLLAMA_VISION_MODEL_NAME` (vision, defaults to `llava`)
+- `OLLAMA_MODEL_NAME` (text, defaults to `gemma4:e4b`)
+- `OLLAMA_VISION_MODEL_NAME` (vision, defaults to `gemma4:e4b`, which is multimodal)
 - `OLLAMA_API_URL` (defaults to `http://localhost:11434`)
 
 The code calls Ollama's HTTP API (`/api/generate`) directly with `httpx` —
@@ -36,7 +36,7 @@ no provider-abstraction layer. Swapping backends would mean changing
   your Downloads folder" mental model.
 - **Ergonomics:** `ollama pull <model>` is a one-liner; no API keys, no
   rate limits, no quota forms. Lower barrier to entry for first-time users.
-- **Hardware flexibility:** Users on a laptop run `gemma:2b`; users with
+- **Hardware flexibility:** Users on a laptop run `gemma4:e4b` (or `gemma4:e2b`); users with
   a GPU run larger/better models. Same code path either way.
 
 ## Alternatives considered

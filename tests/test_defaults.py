@@ -89,3 +89,16 @@ class TestDefaultsImportedByEntrypoints:
         assert hasattr(app_module, "DEFAULT_VERBOSE")
         assert hasattr(app_module, "DEFAULT_QUIET_LLM")
         assert hasattr(app_module, "DEFAULT_LOG_FILE")
+
+
+def test_default_models_are_gemma4(monkeypatch):
+    """One multimodal model serves text and vision out of the box."""
+    from classifai.config import load_app_config
+
+    monkeypatch.delenv("OLLAMA_MODEL_NAME", raising=False)
+    monkeypatch.delenv("OLLAMA_VISION_MODEL_NAME", raising=False)
+
+    config = load_app_config()
+
+    assert config.ollama_model_name == "gemma4:e4b"
+    assert config.ollama_vision_model_name == "gemma4:e4b"
