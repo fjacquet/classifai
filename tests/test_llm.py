@@ -476,3 +476,13 @@ def test_enrich_uses_canonical_issuer_name(mocker, base_context):
     assert result.issuer == "UBS"
     assert result.sector == "Banque"
     assert result.ai_results["issuer"] == "UBS Switzerland AG"
+
+
+def test_tax_category_variants_resolve_to_impots():
+    """Accent-less or English answers still land in the Impôts category."""
+    from classifai.config import app_config
+    from classifai.infrastructure.llm import _validate_category
+
+    assert "Impôts" in app_config.categories
+    assert _validate_category("Impots", app_config.categories) == "Impôts"
+    assert _validate_category("Taxes", app_config.categories) == "Impôts"

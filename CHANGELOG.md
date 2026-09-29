@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `Impôts` category (tax decisions, tax certificates); English/accent-less answers such as
+  `Taxes` or `Impots` map to it
 - `classifai watch` accepts `--ollama-model/-ai`, `--ollama-url/-url`, `--rename-files/-r`,
   `--use-vision/-uv` and `--language-subfolders/-ls`
 - Watch mode waits until a file's size is stable, handles renames (download to a temporary

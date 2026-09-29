@@ -472,11 +472,14 @@ def _query_model(context: FileContext) -> dict[str, Any]:
 
 
 def _validate_category(category: Any, allowed: list[str]) -> str | None:
-    """Return *category* if allowed, its close fuzzy match, or None."""
+    """Return *category* if allowed, else its French mapping, else its close fuzzy match, or None."""
     if not isinstance(category, str) or not category:
         return None
     if category in allowed:
         return category
+    mapped = translate_category(category)  # English names and known variants -> French category
+    if mapped in allowed:
+        return mapped
     fuzzy_match = _fuzzy_match_category(category, allowed)
     if fuzzy_match:
         logger.info(f"Fuzzy matched invalid category '{category}' → '{fuzzy_match}'")

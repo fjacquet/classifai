@@ -144,6 +144,11 @@ CATEGORY_MAPPINGS: dict[str, str] = {
     "Certificates": "Certificats",
     "Certificat": "Certificats",
     "Certificats": "Certificats",
+    "Tax": "Impôts",
+    "Taxes": "Impôts",
+    "Tax Documents": "Impôts",
+    "Impot": "Impôts",
+    "Impots": "Impôts",
     # Common typos and variations
     "Fiichiers Spécifiques": "Fichiers Spécifiques",
     "Fiichés Spécifiques": "Fichiers Spécifiques",
