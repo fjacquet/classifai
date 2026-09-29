@@ -95,6 +95,7 @@ class AppConfig:
     # --- Derived settings ---
     generic_text_extensions: list[str] = field(init=False)
     use_vision_model: bool = field(init=False)
+    online_geocoding: bool = field(init=False)
     supported_extensions: list[str] = field(init=False)
 
     def __post_init__(self):
@@ -108,6 +109,7 @@ class AppConfig:
             self.settings.get("generic_text_extensions", []),
         )
         object.__setattr__(self, "use_vision_model", self.settings.get("use_vision_model", False))
+        object.__setattr__(self, "online_geocoding", self.settings.get("online_geocoding", False))
         object.__setattr__(
             self,
             "supported_extensions",

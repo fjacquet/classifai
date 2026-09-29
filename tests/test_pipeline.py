@@ -262,3 +262,27 @@ def test_scan_with_destination_equal_to_source_still_finds_files(mocker, tmp_pat
     run_scan(str(tmp_path), str(tmp_path), False, False, True, False, ["Factures"])
 
     assert [call.args[0].name for call in mock_process.call_args_list] == ["new.pdf"]
+
+
+@pytest.mark.parametrize(
+    ("ai_date", "metadata", "expected_prefix"),
+    [
+        ("2025-03-14", {}, "2025-03-14_"),
+        ("14 mars 2025", {"creation_date": "2025:03:10 09:00:00+01:00"}, "2025-03-10_"),
+        ("2025-13-45", {}, "Invoice"),
+    ],
+)
+def test_renamed_file_uses_a_valid_date(base_context, ai_date, metadata, expected_prefix):
+    """Invalid model dates fall back to file metadata, or are omitted."""
+    context = base_context.model_copy(
+        update={
+            "rename_files": True,
+            "metadata": metadata,
+            "ai_results": {"category": "Reports", "date": ai_date, "short_title": "Invoice March"},
+        },
+    )
+
+    name = determine_final_path(context).final_destination_path.name
+
+    assert name.startswith(expected_prefix)
+    assert name.endswith(".txt")

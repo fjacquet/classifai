@@ -12,3 +12,7 @@ generic_text_extensions:
 # Vision model settings
 # Enable or disable the use of a vision model for image classification.
 use_vision_model: false
+
+# Reverse-geocode photo GPS coordinates to "City, Country" folders.
+# This sends coordinates to OpenStreetMap Nominatim (online), so it is off by default.
+online_geocoding: false

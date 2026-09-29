@@ -11,10 +11,30 @@ from pathlib import Path
 
 from classifai.core.types import FileContext
 from classifai.localization import get_default_value
-from classifai.utils import sanitize_filename, sanitize_path_component
+from classifai.utils import (
+    format_date_for_filename,
+    parse_date_flexible,
+    sanitize_filename,
+    sanitize_path_component,
+)
 
 # Category whose files are filed by EXIF date (Photos/YYYY/MM_Month/...)
 PHOTO_CATEGORY = "Images"
+
+
+def _document_date(context: FileContext) -> str:
+    """Pure helper: first valid date among the model's answer and the file metadata, as YYYY-MM-DD."""
+    candidates = (
+        context.ai_results.get("date"),
+        context.metadata.get("creation_date"),
+        context.metadata.get("date"),
+    )
+    for candidate in candidates:
+        # [:19] drops timezone suffixes such as "+01:00" from EXIF/PDF dates
+        parsed = parse_date_flexible(str(candidate)[:19]) if candidate else None
+        if parsed:
+            return format_date_for_filename(parsed)
+    return ""
 
 
 def _get_final_filename(context: FileContext) -> str:
@@ -22,7 +42,7 @@ def _get_final_filename(context: FileContext) -> str:
     # Si l'option rename_files est activée, créer un nom descriptif
     if context.rename_files:
         # Extraire les composants pour le nom de fichier selon la spécification: Date_Titre.ext
-        date = context.ai_results.get("date", "")
+        date = _document_date(context)
         short_title = context.ai_results.get("short_title", "")
         category = context.category or context.ai_results.get("category", "")
         category_suggestion = context.ai_results.get("category_suggestion", "")
