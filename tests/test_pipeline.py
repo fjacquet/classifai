@@ -235,3 +235,30 @@ def test_punctuation_only_issuer_falls_back_to_unknown(base_context):
 
     assert "" not in path.parts
     assert path.parent.parent.name in {"Unknown_Issuer", "Émetteur_Inconnu"}
+
+
+def test_recursive_scan_skips_the_destination_tree(mocker, tmp_path):
+    """When the destination lives inside the source, already-filed files are not re-classified."""
+    from classifai.pipeline import run_scan
+
+    (tmp_path / "new.pdf").write_text("x")
+    filed = tmp_path / "sorted" / "fr" / "Banque" / "UBS" / "Factures"
+    filed.mkdir(parents=True)
+    (filed / "old.pdf").write_text("x")
+    mock_process = mocker.patch("classifai.pipeline.process_file_pipeline", return_value=None)
+
+    run_scan(str(tmp_path), str(tmp_path / "sorted"), False, False, True, True, ["Factures"])
+
+    assert [call.args[0].name for call in mock_process.call_args_list] == ["new.pdf"]
+
+
+def test_scan_with_destination_equal_to_source_still_finds_files(mocker, tmp_path):
+    """The CLI defaults destination to source; that must not exclude everything."""
+    from classifai.pipeline import run_scan
+
+    (tmp_path / "new.pdf").write_text("x")
+    mock_process = mocker.patch("classifai.pipeline.process_file_pipeline", return_value=None)
+
+    run_scan(str(tmp_path), str(tmp_path), False, False, True, False, ["Factures"])
+
+    assert [call.args[0].name for call in mock_process.call_args_list] == ["new.pdf"]

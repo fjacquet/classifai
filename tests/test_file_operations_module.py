@@ -6,7 +6,10 @@ import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 
+import pytest
+
 from classifai.core.types import FileContext
+from classifai.exceptions import FileOperationError
 from classifai.infrastructure.file_system import transfer_file
 
 
@@ -118,3 +121,60 @@ def test_name_conflict_resolution():
         assert moved_path.name == "test (1).txt"
         assert moved_path.parent == dest_dir.absolute()
         assert existing_file.exists()  # The original conflicting file should still be there
+
+
+def _context_for(source, destination):
+    return FileContext(
+        source_path=source,
+        destination_dir=destination.parent,
+        rename_files=False,
+        use_vision=False,
+        language_subfolders=False,
+        categories=[],
+        final_destination_path=destination,
+    )
+
+
+def test_identical_file_already_filed_is_not_duplicated(tmp_path):
+    """Re-filing the same content does not create 'name (1).ext' copies."""
+    source = tmp_path / "in" / "invoice.pdf"
+    source.parent.mkdir()
+    source.write_bytes(b"same content")
+    destination = tmp_path / "out" / "invoice.pdf"
+    destination.parent.mkdir()
+    destination.write_bytes(b"same content")
+
+    result = transfer_file(_context_for(source, destination), "copy")
+
+    assert Path(result.final_destination_path) == destination
+    assert sorted(p.name for p in destination.parent.iterdir()) == ["invoice.pdf"]
+    assert source.exists()  # never delete the user's file on a duplicate
+
+
+def test_different_content_with_same_name_gets_a_counter(tmp_path):
+    """Name clashes with different content still keep both files."""
+    source = tmp_path / "in" / "invoice.pdf"
+    source.parent.mkdir()
+    source.write_bytes(b"new")
+    destination = tmp_path / "out" / "invoice.pdf"
+    destination.parent.mkdir()
+    destination.write_bytes(b"old")
+
+    result = transfer_file(_context_for(source, destination), "move")
+
+    assert Path(result.final_destination_path).name == "invoice (1).pdf"
+    assert destination.read_bytes() == b"old"
+
+
+def test_failed_transfer_leaves_no_placeholder(mocker, tmp_path):
+    """If the move fails, the reserved destination name is released."""
+    source = tmp_path / "in" / "a.pdf"
+    source.parent.mkdir()
+    source.write_bytes(b"x")
+    destination = tmp_path / "out" / "a.pdf"
+    mocker.patch("classifai.infrastructure.file_system.shutil.move", side_effect=OSError("disk full"))
+
+    with pytest.raises(FileOperationError):
+        transfer_file(_context_for(source, destination), "move")
+
+    assert not destination.exists()

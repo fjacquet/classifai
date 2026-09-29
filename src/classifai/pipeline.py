@@ -27,6 +27,14 @@ def _is_supported_file(path: Path) -> bool:
     return suffix in app_config.supported_extensions or suffix in app_config.generic_text_extensions
 
 
+def _is_in_destination(path: Path, source_dir: Path, dest_dir: Path) -> bool:
+    """True if *path* was already filed into a destination nested inside the source directory."""
+    dest = dest_dir.resolve()
+    if dest == source_dir.resolve():
+        return False  # destination == source: nothing to tell apart
+    return path.resolve().is_relative_to(dest)
+
+
 def process_file_pipeline(
     file_path: Path,
     scan_config: dict,
@@ -141,7 +149,13 @@ def run_scan(
     }
 
     files = source_path.rglob("*") if recursive else source_path.iterdir()
-    file_paths = [f for f in files if f.is_file() and _is_supported_file(f)]
+    file_paths = [
+        f
+        for f in files
+        if f.is_file()
+        and _is_supported_file(f)
+        and not _is_in_destination(f, source_path, Path(dest_dir_str))
+    ]
 
     results = []
     for item in file_paths:
