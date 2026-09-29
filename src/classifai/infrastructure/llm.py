@@ -4,6 +4,7 @@ This module provides functions for interacting with the Ollama API.
 
 from __future__ import annotations
 
+import base64
 import json
 from difflib import get_close_matches
 from typing import Any
@@ -72,6 +73,7 @@ def _fuzzy_match_category(
 def _make_request(
     endpoint: str,
     payload: dict[str, Any],
+    api_url: str,
     logger_instance: Any | None = logger,
 ) -> dict[str, Any]:
     """
@@ -80,6 +82,7 @@ def _make_request(
     Args:
         endpoint: API endpoint path
         payload: Request payload
+        api_url: Base URL of the Ollama API
         logger_instance: Logger instance for logging
 
     Returns:
@@ -90,7 +93,7 @@ def _make_request(
     """
     try:
         with httpx.Client(timeout=TIMEOUT) as client:
-            response = client.post(f"{app_config.ollama_api_url}{endpoint}", json=payload)
+            response = client.post(f"{api_url}{endpoint}", json=payload)
             response.raise_for_status()
             return response.json()
     except httpx.HTTPStatusError as e:
@@ -106,41 +109,53 @@ def _make_request(
 
 def get_completion(
     prompt: str,
-    model_name: str = app_config.ollama_model_name,
+    model_name: str | None = None,
+    api_url: str | None = None,
     logger_instance: Any | None = logger,
 ) -> dict[str, Any]:
     """
     Gets a completion from the Ollama API.
+
+    ``model_name`` and ``api_url`` default to the configured values when None.
     """
     payload = {
-        "model": model_name,
+        "model": model_name or app_config.ollama_model_name,
         "prompt": prompt,
         "stream": False,
         "format": "json",
     }
-    return _make_request("/api/generate", payload, logger_instance)
+    return _make_request("/api/generate", payload, api_url or app_config.ollama_api_url, logger_instance)
 
 
 def get_vision_completion(
     prompt: str,
     image_bytes: bytes,
-    model_name: str = app_config.ollama_vision_model_name,
+    model_name: str | None = None,
+    api_url: str | None = None,
     logger_instance: Any | None = logger,
 ) -> dict[str, Any]:
     """
     Gets a completion from the Ollama API using a vision model.
+
+    Ollama expects images as base64-encoded strings.
     """
     payload = {
-        "model": model_name,
+        "model": model_name or app_config.ollama_vision_model_name,
         "prompt": prompt,
         "stream": False,
         "format": "json",
-        "images": [image_bytes.hex()],
+        "images": [base64.b64encode(image_bytes).decode("ascii")],
     }
-    return _make_request("/api/generate", payload, logger_instance)
+    return _make_request("/api/generate", payload, api_url or app_config.ollama_api_url, logger_instance)
 
 
-def get_sector_with_ai(issuer_name: str, content: str, logger_instance: Any | None = logger) -> str | None:
+def get_sector_with_ai(
+    issuer_name: str,
+    content: str,
+    model_name: str | None = None,
+    api_url: str | None = None,
+    logger_instance: Any | None = logger,
+) -> str | None:
     """
     Uses an AI model to determine the business sector of an issuer.
     """
@@ -159,7 +174,9 @@ def get_sector_with_ai(issuer_name: str, content: str, logger_instance: Any | No
     Example: {{"sector": "Finance"}}
     """
     try:
-        api_response = get_completion(prompt, logger_instance=logger_instance)
+        api_response = get_completion(
+            prompt, model_name=model_name, api_url=api_url, logger_instance=logger_instance
+        )
         log.debug(f"Sector API response: {api_response}")
 
         # Parse the JSON string from response['response']
@@ -249,6 +266,8 @@ def _build_metadata_hints(metadata: dict[str, Any]) -> str:
 def _get_category_suggestion(
     content: str,
     categories: list[str],
+    model_name: str | None = None,
+    api_url: str | None = None,
     logger_instance: Any | None = logger,
 ) -> str | None:
     """
@@ -270,7 +289,7 @@ def _get_category_suggestion(
     1. Suggest a concise, descriptive category name (2-4 words maximum)
     2. Use French language for the category name
     3. Make it general enough to apply to similar documents
-    4. Return ONLY the category name, nothing else
+    4. Respond with a JSON object under the key "category", e.g. {{"category": "Frais Médicaux"}}
 
     # DOCUMENT TO ANALYZE
     ---
@@ -279,9 +298,11 @@ def _get_category_suggestion(
     """
 
     try:
-        api_response = get_completion(prompt, logger_instance=logger_instance)
+        api_response = get_completion(
+            prompt, model_name=model_name, api_url=api_url, logger_instance=logger_instance
+        )
         if "response" in api_response:
-            suggestion = api_response["response"].strip()
+            suggestion = str(json.loads(api_response["response"]).get("category") or "").strip()
             # Clean the suggestion to be filename-safe
             suggestion = "".join(c for c in suggestion if c.isalnum() or c in " -_").strip()
             suggestion = suggestion.replace(" ", "-")
@@ -351,7 +372,7 @@ def enrich_with_ai(context: FileContext) -> FileContext:
         try:
             logger.debug(f"Calling vision model API for {context.source_path.name}")
             image_bytes = context.source_path.read_bytes()
-            api_response = get_vision_completion(prompt, image_bytes)
+            api_response = get_vision_completion(prompt, image_bytes, api_url=context.ollama_url)
             logger.debug(f"Vision model API response: {api_response}")
 
             # Parse the JSON string from response['response']
@@ -457,7 +478,7 @@ def enrich_with_ai(context: FileContext) -> FileContext:
         """
         try:
             logger.debug(f"Calling LLM API for {context.source_path.name}")
-            api_response = get_completion(prompt)
+            api_response = get_completion(prompt, model_name=context.ollama_model, api_url=context.ollama_url)
             logger.debug(f"LLM API response: {api_response}")
 
             # Parse the JSON string from response['response']
@@ -495,7 +516,12 @@ def enrich_with_ai(context: FileContext) -> FileContext:
                         response["category"] = "_UNKNOWN_"
 
                         # Get category suggestion for filename
-                        suggestion = _get_category_suggestion(context.content, context.categories)
+                        suggestion = _get_category_suggestion(
+                            context.content,
+                            context.categories,
+                            model_name=context.ollama_model,
+                            api_url=context.ollama_url,
+                        )
                         if suggestion:
                             response["category_suggestion"] = suggestion
                             logger.info(f"Category suggestion for _UNKNOWN_ document: {suggestion}")
@@ -538,7 +564,9 @@ def enrich_with_ai(context: FileContext) -> FileContext:
             else:
                 # Fallback to AI classification (step 2 of two-step process)
                 logger.debug("Sector not found in knowledge base, using AI fallback")
-                sector = get_sector_with_ai(ai_response.issuer, context.content)
+                sector = get_sector_with_ai(
+                    ai_response.issuer, context.content, context.ollama_model, context.ollama_url
+                )
                 logger.debug(f"AI determined sector: {sector}")
 
         updated_context = context.model_copy(
@@ -580,7 +608,7 @@ def enrich_with_ai(context: FileContext) -> FileContext:
             else:
                 # Fallback to AI classification (step 2 of two-step process)
                 logger.debug("Sector not found in knowledge base, using AI fallback")
-                sector = get_sector_with_ai(issuer, context.content)
+                sector = get_sector_with_ai(issuer, context.content, context.ollama_model, context.ollama_url)
                 logger.debug(f"AI determined sector: {sector}")
 
         updated_context = context.model_copy(

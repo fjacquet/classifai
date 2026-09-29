@@ -180,7 +180,8 @@ def perform_operations(
     if operation not in {"move", "copy"}:
         raise ValueError("operation must be 'move' or 'copy'")
 
-    total = len(list(ops)) if not isinstance(ops, list) else len(ops)
+    ops = list(ops)
+    total = len(ops)
     success_count = 0
 
     for i, op in enumerate(ops):

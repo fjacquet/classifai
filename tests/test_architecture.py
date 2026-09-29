@@ -51,7 +51,6 @@ def test_process_single_file(mocker):
     mocker.patch("classifai.pipeline.apply_full_rules", return_value=mock_context)
     mocker.patch("classifai.pipeline.read_and_parse_file", return_value=mock_context)
     mocker.patch("classifai.pipeline.enrich_with_ai", return_value=mock_context)
-    mocker.patch("classifai.pipeline.enrich_with_knowledge", return_value=mock_context)
     mocker.patch("classifai.pipeline.determine_final_path", return_value=mock_context)
 
     result = process_single_file(

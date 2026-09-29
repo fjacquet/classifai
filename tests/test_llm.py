@@ -270,3 +270,54 @@ class TestFormatCategoriesForPrompt:
         assert "Relevés Bancaires" in result
         assert "Non Classé" in result
         assert "Médical" in result
+
+
+class TestOllamaRequests:
+    """Regression tests for the Ollama request payloads."""
+
+    def test_vision_completion_sends_base64_image(self, mocker):
+        """Ollama expects base64-encoded images, not hex."""
+        from classifai.infrastructure.llm import get_vision_completion
+
+        mock_request = mocker.patch("classifai.infrastructure.llm._make_request", return_value={})
+        get_vision_completion("prompt", b"\x89PNG")
+
+        payload = mock_request.call_args.args[1]
+        assert payload["images"] == ["iVBORw=="]
+
+    def test_completion_uses_explicit_model_and_url(self, mocker):
+        """Model and URL overrides must reach the request."""
+        from classifai.infrastructure.llm import get_completion
+
+        mock_request = mocker.patch("classifai.infrastructure.llm._make_request", return_value={})
+        get_completion("prompt", model_name="llama3", api_url="http://ollama:11434")
+
+        endpoint, payload, api_url = mock_request.call_args.args[:3]
+        assert endpoint == "/api/generate"
+        assert payload["model"] == "llama3"
+        assert api_url == "http://ollama:11434"
+
+    def test_enrich_with_ai_forwards_context_model(self, mocker, base_context):
+        """The model chosen on the CLI/UI must be used for classification."""
+        context = base_context.model_copy(update={"ollama_model": "llama3", "ollama_url": "http://h:1"})
+        mock_completion = mocker.patch(
+            "classifai.infrastructure.llm.get_completion",
+            return_value={"response": '{"issuer": null, "category": "Invoices"}'},
+        )
+
+        enrich_with_ai(context)
+
+        kwargs = mock_completion.call_args.kwargs
+        assert kwargs["model_name"] == "llama3"
+        assert kwargs["api_url"] == "http://h:1"
+
+    def test_category_suggestion_parses_json_response(self, mocker):
+        """JSON mode is forced, so the suggestion must be read from the JSON key."""
+        from classifai.infrastructure.llm import _get_category_suggestion
+
+        mocker.patch(
+            "classifai.infrastructure.llm.get_completion",
+            return_value={"response": '{"category": "Frais Médicaux"}'},
+        )
+
+        assert _get_category_suggestion("text", ["Factures"]) == "Frais-Médicaux"

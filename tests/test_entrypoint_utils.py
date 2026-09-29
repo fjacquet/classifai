@@ -81,3 +81,16 @@ def test_perform_operations_copy(monkeypatch, sample_df):
     count = perform_operations(ops, "copy")
     assert count == len(ops)
     assert processed == [Path(op["source"]) for op in ops]
+
+
+def test_perform_operations_accepts_generator(mocker, sample_df):
+    """A one-shot iterable must not be consumed before the operations run."""
+    mock_transfer = mocker.patch("classifai.entrypoint_utils.transfer_file")
+    progress = []
+    ops = (op for op in generate_file_operations(sample_df))
+
+    processed = perform_operations(ops, "copy", progress_cb=lambda i, t, _: progress.append((i, t)))
+
+    assert processed == 2
+    assert mock_transfer.call_count == 2
+    assert progress == [(1, 2), (2, 2)]

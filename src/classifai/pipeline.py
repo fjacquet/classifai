@@ -16,29 +16,15 @@ from classifai.core.rules import RulesEngine, apply_early_rules, apply_full_rule
 from classifai.core.types import FileContext
 from classifai.exceptions import ClassifAIError
 from classifai.infrastructure.file_system import read_and_parse_file
-from classifai.infrastructure.knowledge_base import get_sector_for_issuer
 from classifai.infrastructure.llm import enrich_with_ai
 
 
-def enrich_with_knowledge(context: FileContext) -> FileContext:
-    """
-    Enriches the file context with knowledge from the knowledge base.
-    Specifically, it tries to find the sector for the issuer if available.
-
-    Args:
-        context: The file context to enrich
-
-    Returns:
-        The enriched FileContext
-    """
-    # If we have an issuer but no sector, try to find the sector
-    if context.issuer and not context.sector:
-        sector = get_sector_for_issuer(context.issuer)
-        if sector:
-            return context.model_copy(update={"sector": sector})
-
-    # If no enrichment was needed or possible, return the original context
-    return context
+def _is_supported_file(path: Path) -> bool:
+    """Return True for non-hidden, non-lock files with a supported extension."""
+    if path.name.startswith((".", "~$")):
+        return False
+    suffix = path.suffix.lower()
+    return suffix in app_config.supported_extensions or suffix in app_config.generic_text_extensions
 
 
 def process_file_pipeline(
@@ -74,6 +60,8 @@ def process_file_pipeline(
             use_vision=scan_config["use_vision"],
             language_subfolders=scan_config["language_subfolders"],
             categories=scan_config["categories"],
+            ollama_model=scan_config.get("ollama_model"),
+            ollama_url=scan_config.get("ollama_url"),
         )
 
         # Step 1: Apply early rules (filename/path only - before parsing)
@@ -86,13 +74,10 @@ def process_file_pipeline(
         if not context.rule_match_category:
             context = apply_full_rules(context, rules_engine)
 
-        # Step 4: AI enrichment (only if no rule match)
+        # Step 4: AI enrichment (only if no rule match) - includes the KB sector lookup
         context = enrich_with_ai(context)
 
-        # Step 5: Knowledge base enrichment
-        context = enrich_with_knowledge(context)
-
-        # Step 6: Determine final path and return
+        # Step 5: Determine final path and return
         return determine_final_path(context)
 
     except ClassifAIError as e:
@@ -147,6 +132,9 @@ def run_scan(
     language_subfolders: bool,
     recursive: bool,
     categories: list[str],
+    *,
+    ollama_model: str | None = None,
+    ollama_url: str | None = None,
 ) -> pd.DataFrame:
     """
     Scans the source directory, classifies files using the pipeline,
@@ -160,6 +148,8 @@ def run_scan(
         language_subfolders: Whether to create language-based subfolders
         recursive: Whether to search recursively
         categories: List of valid categories
+        ollama_model: Ollama completion model override (None -> configured default)
+        ollama_url: Ollama API URL override (None -> configured default)
 
     Returns:
         DataFrame with classification results
@@ -177,10 +167,12 @@ def run_scan(
         "use_vision": use_vision,
         "language_subfolders": language_subfolders,
         "categories": categories,
+        "ollama_model": ollama_model,
+        "ollama_url": ollama_url,
     }
 
-    files = list(source_path.rglob("*")) if recursive else list(source_path.iterdir())
-    file_paths = [f for f in files if f.is_file()]
+    files = source_path.rglob("*") if recursive else source_path.iterdir()
+    file_paths = [f for f in files if f.is_file() and _is_supported_file(f)]
 
     results = []
     for item in file_paths:

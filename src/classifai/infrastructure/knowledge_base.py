@@ -16,8 +16,10 @@ from loguru import logger
 from classifai.config import app_config
 from classifai.exceptions import ConfigurationError, KnowledgeBaseError
 
-# Path for recording unknown issuers
-UNKNOWN_ISSUERS_PATH = Path("config/unknown_issuers.yaml")
+
+def unknown_issuers_path() -> Path:
+    """Return the file where unknown issuers are recorded for manual review."""
+    return Path(app_config.config_dir) / "unknown_issuers.yaml"
 
 
 def normalize_issuer_name(issuer: str) -> str:
@@ -50,7 +52,7 @@ def record_unknown_issuer(issuer: str) -> None:
         KnowledgeBaseError: If recording fails
     """
     try:
-        unknown_issuers_file = Path(app_config.config_dir) / "unknown_issuers.yaml"
+        unknown_issuers_file = unknown_issuers_path()
 
         # Load existing unknown issuers or create empty dict
         unknown_issuers: dict[str, dict[str, Any]] = {}
@@ -174,6 +176,21 @@ def load_sector_issuer_mapping() -> dict[str, list[str]]:
         raise ConfigurationError(f"Failed to load sector-issuer mapping: {e}") from e
 
 
+def _resolve_alias(normalized_issuer: str, aliases: Any) -> str:
+    """Map a normalized issuer to its normalized canonical name when an alias exists."""
+    if not isinstance(aliases, dict):
+        return normalized_issuer
+    for alias, canonical in aliases.items():
+        if normalize_issuer_name(str(alias)) == normalized_issuer:
+            return normalize_issuer_name(str(canonical))
+    return normalized_issuer
+
+
+def _contains_words(text: str, words: str) -> bool:
+    """Return True if *words* appears in *text* on word boundaries."""
+    return re.search(rf"\b{re.escape(words)}\b", text) is not None
+
+
 def get_sector_for_issuer(issuer: str) -> str | None:
     """
     Find the sector for a given issuer with alias support and normalization.
@@ -196,25 +213,19 @@ def get_sector_for_issuer(issuer: str) -> str | None:
             logger.warning(f"Could not load sector mapping: {e}")
             return None
 
-        normalized_issuer = normalize_issuer_name(issuer)
+        normalized_issuer = _resolve_alias(normalize_issuer_name(issuer), mapping.get("aliases"))
 
         # Search through all sectors and their issuers with normalization
         for sector, issuers in mapping.items():
-            if isinstance(issuers, list):
-                for mapped_issuer in issuers:
-                    normalized_mapped = normalize_issuer_name(mapped_issuer)
-                    if normalized_mapped == normalized_issuer:
-                        logger.debug(f"Found sector '{sector}' for issuer '{issuer}' (normalized match)")
-                        return sector
-
-                    # Also check for partial matches (issuer contains mapped issuer or vice versa)
-                    if (
-                        normalized_issuer in normalized_mapped or normalized_mapped in normalized_issuer
-                    ) and len(normalized_mapped) > 3:
-                        logger.debug(
-                            f"Found sector '{sector}' for issuer '{issuer}' (partial match with '{mapped_issuer}')",
-                        )
-                        return sector
+            if not isinstance(issuers, list):
+                continue
+            for mapped_issuer in issuers:
+                normalized_mapped = normalize_issuer_name(mapped_issuer)
+                if normalized_mapped and _contains_words(normalized_issuer, normalized_mapped):
+                    logger.debug(
+                        f"Found sector '{sector}' for issuer '{issuer}' (match with '{mapped_issuer}')"
+                    )
+                    return sector
 
         # No match found - record as unknown issuer
         logger.info(f"No sector found for issuer '{issuer}'. Recording as unknown.")

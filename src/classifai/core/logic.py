@@ -14,18 +14,13 @@ from loguru import logger
 from classifai.core.types import FileContext
 from classifai.localization import get_default_value
 
+# Category whose files are filed by EXIF date (Photos/YYYY/MM_Month/...)
+PHOTO_CATEGORY = "Images"
+
 
 def _get_final_filename(context: FileContext) -> str:
     """Pure helper to determine the final filename."""
-    # Si l'option rename_files est activée et qu'un nouveau nom est fourni par l'IA
-    if context.rename_files and "new_filename" in context.ai_results:
-        new_filename = context.ai_results["new_filename"]
-        final_filename = "".join(c for c in new_filename if c.isalnum() or c in " -_.").rstrip()
-        if not final_filename.endswith(context.source_path.suffix):
-            final_filename += context.source_path.suffix
-        return final_filename
-
-    # Si l'option rename_files est activée mais qu'aucun nom n'est fourni, créer un nom descriptif
+    # Si l'option rename_files est activée, créer un nom descriptif
     if context.rename_files:
         # Extraire les composants pour le nom de fichier selon la spécification: Date_Titre.ext
         date = context.ai_results.get("date", "")
@@ -102,14 +97,16 @@ def _calculate_photo_destination(context: FileContext) -> Path:
     return photo_path / final_filename
 
 
+def _language_folder(context: FileContext) -> str:
+    """Pure helper: detected language when subfolders are enabled, "fr" otherwise."""
+    if context.language_subfolders and context.language and context.language != "N/A":
+        return context.language
+    return "fr"  # Langue par défaut pour la localisation française
+
+
 def _calculate_general_destination(context: FileContext) -> Path:
     """Pure helper to calculate destination for general files."""
-    # Utiliser la langue du contexte si elle est définie
-    # Si les sous-dossiers de langue sont activés, utiliser toujours la langue détectée
-    # sinon utiliser "fr" comme langue par défaut
-    lang_folder = "fr"  # Langue par défaut pour la localisation française
-    if context.language_subfolders and context.language and context.language != "N/A":
-        lang_folder = context.language
+    lang_folder = _language_folder(context)
 
     # Utiliser le secteur du contexte s'il est défini, sinon utiliser la valeur par défaut
     # Assurer que le secteur est en français
@@ -155,7 +152,7 @@ def determine_final_path(context: FileContext) -> FileContext:
     if context.rule_match_category:
         dest_path = context.destination_dir
         if context.language_subfolders:
-            dest_path = dest_path / get_default_value("na")
+            dest_path = dest_path / _language_folder(context)
         final_path = (
             dest_path
             / get_default_value("unknown_sector")
@@ -164,8 +161,7 @@ def determine_final_path(context: FileContext) -> FileContext:
             / context.source_path.name
         )
     else:
-        category = context.ai_results.get("category", "Non Classé")
-        if category == "Photos" and "date" in context.metadata:
+        if context.category == PHOTO_CATEGORY and "date" in context.metadata:
             final_path = _calculate_photo_destination(context)
         else:
             # Vérifier que le secteur est bien défini avant de calculer le chemin

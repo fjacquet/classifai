@@ -56,12 +56,19 @@ class NewFileHandler(FileSystemEventHandler):
                 logger.error(f"Failed to transfer {file_path.name}: {e}")
 
 
-def start_watcher(source_dir: Path, destination_dir: Path, mode: str, **kwargs):
+def start_watcher(source_dir: Path, destination_dir: Path, mode: str, scan_config: dict[str, Any]):
     """
     Starts the background watcher.
+
+    Args:
+        source_dir: Directory to watch
+        destination_dir: Root of the classified tree
+        mode: "move" or "copy"
+        scan_config: Pipeline options (rename_files, use_vision, language_subfolders,
+            ollama_model, ollama_url)
     """
     logger.info(f"Starting watcher on '{source_dir}'...")
-    event_handler = NewFileHandler(str(destination_dir), mode, kwargs)
+    event_handler = NewFileHandler(str(destination_dir), mode, scan_config)
     observer = Observer()
     observer.schedule(event_handler, str(source_dir), recursive=True)
     observer.start()

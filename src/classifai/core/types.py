@@ -43,6 +43,8 @@ class FileContext(BaseModel):
     use_vision: bool
     language_subfolders: bool
     categories: list[str]
+    ollama_model: str | None = None  # None -> app_config default
+    ollama_url: str | None = None  # None -> app_config default
 
     # --- Fields populated during the pipeline ---
     content: str = ""

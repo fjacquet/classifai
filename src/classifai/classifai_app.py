@@ -154,6 +154,8 @@ with st.sidebar:
                 language_subfolders,
                 recursive,
                 categories,
+                ollama_model=model_name,
+                ollama_url=ollama_url,
             )
 
 
