@@ -95,31 +95,19 @@ def record_unknown_issuer(issuer: str) -> None:
         raise KnowledgeBaseError(f"Failed to record unknown issuer: {e}") from e
 
 
-def load_sector_issuer_mapping() -> dict[str, list[str]]:
+def load_sector_issuer_mapping() -> dict[str, Any]:
     """
-    Load sector-issuer mappings from the configuration file.
+    Return the sector-issuer mapping loaded once at startup by ``config``.
 
     Returns:
-        Dictionary mapping sectors to lists of issuers
+        Dictionary mapping sectors to lists of issuers, plus an optional ``aliases`` dict
 
     Raises:
-        ConfigurationError: If the mapping file cannot be loaded
+        ConfigurationError: If no mapping is configured
     """
-    try:
-        mapping_path = app_config.config_dir / "sector_issuer_mapping.yaml"
-
-        if not mapping_path.exists():
-            raise ConfigurationError(f"Sector-issuer mapping file not found: {mapping_path}")
-
-        with open(mapping_path, encoding="utf-8") as f:
-            mapping = yaml.safe_load(f)
-
-        logger.debug(f"Loaded sector-issuer mappings for {len(mapping)} sectors")
-        return mapping
-    except ConfigurationError:
-        raise
-    except Exception as e:
-        raise ConfigurationError(f"Failed to load sector-issuer mapping: {e}") from e
+    if not app_config.sector_issuer_mapping:
+        raise ConfigurationError("No sector-issuer mapping configured")
+    return app_config.sector_issuer_mapping
 
 
 def _resolve_alias(normalized_issuer: str, aliases: Any) -> str:

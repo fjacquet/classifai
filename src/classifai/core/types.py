@@ -8,7 +8,7 @@ ensuring that data is not modified during the classification process.
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AIResponse(BaseModel):
@@ -32,9 +32,7 @@ class FileContext(BaseModel):
     or updated instance of this context.
     """
 
-    # Configuration for immutability
-    class Config:
-        frozen = True
+    model_config = ConfigDict(frozen=True)
 
     # Required initialization fields
     source_path: Path

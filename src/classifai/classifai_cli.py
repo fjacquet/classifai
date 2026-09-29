@@ -12,7 +12,7 @@ from rich.console import Console
 from rich.table import Table
 
 from classifai.background_watcher import start_watcher
-from classifai.config import app_config, load_app_config
+from classifai.config import app_config
 from classifai.defaults import (
     DEFAULT_LANGUAGE_SUBFOLDERS,
     DEFAULT_LOG_FILE,
@@ -22,12 +22,13 @@ from classifai.defaults import (
     DEFAULT_VERBOSE,
 )
 from classifai.entrypoint_utils import generate_file_operations, perform_operations
+from classifai.exceptions import ConfigurationError
 from classifai.infrastructure.history import get_last_operation, remove_last_operation
 from classifai.infrastructure.knowledge_base import unknown_issuers_path
 from classifai.localization import Language, get_text, set_language
 from classifai.logging_module import setup_logger
 from classifai.pipeline import run_scan
-from classifai.validation import validate_rules_against_categories
+from classifai.validation import validate_rule_conditions, validate_rules_against_categories
 
 app = typer.Typer()
 console = Console()
@@ -151,9 +152,13 @@ def run(
     table.add_column(get_text("new_filename"), style="blue")
     table.add_column(get_text("destination_path"), style="green")
 
-    # Load and validate configuration
-    app_config = load_app_config()
-    validate_rules_against_categories(app_config.rules, app_config.categories)
+    # Validate configuration
+    try:
+        validate_rules_against_categories(app_config.rules, app_config.categories)
+        validate_rule_conditions(app_config.rules)
+    except ConfigurationError as e:
+        logger.error(str(e))
+        raise typer.Exit(code=1) from e
 
     results_df = run_scan(
         str(source_dir),

@@ -10,7 +10,6 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
-from loguru import logger
 
 from classifai.config import app_config
 from classifai.defaults import (
@@ -21,9 +20,7 @@ from classifai.defaults import (
     DEFAULT_RENAME_FILES,
     DEFAULT_VERBOSE,
 )
-from classifai.entrypoint_utils import generate_file_operations
-from classifai.exceptions import FileOperationError
-from classifai.infrastructure.file_system import transfer_file
+from classifai.entrypoint_utils import generate_file_operations, perform_operations
 from classifai.logging_module import setup_logger
 from classifai.pipeline import run_scan
 
@@ -56,17 +53,11 @@ def execute_file_operations(df: pd.DataFrame, operation: str):
     ops = generate_file_operations(df)
     total_ops = len(ops)
     progress_bar = st.progress(0)
-    success_count = 0
 
-    for i, op in enumerate(ops):
-        file_name = Path(op["source"]).name
-        progress_bar.progress((i + 1) / total_ops, text=f"{operation.capitalize()}ing: {file_name}")
-        try:
-            transfer_file(op["context"], operation)
-            success_count += 1
-        except FileOperationError as e:
-            logger.error(f"Failed to {operation} {file_name}: {e}")
+    def _progress(done: int, total: int, file_name: str) -> None:
+        progress_bar.progress(done / total, text=f"{operation.capitalize()}ing: {file_name}")
 
+    success_count = perform_operations(ops, operation, progress_cb=_progress)
     progress_bar.empty()
 
     st.success(f"Successfully {operation}ed {success_count} out of {total_ops} files.")

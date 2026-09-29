@@ -11,10 +11,10 @@ from pathlib import Path
 
 from loguru import logger
 
-from classifai.core.parsing import get_parser
 from classifai.core.types import FileContext
 from classifai.exceptions import FileOperationError, ParsingError
 from classifai.infrastructure.history import log_operation
+from classifai.infrastructure.parser_registry import get_parser
 
 
 def read_and_parse_file(context: FileContext) -> FileContext:

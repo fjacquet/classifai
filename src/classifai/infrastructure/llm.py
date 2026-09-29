@@ -16,12 +16,15 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ex
 from classifai.config import app_config
 from classifai.core.types import AIResponse, FileContext
 from classifai.exceptions import LLMError
+from classifai.infrastructure import knowledge_base
 from classifai.localization import translate_category, translate_sector
+from classifai.utils import sanitize_filename
 
 # --- Constants ---
 MAX_RETRIES = 3
 TIMEOUT = 60  # seconds
 FUZZY_MATCH_CUTOFF = 0.85  # Threshold for fuzzy category matching
+UNKNOWN_CATEGORY = "_UNKNOWN_"
 
 
 def _format_categories_for_prompt(categories: list[str]) -> str:
@@ -70,12 +73,7 @@ def _fuzzy_match_category(
     retry=retry_if_exception_type(httpx.RequestError),
     reraise=True,
 )
-def _make_request(
-    endpoint: str,
-    payload: dict[str, Any],
-    api_url: str,
-    logger_instance: Any | None = logger,
-) -> dict[str, Any]:
+def _make_request(endpoint: str, payload: dict[str, Any], api_url: str) -> dict[str, Any]:
     """
     Makes a request to the Ollama API with retry logic using tenacity.
 
@@ -83,13 +81,13 @@ def _make_request(
         endpoint: API endpoint path
         payload: Request payload
         api_url: Base URL of the Ollama API
-        logger_instance: Logger instance for logging
 
     Returns:
         API response as dictionary
 
     Raises:
-        LLMError: If the request fails after all retries
+        LLMError: If the API returns an HTTP error status
+        httpx.RequestError: If the request still fails after all retries
     """
     try:
         with httpx.Client(timeout=TIMEOUT) as client:
@@ -97,22 +95,15 @@ def _make_request(
             response.raise_for_status()
             return response.json()
     except httpx.HTTPStatusError as e:
-        if logger_instance:
-            logger_instance.error(f"Ollama API returned an error: {e.response.status_code}")
-            logger_instance.error(f"Response body: {e.response.text}")
+        logger.error(f"Ollama API returned an error: {e.response.status_code}")
+        logger.error(f"Response body: {e.response.text}")
         raise LLMError(f"Ollama API error: {e.response.status_code}") from e
     except httpx.RequestError as e:
-        if logger_instance:
-            logger_instance.warning(f"Request to Ollama failed: {e}")
+        logger.warning(f"Request to Ollama failed: {e}")
         raise  # Let tenacity handle the retry
 
 
-def get_completion(
-    prompt: str,
-    model_name: str | None = None,
-    api_url: str | None = None,
-    logger_instance: Any | None = logger,
-) -> dict[str, Any]:
+def get_completion(prompt: str, model_name: str | None = None, api_url: str | None = None) -> dict[str, Any]:
     """
     Gets a completion from the Ollama API.
 
@@ -124,7 +115,7 @@ def get_completion(
         "stream": False,
         "format": "json",
     }
-    return _make_request("/api/generate", payload, api_url or app_config.ollama_api_url, logger_instance)
+    return _make_request("/api/generate", payload, api_url or app_config.ollama_api_url)
 
 
 def get_vision_completion(
@@ -132,7 +123,6 @@ def get_vision_completion(
     image_bytes: bytes,
     model_name: str | None = None,
     api_url: str | None = None,
-    logger_instance: Any | None = logger,
 ) -> dict[str, Any]:
     """
     Gets a completion from the Ollama API using a vision model.
@@ -146,7 +136,25 @@ def get_vision_completion(
         "format": "json",
         "images": [base64.b64encode(image_bytes).decode("ascii")],
     }
-    return _make_request("/api/generate", payload, api_url or app_config.ollama_api_url, logger_instance)
+    return _make_request("/api/generate", payload, api_url or app_config.ollama_api_url)
+
+
+def _parse_json_response(api_response: dict[str, Any]) -> dict[str, Any]:
+    """
+    Extract the JSON object Ollama returns as a string under ``response``.
+
+    Returns an empty dict when the response is missing or not a JSON object.
+    """
+    raw = api_response.get("response")
+    if not isinstance(raw, str):
+        logger.error(f"Unexpected Ollama response shape: {list(api_response)}")
+        return {}
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse JSON from Ollama response: {e}")
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
 
 
 def get_sector_with_ai(
@@ -154,12 +162,10 @@ def get_sector_with_ai(
     content: str,
     model_name: str | None = None,
     api_url: str | None = None,
-    logger_instance: Any | None = logger,
 ) -> str | None:
     """
     Uses an AI model to determine the business sector of an issuer.
     """
-    log = logger_instance or logger
     prompt = f"""
     Based on the issuer name '{issuer_name}' and the following document text,
     what is the most likely business sector for this issuer?
@@ -174,35 +180,16 @@ def get_sector_with_ai(
     Example: {{"sector": "Finance"}}
     """
     try:
-        api_response = get_completion(
-            prompt, model_name=model_name, api_url=api_url, logger_instance=logger_instance
+        sector = _parse_json_response(get_completion(prompt, model_name=model_name, api_url=api_url)).get(
+            "sector"
         )
-        log.debug(f"Sector API response: {api_response}")
-
-        # Parse the JSON string from response['response']
-        if "response" in api_response and isinstance(api_response["response"], str):
-            try:
-                response = json.loads(api_response["response"])
-                log.debug(f"Parsed JSON from sector API response: {response}")
-                sector = response.get("sector", None)
-                logger.debug(f"Parsed JSON from sector API response: {sector}")
-                # Traduire le secteur en français
-                translated_sector = translate_sector(sector)
-                logger.debug(f"Translated sector: {sector} -> {translated_sector}")
-                return translated_sector
-            except json.JSONDecodeError as e:
-                log.error(f"Failed to parse JSON from sector API response: {e}")
-        elif "sector" in api_response:
-            sector = api_response["sector"]
-            logger.debug(f"Parsed JSON from sector API response: {sector}")
-            # Traduire le secteur en français
-            translated_sector = translate_sector(sector)
-            logger.debug(f"Translated sector: {sector} -> {translated_sector}")
-            return translated_sector
-    except Exception as e:
-        if logger_instance:
-            logger_instance.error(f"AI sector classification failed for '{issuer_name}': {e}")
-    return None
+    except (LLMError, httpx.RequestError) as e:
+        logger.error(f"AI sector classification failed for '{issuer_name}': {e}")
+        return None
+    if not isinstance(sector, str) or not sector:
+        return None
+    # Traduire le secteur en français
+    return translate_sector(sector)
 
 
 def _build_metadata_hints(metadata: dict[str, Any]) -> str:
@@ -268,7 +255,6 @@ def _get_category_suggestion(
     categories: list[str],
     model_name: str | None = None,
     api_url: str | None = None,
-    logger_instance: Any | None = logger,
 ) -> str | None:
     """
     Gets a category suggestion from the AI when no predefined category fits.
@@ -296,51 +282,22 @@ def _get_category_suggestion(
     {content[:2000]}
     ---
     """
-
     try:
-        api_response = get_completion(
-            prompt, model_name=model_name, api_url=api_url, logger_instance=logger_instance
+        suggestion = _parse_json_response(get_completion(prompt, model_name=model_name, api_url=api_url)).get(
+            "category"
         )
-        if "response" in api_response:
-            suggestion = str(json.loads(api_response["response"]).get("category") or "").strip()
-            # Clean the suggestion to be filename-safe
-            suggestion = "".join(c for c in suggestion if c.isalnum() or c in " -_").strip()
-            suggestion = suggestion.replace(" ", "-")
-            logger.debug(f"Category suggestion: {suggestion}")
-            return suggestion
-    except Exception as e:
-        if logger_instance:
-            logger_instance.error(f"Failed to get category suggestion: {e}")
-    return None
+    except (LLMError, httpx.RequestError) as e:
+        logger.error(f"Failed to get category suggestion: {e}")
+        return None
+    if not isinstance(suggestion, str):
+        return None
+    return sanitize_filename(suggestion, allowed=" -_", replace_spaces_with="-") or None
 
 
-def enrich_with_ai(context: FileContext) -> FileContext:
-    """
-    Enriches the file context with AI-powered classification.
-    This is an impure function that makes a network call.
-    Implements strict category enforcement with _UNKNOWN_ handling per functional specification.
-
-    Args:
-        context: The file context to enrich
-
-    Returns:
-        Updated FileContext with AI classification results
-
-    Raises:
-        LLMError: If AI processing fails
-    """
-    logger.debug(f"Starting AI enrichment for {context.source_path.name}")
-
-    if context.rule_match_category:
-        logger.debug(f"Skipping AI enrichment for {context.source_path.name} due to rule match")
-        return context
-
-    # Choose the right prompt and model based on file type
-    if context.file_type == "image" and context.use_vision:
-        # Format categories as numbered list for better LLM comprehension
-        formatted_categories = _format_categories_for_prompt(context.categories)
-
-        prompt = f"""
+def _vision_prompt(categories: list[str]) -> str:
+    """Build the prompt for image classification with a vision model."""
+    formatted_categories = _format_categories_for_prompt(categories)
+    return f"""
         # ROLE
         You are a highly accurate image analysis service.
 
@@ -369,69 +326,13 @@ def enrich_with_ai(context: FileContext) -> FileContext:
             "language": "string in ISO 639-1 format or null"
         }}
         """
-        try:
-            logger.debug(f"Calling vision model API for {context.source_path.name}")
-            image_bytes = context.source_path.read_bytes()
-            api_response = get_vision_completion(prompt, image_bytes, api_url=context.ollama_url)
-            logger.debug(f"Vision model API response: {api_response}")
 
-            # Parse the JSON string from response['response']
-            if "response" in api_response and isinstance(api_response["response"], str):
-                try:
-                    response = json.loads(api_response["response"])
-                    logger.debug(f"Parsed JSON from vision API response: {response}")
 
-                    # Validate and translate category
-                    if "category" in response and response["category"]:
-                        original_category = response["category"]
-                        translated_category = translate_category(original_category, context.content)
-                        logger.debug(f"Translated category: {original_category} -> {translated_category}")
-
-                        # Validate category is in the allowed list
-                        if translated_category not in context.categories:
-                            # Try fuzzy matching before giving up
-                            fuzzy_match = _fuzzy_match_category(translated_category, context.categories)
-                            if fuzzy_match:
-                                logger.info(
-                                    f"Fuzzy matched invalid category '{translated_category}' → '{fuzzy_match}'",
-                                )
-                                response["category"] = fuzzy_match
-                            else:
-                                logger.warning(
-                                    f"Invalid category '{translated_category}' not in allowed list "
-                                    f"and no fuzzy match found. Setting to null.",
-                                )
-                                response["category"] = None
-                        else:
-                            response["category"] = translated_category
-                except json.JSONDecodeError as e:
-                    logger.error(f"Failed to parse JSON from vision API response: {e}")
-                    response = {}
-            else:
-                response = api_response
-        except Exception as e:
-            logger.error(f"Vision model processing failed for {context.source_path.name}: {e}")
-            raise LLMError(f"Vision model processing failed: {e}") from e
-    else:
-        # prompt = f"""
-        # Analyze the following document text and provide the following information in a JSON object:
-        # 1.  `issuer`: The name of the company or person that created the document.
-        # 2.  `category`: Classify the document into ONE of the following categories EXACTLY as written
-        #     - do not modify, translate or add typos: {context.categories}.
-        #     - IMPORTANT: You must select a category from the list above EXACTLY as written.
-        #       Do not modify the spelling or add any typos.
-        # 3.  `date`: The date of the document in YYYY-MM-DD format.
-        # 4.  `short_title`: A very short, descriptive title for the document.
-        # 5.  `language`: The primary language of the document (e.g., 'en', 'fr', 'de', etc.). Use ISO 639-1 codes.
-
-        # Document Text:
-        # Build metadata hints if available
-        metadata_hints = _build_metadata_hints(context.metadata)
-
-        # Format categories as numbered list for better LLM comprehension
-        formatted_categories = _format_categories_for_prompt(context.categories)
-
-        prompt = f"""
+def _text_prompt(context: FileContext) -> str:
+    """Build the prompt for document text classification."""
+    metadata_hints = _build_metadata_hints(context.metadata)
+    formatted_categories = _format_categories_for_prompt(context.categories)
+    return f"""
         # ROLE
         You are a highly accurate data extraction service.
 
@@ -476,152 +377,110 @@ def enrich_with_ai(context: FileContext) -> FileContext:
         {context.content[:4000]}
         ---
         """
-        try:
-            logger.debug(f"Calling LLM API for {context.source_path.name}")
-            api_response = get_completion(prompt, model_name=context.ollama_model, api_url=context.ollama_url)
-            logger.debug(f"LLM API response: {api_response}")
 
-            # Parse the JSON string from response['response']
-            if "response" in api_response and isinstance(api_response["response"], str):
-                try:
-                    response = json.loads(api_response["response"])
-                    logger.debug(f"Parsed JSON from LLM API response: {response}")
 
-                    # Strict category validation per functional specification
-                    if "category" in response and response["category"]:
-                        category = response["category"]
-                        # Validate category is in the allowed list
-                        if category not in context.categories:
-                            # Try fuzzy matching before giving up
-                            fuzzy_match = _fuzzy_match_category(category, context.categories)
-                            if fuzzy_match:
-                                logger.info(
-                                    f"Fuzzy matched invalid category '{category}' → '{fuzzy_match}'",
-                                )
-                                response["category"] = fuzzy_match
-                            else:
-                                logger.warning(
-                                    f"Invalid category '{category}' not in allowed list "
-                                    f"and no fuzzy match found. Setting to null.",
-                                )
-                                response["category"] = None
-                        else:
-                            logger.debug(f"Valid category selected: {category}")
+def _query_model(context: FileContext) -> dict[str, Any]:
+    """
+    Ask the text or vision model to classify the file.
 
-                    # Handle _UNKNOWN_ workflow if no valid category was assigned
-                    if not response.get("category"):
-                        logger.info(
-                            f"No valid category found for {context.source_path.name}. Implementing _UNKNOWN_ workflow.",
-                        )
-                        response["category"] = "_UNKNOWN_"
-
-                        # Get category suggestion for filename
-                        suggestion = _get_category_suggestion(
-                            context.content,
-                            context.categories,
-                            model_name=context.ollama_model,
-                            api_url=context.ollama_url,
-                        )
-                        if suggestion:
-                            response["category_suggestion"] = suggestion
-                            logger.info(f"Category suggestion for _UNKNOWN_ document: {suggestion}")
-                        else:
-                            logger.warning("Failed to get category suggestion for _UNKNOWN_ document")
-                except json.JSONDecodeError as e:
-                    logger.error(f"Failed to parse JSON from LLM API response: {e}")
-                    response = {}
-            else:
-                response = api_response
-        except Exception as e:
-            logger.error(f"LLM processing failed for {context.source_path.name}: {e}")
-            raise LLMError(f"LLM processing failed: {e}") from e
-
-    # Create a validated AIResponse object from the LLM response
+    Raises:
+        LLMError: If the model cannot be reached
+    """
     try:
-        # Add language detection to prompt in future iterations
-        response["language"] = response.get("language") or "N/A"
-        logger.debug(f"Creating AIResponse from: {response}")
-        ai_response = AIResponse(**response)
-
-        # Update context with validated AI results
-        ai_results = ai_response.dict(exclude_none=True)
-
-        # Transfer AI results to main FileContext fields
-        logger.debug(f"Updating FileContext with AI results: {ai_results}")
-
-        # Determine sector using issuer name with knowledge base lookup first
-        sector = None
-        if ai_response.issuer:
-            logger.debug(f"Determining sector for issuer: {ai_response.issuer}")
-
-            # First try knowledge base lookup (step 1 of two-step process)
-            from classifai.infrastructure.knowledge_base import get_sector_for_issuer
-
-            sector = get_sector_for_issuer(ai_response.issuer)
-
-            if sector:
-                logger.debug(f"Found sector in knowledge base: {sector}")
-            else:
-                # Fallback to AI classification (step 2 of two-step process)
-                logger.debug("Sector not found in knowledge base, using AI fallback")
-                sector = get_sector_with_ai(
-                    ai_response.issuer, context.content, context.ollama_model, context.ollama_url
-                )
-                logger.debug(f"AI determined sector: {sector}")
-
-        updated_context = context.model_copy(
-            update={
-                "ai_results": ai_results,
-                "issuer": ai_response.issuer,
-                "language": ai_response.language,
-                "category": ai_response.category,  # Ensure category is also transferred
-                "sector": sector,  # Set the sector field
-            },
+        if context.file_type == "image" and context.use_vision:
+            api_response = get_vision_completion(
+                _vision_prompt(context.categories),
+                context.source_path.read_bytes(),
+                api_url=context.ollama_url,
+            )
+            response = _parse_json_response(api_response)
+            if isinstance(response.get("category"), str):
+                response["category"] = translate_category(response["category"], context.content)
+            return response
+        api_response = get_completion(
+            _text_prompt(context), model_name=context.ollama_model, api_url=context.ollama_url
         )
-        logger.debug(
-            f"Updated FileContext: issuer={updated_context.issuer}, language={updated_context.language}, category={updated_context.category}, sector={updated_context.sector}",
+        return _parse_json_response(api_response)
+    except (LLMError, httpx.RequestError, OSError) as e:
+        raise LLMError(f"LLM processing failed for {context.source_path.name}: {e}") from e
+
+
+def _validate_category(category: Any, allowed: list[str]) -> str | None:
+    """Return *category* if allowed, its close fuzzy match, or None."""
+    if not isinstance(category, str) or not category:
+        return None
+    if category in allowed:
+        return category
+    fuzzy_match = _fuzzy_match_category(category, allowed)
+    if fuzzy_match:
+        logger.info(f"Fuzzy matched invalid category '{category}' → '{fuzzy_match}'")
+    else:
+        logger.warning(f"Invalid category '{category}' not in allowed list and no fuzzy match found.")
+    return fuzzy_match
+
+
+def _to_ai_response(response: dict[str, Any]) -> AIResponse:
+    """Keep only the string fields AIResponse knows about, so validation cannot fail."""
+    fields = {
+        name: value
+        for name in AIResponse.model_fields
+        if isinstance(value := response.get(name), str) and value
+    }
+    return AIResponse(**fields)
+
+
+def _determine_sector(issuer: str | None, context: FileContext) -> str | None:
+    """Knowledge base lookup first, then AI fallback."""
+    if not issuer:
+        return None
+    sector = knowledge_base.get_sector_for_issuer(issuer)
+    if sector:
+        return sector
+    logger.debug(f"Sector not found in knowledge base for '{issuer}', using AI fallback")
+    return get_sector_with_ai(issuer, context.content, context.ollama_model, context.ollama_url)
+
+
+def enrich_with_ai(context: FileContext) -> FileContext:
+    """
+    Enriches the file context with AI-powered classification.
+    This is an impure function that makes a network call.
+    Implements strict category enforcement with _UNKNOWN_ handling per functional specification.
+
+    Args:
+        context: The file context to enrich
+
+    Returns:
+        Updated FileContext with AI classification results
+
+    Raises:
+        LLMError: If AI processing fails
+    """
+    if context.rule_match_category:
+        logger.debug(f"Skipping AI enrichment for {context.source_path.name} due to rule match")
+        return context
+
+    response = _query_model(context)
+    response["category"] = _validate_category(response.get("category"), context.categories)
+
+    if not response["category"]:
+        logger.info(
+            f"No valid category found for {context.source_path.name}. Implementing _UNKNOWN_ workflow."
         )
-    except Exception as e:
-        logger.error(f"Failed to parse AI response: {e}")
-        # Fallback to basic mapping if validation fails
-        ai_results = {
-            "issuer": response.get("issuer"),
-            "category": response.get("category"),
-            "date": response.get("date"),
-            "short_title": response.get("short_title"),
-        }
-        logger.debug(f"Fallback mapping: {ai_results}")
-
-        # Determine sector using issuer name with knowledge base lookup first
-        sector = None
-        issuer = response.get("issuer")
-        if issuer:
-            logger.debug(f"Determining sector for issuer: {issuer}")
-
-            # First try knowledge base lookup (step 1 of two-step process)
-            from classifai.infrastructure.knowledge_base import get_sector_for_issuer
-
-            sector = get_sector_for_issuer(issuer)
-
-            if sector:
-                logger.debug(f"Found sector in knowledge base: {sector}")
-            else:
-                # Fallback to AI classification (step 2 of two-step process)
-                logger.debug("Sector not found in knowledge base, using AI fallback")
-                sector = get_sector_with_ai(issuer, context.content, context.ollama_model, context.ollama_url)
-                logger.debug(f"AI determined sector: {sector}")
-
-        updated_context = context.model_copy(
-            update={
-                "ai_results": ai_results,
-                "issuer": response.get("issuer"),
-                "language": response.get("language") or "N/A",
-                "category": response.get("category"),  # Ensure category is also transferred
-                "sector": sector,  # Set the sector field
-            },
+        response["category"] = UNKNOWN_CATEGORY
+        response["category_suggestion"] = _get_category_suggestion(
+            context.content,
+            context.categories,
+            model_name=context.ollama_model,
+            api_url=context.ollama_url,
         )
-        logger.debug(
-            f"Updated FileContext (fallback): issuer={updated_context.issuer}, language={updated_context.language}, category={updated_context.category}, sector={updated_context.sector}",
-        )
-    logger.debug(f"AI enrichment complete for {context.source_path.name}")
-    return updated_context
+
+    ai_response = _to_ai_response(response)
+    return context.model_copy(
+        update={
+            "ai_results": ai_response.model_dump(exclude_none=True),
+            "issuer": ai_response.issuer,
+            "language": ai_response.language,
+            "category": ai_response.category,
+            "sector": _determine_sector(ai_response.issuer, context),
+        },
+    )

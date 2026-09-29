@@ -66,6 +66,8 @@ def process_file_pipeline(
 
         # Step 1: Apply early rules (filename/path only - before parsing)
         context = apply_early_rules(context, rules_engine)
+        if context.rule_match_category:
+            logger.debug(f"Early rule matched '{file_path.name}': {context.rule_match_category}")
 
         # Step 2: Parse file (includes MIME detection and metadata extraction)
         context = read_and_parse_file(context)
@@ -73,6 +75,8 @@ def process_file_pipeline(
         # Step 3: Apply full rules (MIME/metadata - only if no early match)
         if not context.rule_match_category:
             context = apply_full_rules(context, rules_engine)
+            if context.rule_match_category:
+                logger.debug(f"Full rule matched '{file_path.name}': {context.rule_match_category}")
 
         # Step 4: AI enrichment (only if no rule match) - includes the KB sector lookup
         context = enrich_with_ai(context)
@@ -83,8 +87,9 @@ def process_file_pipeline(
     except ClassifAIError as e:
         logger.error(f"Pipeline failed for {file_path.name}: {e}")
         return None
-    except Exception as e:
-        logger.error(f"Unexpected error processing {file_path.name}: {e}")
+    except Exception:
+        # Keep the scan going, but surface the traceback: this is a bug, not a bad file
+        logger.exception(f"Unexpected error processing {file_path.name}")
         return None
 
 

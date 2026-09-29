@@ -9,8 +9,6 @@ import fnmatch
 from pathlib import Path
 from typing import Any
 
-from loguru import logger
-
 from classifai.core.types import FileContext
 
 # Condition types that can be evaluated without file parsing
@@ -18,6 +16,10 @@ _EARLY_CONDITION_TYPES = {"filename", "path"}
 
 # Condition types that require file parsing (MIME type, metadata)
 _FULL_CONDITION_TYPES = {"mime_type", "metadata"}
+
+# Public vocabularies, used by configuration validation
+CONDITION_TYPES = _EARLY_CONDITION_TYPES | _FULL_CONDITION_TYPES
+METADATA_MATCH_TYPES = {"exact", "contains", "startswith", "endswith", "glob"}
 
 
 class RulesEngine:
@@ -40,11 +42,6 @@ class RulesEngine:
                 self.early_rules.append(rule)
             else:
                 self.full_rules.append(rule)
-
-        if self.rules:
-            logger.info(
-                f"Loaded {len(self.rules)} rules: {len(self.early_rules)} early, {len(self.full_rules)} full"
-            )
 
     def _is_early_rule(self, rule: dict[str, Any]) -> bool:
         """
@@ -83,11 +80,7 @@ class RulesEngine:
             if self._check_conditions_early(rule, file_name, file_path_str):
                 action = rule.get("action", {})
                 if action.get("type") == "categorize":
-                    category = action.get("category")
-                    logger.debug(
-                        f"Early matched rule '{rule.get('name')}' for '{file_name}'. Category: {category}",
-                    )
-                    return category
+                    return action.get("category")
         return None
 
     def match_category_full(self, context: FileContext) -> str | None:
@@ -113,11 +106,7 @@ class RulesEngine:
             if self._check_conditions_full(rule, file_name, file_path_str, context):
                 action = rule.get("action", {})
                 if action.get("type") == "categorize":
-                    category = action.get("category")
-                    logger.debug(
-                        f"Full matched rule '{rule.get('name')}' for '{file_name}'. Category: {category}",
-                    )
-                    return category
+                    return action.get("category")
         return None
 
     def _check_conditions_early(self, rule: dict[str, Any], file_name: str, file_path: str) -> bool:
@@ -144,7 +133,6 @@ class RulesEngine:
                     return False
             else:
                 # Unknown or full condition type in early check
-                logger.warning(f"Unexpected condition type in early rule '{rule.get('name')}': {cond_type}")
                 return False
 
         return True
@@ -185,7 +173,7 @@ class RulesEngine:
                     return False
 
             else:
-                logger.warning(f"Unknown condition type in rule '{rule.get('name')}': {cond_type}")
+                # Unknown condition type (rejected by config validation)
                 return False
 
         return True
@@ -246,7 +234,7 @@ class RulesEngine:
             return value_str.endswith(pattern_lower)
         if match_type == "glob":
             return fnmatch.fnmatch(value_str, pattern_lower)
-        logger.warning(f"Unknown match type: {match_type}")
+        # Unknown match type (rejected by config validation)
         return False
 
 

@@ -321,3 +321,38 @@ class TestOllamaRequests:
         )
 
         assert _get_category_suggestion("text", ["Factures"]) == "Frais-Médicaux"
+
+
+class TestEnrichWithAIShapes:
+    """Regression tests for unified response handling."""
+
+    def test_vision_path_uses_unknown_workflow(self, mocker, base_context, tmp_path):
+        """Images with no valid category get _UNKNOWN_ plus a suggestion, like text documents."""
+        image = tmp_path / "scan.png"
+        image.write_bytes(b"\x89PNG")
+        context = base_context.model_copy(
+            update={"source_path": image, "file_type": "image", "use_vision": True}
+        )
+        mocker.patch(
+            "classifai.infrastructure.llm.get_vision_completion",
+            return_value={"response": '{"category": "Holiday Pictures"}'},
+        )
+        mocker.patch("classifai.infrastructure.llm._get_category_suggestion", return_value="Vacances")
+
+        result = enrich_with_ai(context)
+
+        assert result.category == "_UNKNOWN_"
+        assert result.ai_results["category_suggestion"] == "Vacances"
+
+    def test_malformed_field_types_are_dropped(self, mocker, base_context):
+        """Non-string fields from the model are ignored instead of failing validation."""
+        mocker.patch(
+            "classifai.infrastructure.llm.get_completion",
+            return_value={"response": '{"issuer": ["A", "B"], "category": "Invoices", "date": 2025}'},
+        )
+
+        result = enrich_with_ai(base_context)
+
+        assert result.issuer is None
+        assert result.category == "Invoices"
+        assert "date" not in result.ai_results

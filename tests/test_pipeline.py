@@ -222,3 +222,13 @@ def test_run_scan_skips_unsupported_and_hidden_files(mocker, tmp_path):
 
     processed = sorted(call.args[0].name for call in mock_process.call_args_list)
     assert processed == ["SCAN.PDF", "invoice.pdf"]
+
+
+def test_punctuation_only_issuer_falls_back_to_unknown(base_context):
+    """An issuer that sanitizes to nothing must not produce an empty path segment."""
+    context = base_context.model_copy(update={"issuer": "***"})
+
+    path = _calculate_general_destination(context)
+
+    assert "" not in path.parts
+    assert path.parent.parent.name in {"Unknown_Issuer", "Émetteur_Inconnu"}
