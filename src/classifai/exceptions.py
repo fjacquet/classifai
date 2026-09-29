@@ -26,16 +26,6 @@ class ParsingError(ClassifAIError):
     pass
 
 
-class ClassificationError(ClassifAIError):
-    """Error during document classification.
-
-    Raised when the classification process fails, including rule matching
-    failures and AI classification errors.
-    """
-
-    pass
-
-
 class FileOperationError(ClassifAIError):
     """Error during file operations.
 
@@ -71,26 +61,6 @@ class KnowledgeBaseError(ClassifAIError):
 
     Raised when knowledge base operations fail, such as sector lookup
     failures or mapping file errors.
-    """
-
-    pass
-
-
-class ValidationError(ClassifAIError):
-    """Error validating data.
-
-    Raised when input data fails validation, including invalid file paths,
-    malformed responses, and schema validation failures.
-    """
-
-    pass
-
-
-class MetadataExtractionError(ClassifAIError):
-    """Error extracting file metadata.
-
-    Raised when metadata extraction via ExifTool or MIME detection fails.
-    This includes binary availability issues and file access errors.
     """
 
     pass

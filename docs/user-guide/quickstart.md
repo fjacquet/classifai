@@ -45,7 +45,10 @@ uv run classifai watch \
   --mode move
 ```
 
-Runs until you interrupt it (Ctrl-C).
+Runs until you interrupt it (Ctrl-C). The watch is recursive, waits until
+each new file has stopped growing, and ignores hidden, temporary
+(`.part`, `.crdownload`, …) and unsupported files. See
+[CLI → watch](cli.md#watch).
 
 ## 4. Undo
 
@@ -55,8 +58,8 @@ Made a mistake? Revert the last operation:
 uv run classifai undo
 ```
 
-`undo` is one step deep — it reverses the most recent move/copy logged
-in `history.json`.
+`undo` reverses the most recent move/copy logged in `logs/history.json`
+and removes it from the log; run it again to step further back.
 
 ## 5. Using the Web UI instead
 
@@ -71,7 +74,8 @@ Opens at `http://localhost:8501`. Same behavior, different skin. See
 
 ## Typical result
 
-After a successful `move`, your target directory looks like:
+After a successful `move` with `--language-subfolders --rename-files`,
+your target directory looks like:
 
 ```
 ~/Sorted/
@@ -81,11 +85,14 @@ After a successful `move`, your target directory looks like:
 │           └── Factures/
 │               └── 2025-07-18_Consultation_orthopedie.pdf
 └── en/
-    └── Finance/
+    └── Banque/
         └── UBS/
-            └── Relevés/
+            └── Relevés Bancaires/
                 └── 2025-01-15_Monthly_statement.pdf
 ```
+
+Without `--language-subfolders` everything goes under a single `fr/`
+folder; without `--rename-files` the original filenames are kept.
 
 ## Next steps
 

@@ -1,26 +1,36 @@
 # This file defines custom rules for pre-classification based on file attributes.
-# Rules are processed in the order they appear. The first rule that matches
-# will determine the file's category.
+# Copy it to config/rules.yaml and adapt it.
+#
+# A rule sets a category (which must exist in config/categories.yaml) and skips the AI.
+# Every condition of a rule must match. Rules are processed in the order they appear;
+# the first rule that matches determines the file's category.
+#
+# Condition types:
+#   filename   - fnmatch glob on the file name (case-sensitive), checked before parsing
+#   path       - fnmatch glob on the absolute file path (case-sensitive), checked before parsing
+#   mime_type  - exact MIME type ("application/pdf") or prefix ("image/*"), checked after parsing
+#   metadata   - "field" + "pattern" + "match" (exact|contains|startswith|endswith|glob,
+#                default contains; case-insensitive), checked after parsing
 
 rules:
-  # Rule to classify PDF files named "invoice_..." into the "Invoices" category.
+  # Rule to classify PDF files named "invoice_..." into the "Factures" category.
   - name: "Invoice Rule (by name)"
     conditions:
       # You can use multiple conditions. All must be met for the rule to apply.
       - type: "filename" # Condition based on the file's name.
-        pattern: "invoice_*.pdf" # Glob pattern (like in .gitignore).
+        pattern: "invoice_*.pdf" # fnmatch glob pattern.
     action:
       type: "categorize"
-      category: "Invoices"
+      category: "Factures"
 
-  # Rule to classify any file containing "receipt" in its name as a "Receipt".
+  # Rule to classify any file containing "receipt" in its name as "Justificatifs".
   - name: "Receipt Rule (by name)"
     conditions:
       - type: "filename"
         pattern: "*receipt*.*"
     action:
       type: "categorize"
-      category: "Receipts"
+      category: "Justificatifs"
 
   # Rule to classify any file inside a specific project folder.
   - name: "Project Documents Rule (by path)"
@@ -29,16 +39,17 @@ rules:
         pattern: "*/projects/classifai/*"
     action:
       type: "categorize"
-      category: "Work/Classifai"
+      category: "Fichiers de Code"
 
-  # Example of a more complex rule with multiple conditions.
-  # A file would need to be a JPG and have "vacation" in its name.
-  - name: "Vacation Photos Rule"
+  # Rule using the detected MIME type and the document metadata (needs parsing).
+  - name: "Bank statements (by metadata)"
     conditions:
-      - type: "filename"
-        pattern: "*vacation*.jpg"
-      - type: "filename" # Redundant, but shows multiple conditions
-        pattern: "*.jpg"
+      - type: "mime_type"
+        pattern: "application/pdf"
+      - type: "metadata"
+        field: "author" # e.g. author, title, subject, keywords, creation_date
+        pattern: "PostFinance"
+        match: "contains"
     action:
       type: "categorize"
-      category: "Personal/Photos/Vacations"
+      category: "Relevés Bancaires"

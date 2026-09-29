@@ -12,7 +12,7 @@ from rich.console import Console
 from rich.table import Table
 
 from classifai.background_watcher import start_watcher
-from classifai.config import app_config, load_app_config
+from classifai.config import app_config
 from classifai.defaults import (
     DEFAULT_LANGUAGE_SUBFOLDERS,
     DEFAULT_LOG_FILE,
@@ -22,14 +22,25 @@ from classifai.defaults import (
     DEFAULT_VERBOSE,
 )
 from classifai.entrypoint_utils import generate_file_operations, perform_operations
+from classifai.exceptions import ConfigurationError
 from classifai.infrastructure.history import get_last_operation, remove_last_operation
+from classifai.infrastructure.knowledge_base import unknown_issuers_path
 from classifai.localization import Language, get_text, set_language
 from classifai.logging_module import setup_logger
 from classifai.pipeline import run_scan
-from classifai.validation import validate_rules_against_categories
+from classifai.validation import validate_app_config
 
 app = typer.Typer()
 console = Console()
+
+
+def _validate_config_or_exit() -> None:
+    """Stop with exit code 1 if the YAML configuration is invalid."""
+    try:
+        validate_app_config(app_config.rules, app_config.categories)
+    except ConfigurationError as e:
+        console.print(f"[bold red]Configuration error:[/bold red] {e}")
+        raise typer.Exit(code=1) from e
 
 
 @app.command()
@@ -150,9 +161,7 @@ def run(
     table.add_column(get_text("new_filename"), style="blue")
     table.add_column(get_text("destination_path"), style="green")
 
-    # Load and validate configuration
-    app_config = load_app_config()
-    validate_rules_against_categories(app_config.rules, app_config.categories)
+    _validate_config_or_exit()
 
     results_df = run_scan(
         str(source_dir),
@@ -162,6 +171,8 @@ def run(
         language_subfolders,
         recursive,
         app_config.categories,
+        ollama_model=ollama_model,
+        ollama_url=ollama_url,
     )
 
     ops = generate_file_operations(results_df)
@@ -258,28 +269,61 @@ def watch(
             help="Mode of operation: move or copy.",
         ),
     ] = "move",
-    **kwargs,
+    ollama_model: Annotated[
+        str,
+        typer.Option("--ollama-model", "-ai", help="Name of the Ollama model to use."),
+    ] = app_config.ollama_model_name,
+    ollama_url: Annotated[
+        str,
+        typer.Option("--ollama-url", "-url", help="URL of the Ollama API."),
+    ] = app_config.ollama_api_url,
+    rename_files: Annotated[
+        bool,
+        typer.Option("--rename-files", "-r", help="Enable AI-powered file renaming."),
+    ] = DEFAULT_RENAME_FILES,
+    use_vision: Annotated[
+        bool,
+        typer.Option("--use-vision", "-uv", help="Use vision model for image classification."),
+    ] = app_config.use_vision_model,
+    language_subfolders: Annotated[
+        bool,
+        typer.Option(
+            "--language-subfolders",
+            "-ls",
+            help="Create language-based subfolders (e.g., /en, /fr).",
+        ),
+    ] = DEFAULT_LANGUAGE_SUBFOLDERS,
 ):
     """
     Watches a directory for new files and organizes them automatically.
     """
-    start_watcher(source_dir, destination_dir, mode, **kwargs)
+    _validate_config_or_exit()
+    scan_config = {
+        "rename_files": rename_files,
+        "use_vision": use_vision,
+        "language_subfolders": language_subfolders,
+        "ollama_model": ollama_model,
+        "ollama_url": ollama_url,
+    }
+    start_watcher(source_dir, destination_dir, mode, scan_config)
 
 
 @app.command(name="kb-list-unknown")
 def list_unknown_issuers(
     config_file: Annotated[
-        Path,
+        Path | None,
         typer.Option(
             "--file",
             "-f",
-            help="Path to the unknown issuers file.",
+            help="Path to the unknown issuers file (default: <config_dir>/unknown_issuers.yaml).",
         ),
-    ] = Path("config/unknown_issuers.yaml"),
+    ] = None,
 ):
     """
     Lists all the issuers that were not found in the knowledge base.
     """
+    if config_file is None:
+        config_file = unknown_issuers_path()
     if not config_file.exists():
         console.print(f"[bold yellow]Unknown issuers file not found at '{config_file}'.[/bold yellow]")
         raise typer.Exit()
@@ -297,10 +341,15 @@ def list_unknown_issuers(
 
     table = Table(title="Unknown Issuers", show_header=True, header_style="bold magenta")
     table.add_column("Issuer", style="cyan")
-    table.add_column("AI-Suggested Sector", style="yellow")
+    table.add_column("Count", style="yellow", justify="right")
+    table.add_column("Last Seen", style="green")
 
-    for entry in unknown_issuers:
-        table.add_row(entry.get("issuer", "N/A"), entry.get("sector", "N/A"))
+    for normalized_name, entry in unknown_issuers.items():
+        table.add_row(
+            entry.get("original_name", normalized_name),
+            str(entry.get("count", "")),
+            str(entry.get("last_seen", "")),
+        )
 
     console.print(table)
 

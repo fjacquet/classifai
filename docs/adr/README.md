@@ -20,7 +20,7 @@ Format inspired by Michael Nygard's
 | 0002 | [Hybrid rule-based + LLM classification](0002-hybrid-rule-plus-llm-classification.md)  | Accepted  |
 | 0003 | [Ollama as the LLM runtime](0003-ollama-as-llm-runtime.md)                      | Accepted  |
 | 0004 | [Remove the `returns` library; use native exceptions](0004-remove-returns-library.md) | Accepted  |
-| 0005 | [Three entry points — CLI, Streamlit, FastAPI](0005-three-entry-points-cli-web-api.md) | Accepted  |
+| 0005 | [Three entry points — CLI, Streamlit, FastAPI](0005-three-entry-points-cli-web-api.md) | Accepted (API removed 2026-09-29) |
 | 0006 | [YAML-driven configuration for categories, sectors, rules](0006-yaml-driven-configuration.md) | Accepted  |
 
 ## When to write an ADR

@@ -22,18 +22,18 @@ session.
 | Want to script a one-shot run or cron it      | [CLI](cli.md) |
 | Want to preview + confirm visually            | [Web UI](web-ui.md) |
 | Want a folder to be watched continuously      | `classifai watch` (see [CLI](cli.md#watch)) |
-| Want to integrate with another program        | FastAPI (see the code in `src/classifai/app/`) |
 
-All four share the same core logic and configuration; switching between
+All three share the same core logic and configuration; switching between
 them doesn't change classification behavior.
 
 ## What ClassifAI does, in one sentence
 
 ClassifAI reads each file in a source directory, extracts metadata and
-text, decides a `Language / Sector / Issuer / Category / Date_Title.ext`
-placement via a hybrid of YAML rules and a local LLM (Ollama), and —
+text, decides a `Language / Sector / Issuer / Category / filename`
+placement via a hybrid of YAML rules and a local LLM (Ollama) — optionally
+renaming the file to `Date_Title.ext` — and —
 depending on mode — previews, moves, or copies the files into that
 hierarchy.
 
 For the formal requirements, see the [PRD](../PRD.md). For the reasoning
-behind architecture choices, see the [ADRs](../adr/).
+behind architecture choices, see the [ADRs](../adr/README.md).

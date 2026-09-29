@@ -16,29 +16,23 @@ from classifai.core.rules import RulesEngine, apply_early_rules, apply_full_rule
 from classifai.core.types import FileContext
 from classifai.exceptions import ClassifAIError
 from classifai.infrastructure.file_system import read_and_parse_file
-from classifai.infrastructure.knowledge_base import get_sector_for_issuer
 from classifai.infrastructure.llm import enrich_with_ai
 
 
-def enrich_with_knowledge(context: FileContext) -> FileContext:
-    """
-    Enriches the file context with knowledge from the knowledge base.
-    Specifically, it tries to find the sector for the issuer if available.
+def is_supported_file(path: Path) -> bool:
+    """Return True for non-hidden, non-lock files with a supported extension."""
+    if path.name.startswith((".", "~$")):
+        return False
+    suffix = path.suffix.lower()
+    return suffix in app_config.supported_extensions or suffix in app_config.generic_text_extensions
 
-    Args:
-        context: The file context to enrich
 
-    Returns:
-        The enriched FileContext
-    """
-    # If we have an issuer but no sector, try to find the sector
-    if context.issuer and not context.sector:
-        sector = get_sector_for_issuer(context.issuer)
-        if sector:
-            return context.model_copy(update={"sector": sector})
-
-    # If no enrichment was needed or possible, return the original context
-    return context
+def is_in_destination(path: Path, source_dir: Path, dest_dir: Path) -> bool:
+    """True if *path* was already filed into a destination nested inside the source directory."""
+    dest = dest_dir.resolve()
+    if dest == source_dir.resolve():
+        return False  # destination == source: nothing to tell apart
+    return path.resolve().is_relative_to(dest)
 
 
 def process_file_pipeline(
@@ -74,10 +68,14 @@ def process_file_pipeline(
             use_vision=scan_config["use_vision"],
             language_subfolders=scan_config["language_subfolders"],
             categories=scan_config["categories"],
+            ollama_model=scan_config.get("ollama_model"),
+            ollama_url=scan_config.get("ollama_url"),
         )
 
         # Step 1: Apply early rules (filename/path only - before parsing)
         context = apply_early_rules(context, rules_engine)
+        if context.rule_match_category:
+            logger.debug(f"Early rule matched '{file_path.name}': {context.rule_match_category}")
 
         # Step 2: Parse file (includes MIME detection and metadata extraction)
         context = read_and_parse_file(context)
@@ -85,58 +83,22 @@ def process_file_pipeline(
         # Step 3: Apply full rules (MIME/metadata - only if no early match)
         if not context.rule_match_category:
             context = apply_full_rules(context, rules_engine)
+            if context.rule_match_category:
+                logger.debug(f"Full rule matched '{file_path.name}': {context.rule_match_category}")
 
-        # Step 4: AI enrichment (only if no rule match)
+        # Step 4: AI enrichment (only if no rule match) - includes the KB sector lookup
         context = enrich_with_ai(context)
 
-        # Step 5: Knowledge base enrichment
-        context = enrich_with_knowledge(context)
-
-        # Step 6: Determine final path and return
+        # Step 5: Determine final path and return
         return determine_final_path(context)
 
     except ClassifAIError as e:
         logger.error(f"Pipeline failed for {file_path.name}: {e}")
         return None
-    except Exception as e:
-        logger.error(f"Unexpected error processing {file_path.name}: {e}")
+    except Exception:
+        # Keep the scan going, but surface the traceback: this is a bug, not a bad file
+        logger.exception(f"Unexpected error processing {file_path.name}")
         return None
-
-
-def process_single_file(
-    file_path: Path,
-    dest_dir: Path,
-    rename_files: bool = False,
-    use_vision: bool = False,
-    language_subfolders: bool = True,
-) -> FileContext | None:
-    """
-    Process a single file through the classification pipeline.
-
-    This is a convenience function for API/UI that wraps process_file_pipeline
-    with a simpler interface.
-
-    Args:
-        file_path: Path to the file to process
-        dest_dir: Destination directory for classified files
-        rename_files: Whether to rename files based on AI-extracted information
-        use_vision: Whether to use vision model for image classification
-        language_subfolders: Whether to create language subfolders
-
-    Returns:
-        The processed FileContext, or None if processing failed
-    """
-    rules_engine = RulesEngine(app_config.rules)
-
-    scan_config = {
-        "dest_dir_str": str(dest_dir),
-        "rename_files": rename_files,
-        "use_vision": use_vision,
-        "language_subfolders": language_subfolders,
-        "categories": app_config.categories,
-    }
-
-    return process_file_pipeline(file_path, scan_config, rules_engine)
 
 
 def run_scan(
@@ -147,6 +109,9 @@ def run_scan(
     language_subfolders: bool,
     recursive: bool,
     categories: list[str],
+    *,
+    ollama_model: str | None = None,
+    ollama_url: str | None = None,
 ) -> pd.DataFrame:
     """
     Scans the source directory, classifies files using the pipeline,
@@ -160,6 +125,8 @@ def run_scan(
         language_subfolders: Whether to create language-based subfolders
         recursive: Whether to search recursively
         categories: List of valid categories
+        ollama_model: Ollama completion model override (None -> configured default)
+        ollama_url: Ollama API URL override (None -> configured default)
 
     Returns:
         DataFrame with classification results
@@ -177,10 +144,16 @@ def run_scan(
         "use_vision": use_vision,
         "language_subfolders": language_subfolders,
         "categories": categories,
+        "ollama_model": ollama_model,
+        "ollama_url": ollama_url,
     }
 
-    files = list(source_path.rglob("*")) if recursive else list(source_path.iterdir())
-    file_paths = [f for f in files if f.is_file()]
+    files = source_path.rglob("*") if recursive else source_path.iterdir()
+    file_paths = [
+        f
+        for f in files
+        if f.is_file() and is_supported_file(f) and not is_in_destination(f, source_path, Path(dest_dir_str))
+    ]
 
     results = []
     for item in file_paths:

@@ -19,3 +19,7 @@ generic_text_extensions:
   - .opml
   - .vcf
   - .ics
+
+# Reverse-geocode photo GPS coordinates to "City, Country" folders.
+# This sends coordinates to OpenStreetMap Nominatim (online), so it is off by default.
+online_geocoding: false

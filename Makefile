@@ -96,6 +96,7 @@ run:
 watch:
 	@echo "Usage: make watch SRC=/path/to/source DEST=/path/to/dest"
 	@test -n "$(SRC)" || (echo "Error: SRC not set" && exit 1)
+	@test -n "$(DEST)" || (echo "Error: DEST not set" && exit 1)
 	uv run classifai watch --source-dir "$(SRC)" --destination-dir "$(DEST)"
 
 web:

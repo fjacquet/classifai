@@ -5,10 +5,11 @@ This module provides shared utilities following DRY principle.
 All filename/path sanitization and date parsing should use these functions.
 """
 
+import os
 import re
+import tempfile
 from datetime import datetime
-
-from langdetect import LangDetectException, detect
+from pathlib import Path
 
 # Pre-compiled patterns (performance optimization)
 _SANITIZE_PATTERN = re.compile(r"[^\w\s\-_.]")
@@ -120,20 +121,20 @@ def format_date_for_filename(dt: datetime | None) -> str:
     return dt.strftime("%Y-%m-%d")
 
 
-def detect_language(text: str) -> str | None:
+def write_text_atomic(path: Path, text: str) -> None:
     """
-    Detects the language of a given text.
+    Replace *path* with *text* atomically: a crash leaves either the old or the new file.
 
     Args:
-        text: The text to analyze.
-
-    Returns:
-        The two-letter ISO 639-1 language code (e.g., "en", "fr")
-        or None if detection fails.
+        path: Destination file (its directory is created if needed)
+        text: Content to write (UTF-8)
     """
-    if not text or not isinstance(text, str) or not text.strip():
-        return None
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
     try:
-        return detect(text)
-    except LangDetectException:
-        return None
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(text)
+        os.replace(tmp_name, path)
+    except BaseException:
+        Path(tmp_name).unlink(missing_ok=True)
+        raise

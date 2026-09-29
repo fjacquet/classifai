@@ -304,26 +304,3 @@ class TestMergeMetadata:
 
         assert result["author"] == "Real Author"
         assert result["title"] == "Real Title"
-
-
-class TestAvailabilityChecks:
-    """Tests for availability check functions."""
-
-    def test_is_magic_available(self):
-        """Test is_magic_available returns correct value."""
-        with patch("classifai.infrastructure.metadata._MAGIC_AVAILABLE", True):
-            # Need to reimport to get the patched value
-            import importlib
-
-            import classifai.infrastructure.metadata
-
-            importlib.reload(classifai.infrastructure.metadata)
-
-    def test_is_exiftool_available(self):
-        """Test is_exiftool_available returns correct value."""
-        with patch("classifai.infrastructure.metadata._EXIFTOOL_AVAILABLE", True):
-            from classifai.infrastructure.metadata import is_exiftool_available
-
-            # The function reads module-level variable
-            # This test verifies the function exists and is callable
-            assert callable(is_exiftool_available)

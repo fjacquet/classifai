@@ -144,6 +144,11 @@ CATEGORY_MAPPINGS: dict[str, str] = {
     "Certificates": "Certificats",
     "Certificat": "Certificats",
     "Certificats": "Certificats",
+    "Tax": "Impôts",
+    "Taxes": "Impôts",
+    "Tax Documents": "Impôts",
+    "Impot": "Impôts",
+    "Impots": "Impôts",
     # Common typos and variations
     "Fiichiers Spécifiques": "Fichiers Spécifiques",
     "Fiichés Spécifiques": "Fichiers Spécifiques",
@@ -171,16 +176,6 @@ def set_language(language: Language) -> None:
         language: La langue à utiliser
     """
     _current_language.set(language)
-
-
-def get_current_language() -> Language:
-    """
-    Récupère la langue actuelle.
-
-    Returns:
-        La langue actuelle
-    """
-    return _current_language.get()
 
 
 def get_text(key: str, **kwargs) -> str:

@@ -468,24 +468,3 @@ class TestApplyFullRules:
         result = apply_full_rules(context, engine)
 
         assert result.rule_match_category is None
-
-
-class TestLegacyCompatibility:
-    """Tests for legacy API compatibility."""
-
-    def test_match_category_returns_early_match(self, tmp_path: Path):
-        """Test legacy match_category still works for early rules."""
-        rules = [
-            {
-                "name": "Invoice PDF",
-                "conditions": [{"type": "filename", "pattern": "invoice_*.pdf"}],
-                "action": {"type": "categorize", "category": "Factures"},
-            },
-        ]
-        engine = RulesEngine(rules)
-
-        test_file = tmp_path / "invoice_2024.pdf"
-        test_file.touch()
-
-        result = engine.match_category(test_file)
-        assert result == "Factures"

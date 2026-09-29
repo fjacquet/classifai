@@ -2,12 +2,12 @@
 
 import email
 import functools
-import os
-import stat
 import subprocess
 import tarfile
-import tempfile
 import zipfile
+from email import policy
+from email.message import EmailMessage
+from typing import cast
 
 import extract_msg
 
@@ -26,6 +26,27 @@ from PIL.ExifTags import TAGS
 from striprtf.striprtf import rtf_to_text
 
 from classifai.infrastructure.geocoding import get_location_from_gps
+
+SUBPROCESS_TIMEOUT = 60  # seconds, for pdftotext / pandoc
+OCR_PREFERRED_LANGUAGES = ("fra", "eng", "deu")
+OCR_MAX_PDF_PAGES = 3  # scanned PDFs: OCR the first pages only
+OCR_DPI = 200
+
+
+@functools.cache
+def _ocr_languages() -> str | None:
+    """Tesseract language string from the preferred languages that are installed."""
+    try:
+        installed = set(pytesseract.get_languages(config=""))
+    except pytesseract.TesseractNotFoundError:
+        return None
+    available = [lang for lang in OCR_PREFERRED_LANGUAGES if lang in installed]
+    return "+".join(available) or None
+
+
+def _ocr(image: Image.Image) -> str:
+    """OCR an image with the preferred languages."""
+    return pytesseract.image_to_string(image, lang=_ocr_languages())
 
 
 # --- Decorator for Exception Handling ---
@@ -81,7 +102,7 @@ def parse_image(file_path: str) -> tuple[str, dict]:
     """Extracts text and metadata from an image file."""
     metadata = {}
     with Image.open(file_path) as img:
-        text = pytesseract.image_to_string(img)
+        text = _ocr(img)
         if not text.strip():
             logger.info(f"OCR returned no text for image: {file_path}")
 
@@ -97,21 +118,48 @@ def parse_image(file_path: str) -> tuple[str, dict]:
         return text, metadata
 
 
+def _pdftotext(file_path: str) -> str:
+    """Text layer via poppler's pdftotext; empty if the tool is missing."""
+    try:
+        result = subprocess.run(
+            ["pdftotext", file_path, "-"],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=SUBPROCESS_TIMEOUT,
+        )
+    except FileNotFoundError:
+        logger.warning("pdftotext is not installed; skipping it.")
+        return ""
+    return result.stdout
+
+
+def _ocr_pdf_pages(doc) -> str:
+    """Render the first pages of a scanned PDF and OCR them."""
+    texts = []
+    for page in doc.pages(0, min(OCR_MAX_PDF_PAGES, doc.page_count)):
+        pix = page.get_pixmap(dpi=OCR_DPI)
+        image = Image.frombytes("RGBA" if pix.alpha else "RGB", (pix.width, pix.height), pix.samples)
+        texts.append(_ocr(image))
+    return "\n\f".join(texts)
+
+
 @parsing_handler
 def parse_pdf(file_path: str) -> tuple[str, dict]:
-    """Extracts text content from a PDF file."""
+    """Extracts text from a PDF: text layer first, OCR for scanned documents."""
     if not fitz:
         logger.warning("PyMuPDF (fitz) is not installed. Falling back to pdftotext.")
-        result = subprocess.run(["pdftotext", file_path, "-"], capture_output=True, text=True, check=True)
-        return result.stdout, {}
+        return _pdftotext(file_path), {}
 
     with fitz.open(file_path) as doc:
-        text = "".join(page.get_text() for page in doc)
-    if not text.strip():
-        logger.info(f"PyMuPDF found no text in {file_path}. Trying pdftotext.")
-        result = subprocess.run(["pdftotext", file_path, "-"], capture_output=True, text=True, check=True)
-        return result.stdout, {}
-    return text, {}
+        text = "\n\f".join(page.get_text() for page in doc)
+        if text.strip():
+            return text, {}
+        text = _pdftotext(file_path)
+        if text.strip():
+            return text, {}
+        logger.info(f"No text layer in {file_path}; running OCR.")
+        return _ocr_pdf_pages(doc), {}
 
 
 @parsing_handler
@@ -124,49 +172,57 @@ def parse_docx(file_path: str) -> tuple[str, dict]:
 @parsing_handler
 def parse_xlsx(file_path: str) -> tuple[str, dict]:
     """Extracts text content from an XLSX file."""
-    workbook = openpyxl.load_workbook(file_path)
-    text = []
-    for sheet in workbook.worksheets:
-        for row in sheet.iter_rows():
-            for cell in row:
-                if cell.value:
-                    text.append(str(cell.value))
+    workbook = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
+    try:
+        text = [
+            str(value)
+            for sheet in workbook.worksheets
+            for row in sheet.iter_rows(values_only=True)
+            for value in row
+            if value
+        ]
+    finally:
+        workbook.close()
     return "\n".join(text), {}
 
 
 @parsing_handler
 def parse_html(file_path: str) -> tuple[str, dict]:
-    """Extracts text from an HTML file."""
-    with open(file_path, encoding="utf-8") as f:
-        soup = BeautifulSoup(f, "html.parser")
-        return soup.get_text(), {}
+    """Extracts text from an HTML file, honouring its declared charset."""
+    with open(file_path, "rb") as f:
+        soup = BeautifulSoup(f.read(), "html.parser")
+    return soup.get_text(), {}
 
 
 @parsing_handler
 def parse_rtf(file_path: str) -> tuple[str, dict]:
-    """Extracts text from an RTF file."""
-    with open(file_path) as f:
+    """Extracts text from an RTF file (7-bit ASCII with escapes; tolerate stray bytes)."""
+    with open(file_path, encoding="cp1252", errors="replace") as f:
         return rtf_to_text(f.read()), {}
 
 
 @parsing_handler
 def parse_eml(file_path: str) -> tuple[str, dict]:
-    """Extracts text from an EML file."""
-    with open(file_path) as f:
-        msg = email.message_from_file(f)
-        body = ""
-        if msg.is_multipart():
-            for part in msg.walk():
-                if part.get_content_type() == "text/plain":
-                    payload = part.get_payload(decode=True)
-                    if isinstance(payload, bytes):
-                        body = payload.decode()
-                    break
-        else:
-            payload = msg.get_payload(decode=True)
-            if isinstance(payload, bytes):
-                body = payload.decode()
-        return body, {}
+    """Extracts headers and body (plain text preferred, HTML otherwise) from an EML file."""
+    with open(file_path, "rb") as f:
+        # policy.default makes the parser build EmailMessage objects (with get_body)
+        msg = cast(EmailMessage, email.message_from_binary_file(f, policy=policy.default))
+
+    metadata = {
+        "subject": str(msg.get("Subject", "")),
+        "sender": str(msg.get("From", "")),
+        "date": str(msg.get("Date", "")),
+        "to": str(msg.get("To", "")),
+    }
+    body = ""
+    part = msg.get_body(preferencelist=("plain", "html"))
+    if part is not None:
+        body = part.get_content()
+        if part.get_content_type() == "text/html":
+            body = BeautifulSoup(body, "html.parser").get_text()
+
+    header = f"Subject: {metadata['subject']}\nFrom: {metadata['sender']}\nDate: {metadata['date']}\n\n"
+    return header + body, metadata
 
 
 @parsing_handler
@@ -200,16 +256,16 @@ def parse_msg(file_path: str) -> tuple[str, dict]:
 
 @parsing_handler
 def parse_generic_text(file_path: str) -> tuple[str, dict]:
-    """Extracts content from a generic text file, trying various encodings."""
-    encodings = ["utf-8", "latin-1", "iso-8859-1"]
-    for encoding in encodings:
+    """Extracts content from a generic text file: UTF-8, then Windows-1252, then Latin-1."""
+    for encoding in ("utf-8", "cp1252"):
         try:
             with open(file_path, encoding=encoding) as f:
                 return f.read(), {}
         except UnicodeDecodeError:
             continue
-    logger.warning(f"Could not decode file {file_path} with any of the default encodings.")
-    return "", {}
+    # Latin-1 maps every byte, so it always succeeds
+    with open(file_path, encoding="latin-1") as f:
+        return f.read(), {}
 
 
 @parsing_handler
@@ -221,6 +277,7 @@ def parse_with_pandoc(file_path: str) -> tuple[str, dict]:
             capture_output=True,
             text=True,
             check=True,
+            timeout=SUBPROCESS_TIMEOUT,
         )
         return result.stdout, {}
     except FileNotFoundError:
@@ -236,109 +293,15 @@ def parse_with_pandoc(file_path: str) -> tuple[str, dict]:
 @parsing_handler
 def parse_archive(file_path: str) -> tuple[str, dict]:
     """
-    Extracts the names of files within a ZIP or TAR archive.
+    Lists the names of files within a ZIP or TAR archive without extracting them.
     """
-    text_content = []
     file_path_lower = file_path.lower()
-
-    def _is_within_dir(base: str | os.PathLike, target: str | os.PathLike) -> bool:
-        base_path = os.path.realpath(base)
-        target_path = os.path.realpath(target)
-        return os.path.commonpath([base_path]) == os.path.commonpath([base_path, target_path])
-
-    def _safe_extract_tar(tf: tarfile.TarFile, dest: str) -> None:
-        for member in tf.getmembers():
-            # Normalize and validate path
-            name = member.name
-            norm_name = os.path.normpath(name)
-            if os.path.isabs(norm_name) or norm_name.startswith(".." + os.sep) or ".." + os.sep in norm_name:
-                logger.warning(f"Blocked unsafe tar member path: {name}")
-                continue
-
-            dest_path = os.path.join(dest, norm_name)
-            if not _is_within_dir(dest, dest_path):
-                logger.warning(f"Blocked traversal outside dest for tar member: {name}")
-                continue
-
-            # Directories
-            if member.isdir():
-                os.makedirs(dest_path, exist_ok=True)
-                continue
-
-            # Block symlinks and hardlinks
-            if member.issym() or member.islnk():
-                logger.warning(f"Skipping link in tar archive: {name}")
-                continue
-
-            # Skip special files (devices, fifos, etc.)
-            if not member.isreg():
-                logger.warning(f"Skipping non-regular tar member: {name}")
-                continue
-
-            # Ensure directory exists
-            os.makedirs(os.path.dirname(dest_path), exist_ok=True)
-
-            # Extract file content safely without following symlinks
-            src = tf.extractfile(member)
-            if src is None:
-                logger.warning(f"Could not read tar member (None): {name}")
-                continue
-            with src as s, open(dest_path, "wb") as f:
-                while True:
-                    chunk = s.read(1024 * 1024)
-                    if not chunk:
-                        break
-                    f.write(chunk)
-
-    def _safe_extract_zip(zf: zipfile.ZipFile, dest: str) -> None:
-        for member in zf.infolist():
-            name = member.filename
-            norm_name = os.path.normpath(name)
-            if os.path.isabs(norm_name) or norm_name.startswith(".." + os.sep) or ".." + os.sep in norm_name:
-                logger.warning(f"Blocked unsafe zip member path: {name}")
-                continue
-
-            dest_path = os.path.join(dest, norm_name)
-            if not _is_within_dir(dest, dest_path):
-                logger.warning(f"Blocked traversal outside dest for zip member: {name}")
-                continue
-
-            # Detect symlink in zip (POSIX) via external attributes
-            is_symlink = False
-            try:
-                external_attr = member.external_attr >> 16
-                is_symlink = stat.S_ISLNK(external_attr)
-            except Exception:
-                is_symlink = False
-
-            if is_symlink:
-                logger.warning(f"Skipping symlink in zip archive: {name}")
-                continue
-
-            if name.endswith("/") or member.is_dir():
-                os.makedirs(dest_path, exist_ok=True)
-                continue
-
-            os.makedirs(os.path.dirname(dest_path), exist_ok=True)
-            with zf.open(member, "r") as s, open(dest_path, "wb") as f:
-                while True:
-                    chunk = s.read(1024 * 1024)
-                    if not chunk:
-                        break
-                    f.write(chunk)
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        if file_path_lower.endswith(".zip"):
-            with zipfile.ZipFile(file_path, "r") as zip_archive:
-                _safe_extract_zip(zip_archive, temp_dir)
-        elif file_path_lower.endswith((".tar", ".gz", ".bz2", ".xz")):
-            with tarfile.open(file_path, "r:*") as tar_archive:
-                _safe_extract_tar(tar_archive, temp_dir)
-        else:
-            return "", {}
-
-        for _root, _, files in os.walk(temp_dir):
-            for name in files:
-                text_content.append(f"--- File: {name} ---")
-
-        return "\n".join(text_content), {}
+    if file_path_lower.endswith(".zip"):
+        with zipfile.ZipFile(file_path, "r") as zip_archive:
+            names = [info.filename for info in zip_archive.infolist() if not info.is_dir()]
+    elif file_path_lower.endswith((".tar", ".gz", ".bz2", ".xz")):
+        with tarfile.open(file_path, "r:*") as tar_archive:
+            names = [member.name for member in tar_archive.getmembers() if member.isreg()]
+    else:
+        return "", {}
+    return "\n".join(f"--- File: {name} ---" for name in names), {}

@@ -8,7 +8,7 @@ ensuring that data is not modified during the classification process.
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AIResponse(BaseModel):
@@ -32,9 +32,7 @@ class FileContext(BaseModel):
     or updated instance of this context.
     """
 
-    # Configuration for immutability
-    class Config:
-        frozen = True
+    model_config = ConfigDict(frozen=True)
 
     # Required initialization fields
     source_path: Path
@@ -43,6 +41,8 @@ class FileContext(BaseModel):
     use_vision: bool
     language_subfolders: bool
     categories: list[str]
+    ollama_model: str | None = None  # None -> app_config default
+    ollama_url: str | None = None  # None -> app_config default
 
     # --- Fields populated during the pipeline ---
     content: str = ""

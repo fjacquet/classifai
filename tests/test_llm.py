@@ -12,6 +12,7 @@ from pathlib import Path
 import pytest
 
 from classifai.core.types import AIResponse, FileContext
+from classifai.infrastructure.knowledge_base import IssuerMatch
 from classifai.infrastructure.llm import (
     _format_categories_for_prompt,
     _fuzzy_match_category,
@@ -115,8 +116,9 @@ class TestEnrichWithAI:
         mocker.patch(
             "classifai.infrastructure.llm._get_category_suggestion", return_value="Suggested-Category"
         )
-        # get_sector_for_issuer is imported inside the function, mock at source
-        mocker.patch("classifai.infrastructure.knowledge_base.get_sector_for_issuer", return_value=None)
+        mocker.patch(
+            "classifai.infrastructure.knowledge_base.lookup_issuer", return_value=IssuerMatch(None, None)
+        )
 
         # Should not raise ValidationError
         result = enrich_with_ai(base_context)
@@ -135,9 +137,9 @@ class TestEnrichWithAI:
         }
 
         mocker.patch("classifai.infrastructure.llm.get_completion", return_value=mock_response)
-        # get_sector_for_issuer is imported inside the function, mock at source
         mocker.patch(
-            "classifai.infrastructure.knowledge_base.get_sector_for_issuer", return_value="Technology"
+            "classifai.infrastructure.knowledge_base.lookup_issuer",
+            return_value=IssuerMatch("Technology", None),
         )
 
         result = enrich_with_ai(base_context)
@@ -183,7 +185,8 @@ class TestEnrichWithAI:
 
         mocker.patch("classifai.infrastructure.llm.get_completion", return_value=mock_response)
         mocker.patch(
-            "classifai.infrastructure.knowledge_base.get_sector_for_issuer", return_value="Technology"
+            "classifai.infrastructure.knowledge_base.lookup_issuer",
+            return_value=IssuerMatch("Technology", None),
         )
 
         result = enrich_with_ai(context)
@@ -270,3 +273,216 @@ class TestFormatCategoriesForPrompt:
         assert "Relevés Bancaires" in result
         assert "Non Classé" in result
         assert "Médical" in result
+
+
+class TestOllamaRequests:
+    """Regression tests for the Ollama request payloads."""
+
+    def test_vision_completion_sends_base64_image(self, mocker):
+        """Ollama expects base64-encoded images, not hex."""
+        from classifai.infrastructure.llm import get_vision_completion
+
+        mock_request = mocker.patch("classifai.infrastructure.llm._make_request", return_value={})
+        get_vision_completion("prompt", b"\x89PNG")
+
+        payload = mock_request.call_args.args[1]
+        assert payload["images"] == ["iVBORw=="]
+
+    def test_completion_uses_explicit_model_and_url(self, mocker):
+        """Model and URL overrides must reach the request."""
+        from classifai.infrastructure.llm import get_completion
+
+        mock_request = mocker.patch("classifai.infrastructure.llm._make_request", return_value={})
+        get_completion("prompt", model_name="llama3", api_url="http://ollama:11434")
+
+        endpoint, payload, api_url = mock_request.call_args.args[:3]
+        assert endpoint == "/api/generate"
+        assert payload["model"] == "llama3"
+        assert api_url == "http://ollama:11434"
+
+    def test_enrich_with_ai_forwards_context_model(self, mocker, base_context):
+        """The model chosen on the CLI/UI must be used for classification."""
+        context = base_context.model_copy(update={"ollama_model": "llama3", "ollama_url": "http://h:1"})
+        mock_completion = mocker.patch(
+            "classifai.infrastructure.llm.get_completion",
+            return_value={"response": '{"issuer": null, "category": "Invoices"}'},
+        )
+
+        enrich_with_ai(context)
+
+        kwargs = mock_completion.call_args.kwargs
+        assert kwargs["model_name"] == "llama3"
+        assert kwargs["api_url"] == "http://h:1"
+
+    def test_category_suggestion_parses_json_response(self, mocker):
+        """JSON mode is forced, so the suggestion must be read from the JSON key."""
+        from classifai.infrastructure.llm import _get_category_suggestion
+
+        mocker.patch(
+            "classifai.infrastructure.llm.get_completion",
+            return_value={"response": '{"category": "Frais Médicaux"}'},
+        )
+
+        assert _get_category_suggestion("text", ["Factures"]) == "Frais-Médicaux"
+
+
+class TestEnrichWithAIShapes:
+    """Regression tests for unified response handling."""
+
+    def test_vision_path_uses_unknown_workflow(self, mocker, base_context, tmp_path):
+        """Images with no valid category get _UNKNOWN_ plus a suggestion, like text documents."""
+        image = tmp_path / "scan.png"
+        image.write_bytes(b"\x89PNG")
+        context = base_context.model_copy(
+            update={"source_path": image, "file_type": "image", "use_vision": True}
+        )
+        mocker.patch(
+            "classifai.infrastructure.llm.get_vision_completion",
+            return_value={"response": '{"category": "Holiday Pictures"}'},
+        )
+        mocker.patch("classifai.infrastructure.llm._get_category_suggestion", return_value="Vacances")
+
+        result = enrich_with_ai(context)
+
+        assert result.category == "_UNKNOWN_"
+        assert result.ai_results["category_suggestion"] == "Vacances"
+
+    def test_malformed_field_types_are_dropped(self, mocker, base_context):
+        """Non-string fields from the model are ignored instead of failing validation."""
+        mocker.patch(
+            "classifai.infrastructure.llm.get_completion",
+            return_value={"response": '{"issuer": ["A", "B"], "category": "Invoices", "date": 2025}'},
+        )
+
+        result = enrich_with_ai(base_context)
+
+        assert result.issuer is None
+        assert result.category == "Invoices"
+        assert "date" not in result.ai_results
+
+
+class TestStructuredOutputs:
+    """Ollama calls are deterministic and constrained by a JSON schema."""
+
+    def test_classification_uses_category_enum_schema(self, mocker, base_context):
+        """The category field is constrained to the allowed list (or null)."""
+        mock_completion = mocker.patch(
+            "classifai.infrastructure.llm.get_completion",
+            return_value={"response": '{"category": "Invoices"}'},
+        )
+
+        enrich_with_ai(base_context)
+
+        schema = mock_completion.call_args.kwargs["schema"]
+        assert schema["properties"]["category"]["enum"] == ["Invoices", "Reports", "Contracts", None]
+
+    def test_request_is_deterministic(self, mocker):
+        """Classification must not vary between runs: temperature 0 and keep_alive set."""
+        from classifai.infrastructure.llm import get_completion
+
+        mock_request = mocker.patch("classifai.infrastructure.llm._make_request", return_value={})
+        get_completion("prompt", schema={"type": "object"})
+
+        payload = mock_request.call_args.args[1]
+        assert payload["format"] == {"type": "object"}
+        assert payload["options"]["temperature"] == 0
+        assert payload["options"]["num_ctx"] >= 4096
+        assert "keep_alive" in payload
+        assert payload["think"] is False  # Gemma 4 thinks by default and can exhaust the budget
+
+    def test_sector_fallback_is_constrained_to_known_sectors(self, mocker):
+        """Unknown sectors from the model are rejected instead of creating new folders."""
+        from classifai.infrastructure.llm import get_sector_with_ai
+
+        mock_completion = mocker.patch(
+            "classifai.infrastructure.llm.get_completion",
+            return_value={"response": '{"sector": "Space Mining"}'},
+        )
+
+        assert get_sector_with_ai("Acme", "text") is None
+        assert "Banque" in mock_completion.call_args.kwargs["schema"]["properties"]["sector"]["enum"]
+
+    def test_empty_content_skips_the_model(self, mocker, base_context):
+        """With no extracted text there is nothing to classify: don't let the model invent one."""
+        mock_completion = mocker.patch("classifai.infrastructure.llm.get_completion")
+
+        result = enrich_with_ai(base_context.model_copy(update={"content": "   "}))
+
+        mock_completion.assert_not_called()
+        assert result.category == "_UNKNOWN_"
+
+    def test_document_text_is_delimited_and_keeps_the_tail(self, mocker, base_context):
+        """Long documents keep their end (totals, signatures) and are fenced as data."""
+        content = "HEAD " + "x" * 10000 + " TAIL-SIGNATURE"
+        mock_completion = mocker.patch(
+            "classifai.infrastructure.llm.get_completion",
+            return_value={"response": '{"category": "Invoices"}'},
+        )
+
+        enrich_with_ai(base_context.model_copy(update={"content": content}))
+
+        prompt = mock_completion.call_args.args[0]
+        assert "<document>" in prompt
+        assert "</document>" in prompt
+        assert "HEAD" in prompt
+        assert "TAIL-SIGNATURE" in prompt
+
+
+class TestRequestRetries:
+    """Transient server errors are retried; client errors are not."""
+
+    def _response(self, status):
+        import httpx
+
+        return httpx.Response(status, json={"response": "{}"}, request=httpx.Request("POST", "http://h/api"))
+
+    def test_retries_on_503(self, mocker):
+        from classifai.infrastructure import llm
+
+        mocker.patch("tenacity.nap.time.sleep")
+        client = mocker.MagicMock()
+        client.post.side_effect = [self._response(503), self._response(200)]
+        mocker.patch.object(llm, "_client", return_value=client)
+
+        assert llm._make_request("/api/generate", {}, "http://h") == {"response": "{}"}
+        assert client.post.call_count == 2
+
+    def test_does_not_retry_on_404(self, mocker):
+        from classifai.exceptions import LLMError
+        from classifai.infrastructure import llm
+
+        client = mocker.MagicMock()
+        client.post.return_value = self._response(404)
+        mocker.patch.object(llm, "_client", return_value=client)
+
+        with pytest.raises(LLMError, match="404"):
+            llm._make_request("/api/generate", {}, "http://h")
+        assert client.post.call_count == 1
+
+
+def test_enrich_uses_canonical_issuer_name(mocker, base_context):
+    """The folder name comes from the knowledge base, not the model's spelling of the issuer."""
+    mocker.patch(
+        "classifai.infrastructure.llm.get_completion",
+        return_value={"response": '{"issuer": "UBS Switzerland AG", "category": "Invoices"}'},
+    )
+    mocker.patch(
+        "classifai.infrastructure.knowledge_base.lookup_issuer",
+        return_value=IssuerMatch("Banque", "UBS"),
+    )
+
+    result = enrich_with_ai(base_context)
+
+    assert result.issuer == "UBS"
+    assert result.sector == "Banque"
+    assert result.ai_results["issuer"] == "UBS Switzerland AG"
+
+
+def test_tax_category_variants_resolve_to_impots():
+    """Accent-less or English answers still land in the Impôts category."""
+    from classifai.config import app_config
+    from classifai.infrastructure.llm import _validate_category
+
+    assert "Impôts" in app_config.categories
+    assert _validate_category("Impots", app_config.categories) == "Impôts"
+    assert _validate_category("Taxes", app_config.categories) == "Impôts"

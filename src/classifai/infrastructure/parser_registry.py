@@ -1,4 +1,4 @@
-"""Pure parsing logic for ClassifAI."""
+"""Maps file extensions to their parser functions."""
 
 from collections.abc import Callable
 

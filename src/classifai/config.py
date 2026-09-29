@@ -31,20 +31,20 @@ def _load_yaml_file(path: Path) -> dict | list | None:
         return None
 
 
+# Gemma 4 E4B: multimodal (text + images), good French, native structured JSON
+DEFAULT_OLLAMA_MODEL = "gemma4:e4b"
+
 # Default supported file extensions
 DEFAULT_SUPPORTED_EXTENSIONS = [
     # Documents
     ".pdf",
     ".docx",
-    ".doc",
     ".txt",
     ".rtf",
     ".odt",
     ".md",
     # Spreadsheets
     ".xlsx",
-    ".xls",
-    ".ods",
     # Presentations
     ".pptx",
     ".ppt",
@@ -87,7 +87,7 @@ class AppConfig:
     categories: list[str]
     rules: list[dict[str, Any]]
     sectors: list[str]
-    sector_issuer_mapping: dict[str, str]
+    sector_issuer_mapping: dict[str, Any]  # sector -> issuers, plus an 'aliases' dict
 
     # --- Path settings ---
     config_dir: Path = field(default=Path("config"))
@@ -95,6 +95,7 @@ class AppConfig:
     # --- Derived settings ---
     generic_text_extensions: list[str] = field(init=False)
     use_vision_model: bool = field(init=False)
+    online_geocoding: bool = field(init=False)
     supported_extensions: list[str] = field(init=False)
 
     def __post_init__(self):
@@ -108,6 +109,7 @@ class AppConfig:
             self.settings.get("generic_text_extensions", []),
         )
         object.__setattr__(self, "use_vision_model", self.settings.get("use_vision_model", False))
+        object.__setattr__(self, "online_geocoding", self.settings.get("online_geocoding", False))
         object.__setattr__(
             self,
             "supported_extensions",
@@ -115,53 +117,39 @@ class AppConfig:
         )
 
 
-def _load_sector_issuer_mapping(mapping_data: dict | None) -> dict[str, str]:
-    """
-    Loads and processes the sector-issuer mapping data from the YAML file.
-    It inverts the mapping to be issuer -> sector for efficient lookups.
-    """
-    if not isinstance(mapping_data, dict):
-        return {}
-
-    issuer_to_sector_map = {}
-    for sector, issuers in mapping_data.items():
-        if isinstance(issuers, list):
-            for issuer in issuers:
-                issuer_to_sector_map[issuer.lower()] = sector
-    return issuer_to_sector_map
-
-
 def load_app_config() -> AppConfig:
     """
     Loads all configurations and returns a frozen AppConfig object.
     """
-    raw_settings = _load_yaml_file(Path("config/settings.yaml"))
+    config_dir = Path("config")
+
+    raw_settings = _load_yaml_file(config_dir / "settings.yaml")
     settings: dict[str, Any] = raw_settings if isinstance(raw_settings, dict) else {}
 
-    raw_categories = _load_yaml_file(Path("config/categories.yaml"))
+    raw_categories = _load_yaml_file(config_dir / "categories.yaml")
     categories: list[str] = raw_categories if isinstance(raw_categories, list) else []
 
-    rules_data = _load_yaml_file(Path("config/rules.yaml"))
+    rules_data = _load_yaml_file(config_dir / "rules.yaml")
     rules = rules_data.get("rules", []) if isinstance(rules_data, dict) else []
 
-    raw_sectors = _load_yaml_file(Path("config/sectors.yaml"))
+    raw_sectors = _load_yaml_file(config_dir / "sectors.yaml")
     sectors: list[str] = raw_sectors if isinstance(raw_sectors, list) else []
 
-    raw_mapping = _load_yaml_file(Path("config/sector_issuer_mapping.yaml"))
-    sector_issuer_data = raw_mapping if isinstance(raw_mapping, dict) else None
-    sector_issuer_mapping = _load_sector_issuer_mapping(sector_issuer_data)
+    raw_mapping = _load_yaml_file(config_dir / "sector_issuer_mapping.yaml")
+    sector_issuer_mapping: dict[str, Any] = raw_mapping if isinstance(raw_mapping, dict) else {}
 
     return AppConfig(
         # Env vars
-        ollama_model_name=os.getenv("OLLAMA_MODEL_NAME", "gemma:2b"),
+        ollama_model_name=os.getenv("OLLAMA_MODEL_NAME", DEFAULT_OLLAMA_MODEL),
         ollama_api_url=os.getenv("OLLAMA_API_URL", "http://localhost:11434"),
-        ollama_vision_model_name=os.getenv("OLLAMA_VISION_MODEL_NAME", "llava"),
+        ollama_vision_model_name=os.getenv("OLLAMA_VISION_MODEL_NAME", DEFAULT_OLLAMA_MODEL),
         # YAML files
         settings=settings,
         categories=categories,
         rules=rules,
         sectors=sectors,
         sector_issuer_mapping=sector_issuer_mapping,
+        config_dir=config_dir,
     )
 
 

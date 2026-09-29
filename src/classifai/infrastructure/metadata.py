@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Any
 
 from loguru import logger
-from tenacity import retry, stop_after_attempt, wait_exponential
 
 # Feature flags for optional dependencies
 _MAGIC_AVAILABLE = False
@@ -221,13 +220,11 @@ def _normalize_metadata(raw: dict[str, Any]) -> dict[str, Any]:
     return normalized
 
 
-@retry(stop=stop_after_attempt(2), wait=wait_exponential(min=1, max=5))
 def extract_rich_metadata(file_path: Path) -> dict[str, Any]:
     """
     Extract rich metadata from a file using ExifTool.
 
     Returns an empty dictionary if ExifTool is unavailable or extraction fails.
-    Uses retry logic to handle transient failures.
 
     Args:
         file_path: Path to the file
@@ -298,13 +295,3 @@ def merge_metadata(
             # Otherwise keep existing value
 
     return merged
-
-
-def is_magic_available() -> bool:
-    """Check if python-magic is available."""
-    return _MAGIC_AVAILABLE
-
-
-def is_exiftool_available() -> bool:
-    """Check if ExifTool is available."""
-    return _EXIFTOOL_AVAILABLE

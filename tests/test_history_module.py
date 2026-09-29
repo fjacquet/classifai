@@ -60,3 +60,18 @@ def test_empty_history(mock_history_file: Path):
     """
     assert get_last_operation() is None
     remove_last_operation()  # Should not raise an error
+
+
+def test_history_write_is_atomic(mocker, tmp_path):
+    """A crash while writing history must leave the previous history intact for undo."""
+    from classifai.infrastructure import history
+
+    history_file = tmp_path / "history.json"
+    mocker.patch.object(history, "HISTORY_FILE", history_file)
+    history.log_operation("move", "/a", "/b")
+    mocker.patch("classifai.infrastructure.history.json.dumps", side_effect=RuntimeError("boom"))
+
+    with pytest.raises(RuntimeError):
+        history.log_operation("move", "/c", "/d")
+
+    assert history.get_last_operation() == {"operation": "move", "source": "/a", "destination": "/b"}

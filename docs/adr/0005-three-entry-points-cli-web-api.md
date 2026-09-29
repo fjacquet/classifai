@@ -1,8 +1,17 @@
 # ADR-0005: Three entry points — CLI, Streamlit, FastAPI
 
-- **Status:** Accepted
+- **Status:** Accepted (amended 2026-09-29: REST API removed)
 - **Date:** 2024 (codified retroactively 2026-04-19)
 - **Deciders:** Frederic Jacquet
+
+> **Update (2026-09-29):** the FastAPI REST API (`src/classifai/app/`) was
+> never wired to an entry point and has been removed, together with a
+> duplicate Streamlit UI (`app/web_ui.py`) and the `main.py` dispatcher.
+> The current entry points are the **CLI** (`classifai run | watch | undo |
+> kb-list-unknown`), the **Streamlit UI** (`make web` /
+> `streamlit run src/classifai/classifai_app.py`) and the **watcher**
+> (`classifai watch`). The rest of this ADR is kept as the original record;
+> alternative 4 below ("CLI + Web, drop API") is what ships today.
 
 ## Context
 

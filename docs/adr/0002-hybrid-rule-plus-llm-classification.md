@@ -35,6 +35,16 @@ Classification follows a **fixed-priority cascade**:
 Each step only runs if the previous step left fields unset. The LLM is the
 **fallback**, not the default.
 
+> **Update (2026-09-29) — order as implemented** (`src/classifai/pipeline.py`):
+> early rules (`filename` / `path` globs only; MIME type is a full-rule
+> condition) → parsing → full rules (`mime_type` / `metadata`) → LLM
+> enrichment with fuzzy category post-fix → knowledge-base lookup of the
+> extracted issuer (sector + canonical name) → AI sector fallback
+> constrained to `sectors.yaml` → path. Rules only set the category; a
+> rule match skips both the LLM and the knowledge base. The knowledge base
+> runs *after* the LLM because the issuer it looks up is extracted by the
+> LLM.
+
 ## Rationale
 
 - **Latency & cost:** Rules match in milliseconds; LLM calls take seconds.

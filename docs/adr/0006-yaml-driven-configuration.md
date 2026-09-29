@@ -18,17 +18,23 @@ changing jobs, new vendors). They must be **edited without a code release**.
 
 ## Decision
 
-Store all four surfaces as YAML files under `config/`:
+Store these surfaces as YAML files under `config/`:
 
 - `config/categories.yaml` — flat list of valid categories
 - `config/sectors.yaml` — flat list of valid sectors
 - `config/sector_issuer_mapping.yaml` — nested map, with `aliases` section
 - `config/rules.yaml` — ordered list of rule objects (early + full)
+- `config/settings.yaml` — general settings (`generic_text_extensions`,
+  `supported_extensions`, `use_vision_model`, `online_geocoding`)
+
+plus one generated file, `config/unknown_issuers.yaml`, where issuers
+missing from the mapping are recorded for review.
 
 Loaded once at startup into the frozen `AppConfig` dataclass
-(`src/classifai/config.py`). Validation at startup checks that every category
-referenced in `rules.yaml` exists in `categories.yaml` — the app fails fast
-if it doesn't.
+(`src/classifai/config.py`). Validation at startup (`classifai run`) checks
+that every category referenced in `rules.yaml` exists in `categories.yaml`
+and that every condition uses a known type / match operator — the run fails
+fast if it doesn't.
 
 Model identities live in `.env` / environment variables
 (`OLLAMA_MODEL_NAME`, `OLLAMA_API_URL`, `OLLAMA_VISION_MODEL_NAME`), not
@@ -47,8 +53,9 @@ in YAML — they're deployment concerns, not taxonomy.
 - **Fails fast.** `validation.py` cross-checks rules vs. categories at
   startup — a rule referencing a dropped category surfaces immediately,
   not on the first matching document.
-- **`yamlfix` keeps it tidy.** Pre-commit and CI run `yamlfix` so the
-  files stay canonical regardless of who edited them.
+- **`yamlfmt` keeps it tidy.** Pre-commit runs `yamlfmt` (configured in
+  `.yamlfmt.yaml`) so the files stay canonical regardless of who edited
+  them.
 
 ## Alternatives considered
 
@@ -61,9 +68,10 @@ in YAML — they're deployment concerns, not taxonomy.
    for the issuer → sector → aliases shape, and the project already uses
    YAML for pre-commit and mkdocs.
 4. **JSON.** Rejected: no comments, worse for human hand-editing.
-5. **pydantic-settings driving everything.** `pydantic-settings` is already
-   a dependency and used for env vars. Extending it to wrap the YAML files
-   is a reasonable incremental improvement (future ADR if taken).
+5. **pydantic-settings driving everything.** Env vars are currently read
+   with `python-dotenv` + `os.getenv`; `pydantic-settings` is not a
+   dependency. Adopting it to wrap env vars and the YAML files is a
+   reasonable incremental improvement (future ADR if taken).
 
 ## Consequences
 
@@ -81,6 +89,6 @@ in YAML — they're deployment concerns, not taxonomy.
 ## References
 
 - `src/classifai/config.py` — loader + `AppConfig`
-- `src/classifai/validation.py` — rules-vs-categories cross-check
+- `src/classifai/validation.py` — rules-vs-categories and condition checks
 - `config/` directory — the YAML files themselves
-- [yamlfix](https://lyz-code.github.io/yamlfix/)
+- [yamlfmt](https://github.com/google/yamlfmt)
