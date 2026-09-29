@@ -356,3 +356,101 @@ class TestEnrichWithAIShapes:
         assert result.issuer is None
         assert result.category == "Invoices"
         assert "date" not in result.ai_results
+
+
+class TestStructuredOutputs:
+    """Ollama calls are deterministic and constrained by a JSON schema."""
+
+    def test_classification_uses_category_enum_schema(self, mocker, base_context):
+        """The category field is constrained to the allowed list (or null)."""
+        mock_completion = mocker.patch(
+            "classifai.infrastructure.llm.get_completion",
+            return_value={"response": '{"category": "Invoices"}'},
+        )
+
+        enrich_with_ai(base_context)
+
+        schema = mock_completion.call_args.kwargs["schema"]
+        assert schema["properties"]["category"]["enum"] == ["Invoices", "Reports", "Contracts", None]
+
+    def test_request_is_deterministic(self, mocker):
+        """Classification must not vary between runs: temperature 0 and keep_alive set."""
+        from classifai.infrastructure.llm import get_completion
+
+        mock_request = mocker.patch("classifai.infrastructure.llm._make_request", return_value={})
+        get_completion("prompt", schema={"type": "object"})
+
+        payload = mock_request.call_args.args[1]
+        assert payload["format"] == {"type": "object"}
+        assert payload["options"]["temperature"] == 0
+        assert payload["options"]["num_ctx"] >= 4096
+        assert "keep_alive" in payload
+
+    def test_sector_fallback_is_constrained_to_known_sectors(self, mocker):
+        """Unknown sectors from the model are rejected instead of creating new folders."""
+        from classifai.infrastructure.llm import get_sector_with_ai
+
+        mock_completion = mocker.patch(
+            "classifai.infrastructure.llm.get_completion",
+            return_value={"response": '{"sector": "Space Mining"}'},
+        )
+
+        assert get_sector_with_ai("Acme", "text") is None
+        assert "Banque" in mock_completion.call_args.kwargs["schema"]["properties"]["sector"]["enum"]
+
+    def test_empty_content_skips_the_model(self, mocker, base_context):
+        """With no extracted text there is nothing to classify: don't let the model invent one."""
+        mock_completion = mocker.patch("classifai.infrastructure.llm.get_completion")
+
+        result = enrich_with_ai(base_context.model_copy(update={"content": "   "}))
+
+        mock_completion.assert_not_called()
+        assert result.category == "_UNKNOWN_"
+
+    def test_document_text_is_delimited_and_keeps_the_tail(self, mocker, base_context):
+        """Long documents keep their end (totals, signatures) and are fenced as data."""
+        content = "HEAD " + "x" * 10000 + " TAIL-SIGNATURE"
+        mock_completion = mocker.patch(
+            "classifai.infrastructure.llm.get_completion",
+            return_value={"response": '{"category": "Invoices"}'},
+        )
+
+        enrich_with_ai(base_context.model_copy(update={"content": content}))
+
+        prompt = mock_completion.call_args.args[0]
+        assert "<document>" in prompt
+        assert "</document>" in prompt
+        assert "HEAD" in prompt
+        assert "TAIL-SIGNATURE" in prompt
+
+
+class TestRequestRetries:
+    """Transient server errors are retried; client errors are not."""
+
+    def _response(self, status):
+        import httpx
+
+        return httpx.Response(status, json={"response": "{}"}, request=httpx.Request("POST", "http://h/api"))
+
+    def test_retries_on_503(self, mocker):
+        from classifai.infrastructure import llm
+
+        mocker.patch("tenacity.nap.time.sleep")
+        client = mocker.MagicMock()
+        client.post.side_effect = [self._response(503), self._response(200)]
+        mocker.patch.object(llm, "_client", return_value=client)
+
+        assert llm._make_request("/api/generate", {}, "http://h") == {"response": "{}"}
+        assert client.post.call_count == 2
+
+    def test_does_not_retry_on_404(self, mocker):
+        from classifai.exceptions import LLMError
+        from classifai.infrastructure import llm
+
+        client = mocker.MagicMock()
+        client.post.return_value = self._response(404)
+        mocker.patch.object(llm, "_client", return_value=client)
+
+        with pytest.raises(LLMError, match="404"):
+            llm._make_request("/api/generate", {}, "http://h")
+        assert client.post.call_count == 1

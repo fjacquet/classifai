@@ -188,7 +188,10 @@ def test_unknown_issuer_recorded_once_per_file(mocker, tmp_path, isolated_unknow
         return_value={"Banque": ["UBS"]},
     )
     mocker.patch("classifai.pipeline.apply_early_rules", side_effect=lambda c, _: c)
-    mocker.patch("classifai.pipeline.read_and_parse_file", side_effect=lambda c: c)
+    mocker.patch(
+        "classifai.pipeline.read_and_parse_file",
+        side_effect=lambda c: c.model_copy(update={"content": "Invoice from Nobody Corp"}),
+    )
     mocker.patch(
         "classifai.infrastructure.llm.get_completion",
         return_value={"response": '{"issuer": "Nobody Corp", "category": "Reports"}'},
