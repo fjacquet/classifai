@@ -9,6 +9,8 @@ from pathlib import Path
 
 from loguru import logger
 
+from classifai.utils import write_text_atomic
+
 HISTORY_FILE = Path("logs/history.json")
 
 
@@ -35,9 +37,7 @@ def log_operation(operation: str, source_path: str, dest_path: str) -> None:
                 history = json.load(f)
 
         history.append(history_entry)
-
-        with open(HISTORY_FILE, "w") as f:
-            json.dump(history, f, indent=4)
+        write_text_atomic(HISTORY_FILE, json.dumps(history, indent=4))
     except Exception as e:
         logger.error(f"Failed to log operation: {e}")
         raise
@@ -78,9 +78,7 @@ def remove_last_operation() -> None:
 
         if history:
             history.pop()
-
-        with open(HISTORY_FILE, "w") as f:
-            json.dump(history, f, indent=4)
+        write_text_atomic(HISTORY_FILE, json.dumps(history, indent=4))
     except Exception as e:
         logger.error(f"Failed to remove last operation: {e}")
         raise

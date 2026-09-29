@@ -488,15 +488,16 @@ def _to_ai_response(response: dict[str, Any]) -> AIResponse:
     return AIResponse(**fields)
 
 
-def _determine_sector(issuer: str | None, context: FileContext) -> str | None:
-    """Knowledge base lookup first, then AI fallback."""
+def _identify_issuer(issuer: str | None, context: FileContext) -> knowledge_base.IssuerMatch:
+    """Knowledge base lookup first (sector + canonical name), then AI sector fallback."""
     if not issuer:
-        return None
-    sector = knowledge_base.get_sector_for_issuer(issuer)
-    if sector:
-        return sector
+        return knowledge_base.IssuerMatch(None, None)
+    match = knowledge_base.lookup_issuer(issuer)
+    if match.sector:
+        return match
     logger.debug(f"Sector not found in knowledge base for '{issuer}', using AI fallback")
-    return get_sector_with_ai(issuer, context.content, context.ollama_model, context.ollama_url)
+    sector = get_sector_with_ai(issuer, context.content, context.ollama_model, context.ollama_url)
+    return knowledge_base.IssuerMatch(sector, None)
 
 
 def enrich_with_ai(context: FileContext) -> FileContext:
@@ -541,12 +542,13 @@ def enrich_with_ai(context: FileContext) -> FileContext:
             )
 
     ai_response = _to_ai_response(response)
+    issuer = _identify_issuer(ai_response.issuer, context)
     return context.model_copy(
         update={
             "ai_results": ai_response.model_dump(exclude_none=True),
-            "issuer": ai_response.issuer,
+            "issuer": issuer.canonical_name or ai_response.issuer,
             "language": ai_response.language,
             "category": ai_response.category,
-            "sector": _determine_sector(ai_response.issuer, context),
+            "sector": issuer.sector,
         },
     )

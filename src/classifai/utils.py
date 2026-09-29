@@ -5,8 +5,11 @@ This module provides shared utilities following DRY principle.
 All filename/path sanitization and date parsing should use these functions.
 """
 
+import os
 import re
+import tempfile
 from datetime import datetime
+from pathlib import Path
 
 # Pre-compiled patterns (performance optimization)
 _SANITIZE_PATTERN = re.compile(r"[^\w\s\-_.]")
@@ -116,3 +119,22 @@ def format_date_for_filename(dt: datetime | None) -> str:
     if dt is None:
         return ""
     return dt.strftime("%Y-%m-%d")
+
+
+def write_text_atomic(path: Path, text: str) -> None:
+    """
+    Replace *path* with *text* atomically: a crash leaves either the old or the new file.
+
+    Args:
+        path: Destination file (its directory is created if needed)
+        text: Content to write (UTF-8)
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(text)
+        os.replace(tmp_name, path)
+    except BaseException:
+        Path(tmp_name).unlink(missing_ok=True)
+        raise

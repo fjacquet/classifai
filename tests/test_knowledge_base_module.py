@@ -156,3 +156,39 @@ def test_unknown_issuer_is_recorded_in_isolated_file(mocker, isolated_unknown_is
 
     data = yaml.safe_load(isolated_unknown_issuers.read_text())
     assert data["nobody corp"]["count"] == 1
+
+
+def test_normalize_folds_accents_instead_of_dropping_them():
+    """'Mobilière' and 'Mobiliere' normalize identically (accents folded, not deleted)."""
+    assert normalize_issuer_name("La Mobilière") == "la mobiliere"
+    assert normalize_issuer_name("Hôpitaux") == normalize_issuer_name("Hopitaux")
+
+
+def test_lookup_returns_canonical_issuer(mocker):
+    """Variants of one issuer resolve to the name written in the mapping (one folder per issuer)."""
+    from classifai.infrastructure.knowledge_base import lookup_issuer
+
+    mocker.patch(
+        "classifai.infrastructure.knowledge_base.load_sector_issuer_mapping",
+        return_value={
+            "Banque": ["UBS"],
+            "Assurance": ["La Mobilière"],
+            "aliases": {"UBS Switzerland AG": "UBS"},
+        },
+    )
+
+    assert lookup_issuer("UBS Switzerland AG") == ("Banque", "UBS")
+    assert lookup_issuer("UBS AG") == ("Banque", "UBS")
+    assert lookup_issuer("la mobiliere") == ("Assurance", "La Mobilière")
+    assert lookup_issuer("Nobody") == (None, None)
+
+
+def test_unknown_issuer_file_is_written_atomically(mocker, isolated_unknown_issuers):
+    """A crash mid-write must not truncate the existing file."""
+    isolated_unknown_issuers.write_text("old corp:\n  count: 3\n")
+    mocker.patch("classifai.infrastructure.knowledge_base.yaml.dump", side_effect=RuntimeError("boom"))
+
+    with pytest.raises(Exception, match="boom"):
+        record_unknown_issuer("New Corp")
+
+    assert "old corp" in isolated_unknown_issuers.read_text()

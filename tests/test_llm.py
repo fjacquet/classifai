@@ -12,6 +12,7 @@ from pathlib import Path
 import pytest
 
 from classifai.core.types import AIResponse, FileContext
+from classifai.infrastructure.knowledge_base import IssuerMatch
 from classifai.infrastructure.llm import (
     _format_categories_for_prompt,
     _fuzzy_match_category,
@@ -115,8 +116,9 @@ class TestEnrichWithAI:
         mocker.patch(
             "classifai.infrastructure.llm._get_category_suggestion", return_value="Suggested-Category"
         )
-        # get_sector_for_issuer is imported inside the function, mock at source
-        mocker.patch("classifai.infrastructure.knowledge_base.get_sector_for_issuer", return_value=None)
+        mocker.patch(
+            "classifai.infrastructure.knowledge_base.lookup_issuer", return_value=IssuerMatch(None, None)
+        )
 
         # Should not raise ValidationError
         result = enrich_with_ai(base_context)
@@ -135,9 +137,9 @@ class TestEnrichWithAI:
         }
 
         mocker.patch("classifai.infrastructure.llm.get_completion", return_value=mock_response)
-        # get_sector_for_issuer is imported inside the function, mock at source
         mocker.patch(
-            "classifai.infrastructure.knowledge_base.get_sector_for_issuer", return_value="Technology"
+            "classifai.infrastructure.knowledge_base.lookup_issuer",
+            return_value=IssuerMatch("Technology", None),
         )
 
         result = enrich_with_ai(base_context)
@@ -183,7 +185,8 @@ class TestEnrichWithAI:
 
         mocker.patch("classifai.infrastructure.llm.get_completion", return_value=mock_response)
         mocker.patch(
-            "classifai.infrastructure.knowledge_base.get_sector_for_issuer", return_value="Technology"
+            "classifai.infrastructure.knowledge_base.lookup_issuer",
+            return_value=IssuerMatch("Technology", None),
         )
 
         result = enrich_with_ai(context)
@@ -454,3 +457,21 @@ class TestRequestRetries:
         with pytest.raises(LLMError, match="404"):
             llm._make_request("/api/generate", {}, "http://h")
         assert client.post.call_count == 1
+
+
+def test_enrich_uses_canonical_issuer_name(mocker, base_context):
+    """The folder name comes from the knowledge base, not the model's spelling of the issuer."""
+    mocker.patch(
+        "classifai.infrastructure.llm.get_completion",
+        return_value={"response": '{"issuer": "UBS Switzerland AG", "category": "Invoices"}'},
+    )
+    mocker.patch(
+        "classifai.infrastructure.knowledge_base.lookup_issuer",
+        return_value=IssuerMatch("Banque", "UBS"),
+    )
+
+    result = enrich_with_ai(base_context)
+
+    assert result.issuer == "UBS"
+    assert result.sector == "Banque"
+    assert result.ai_results["issuer"] == "UBS Switzerland AG"

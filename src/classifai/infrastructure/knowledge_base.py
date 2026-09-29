@@ -6,15 +6,24 @@ which includes categories, sector-issuer mappings, and other reference data.
 """
 
 import re
+import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 import yaml
 from loguru import logger
 
 from classifai.config import app_config
 from classifai.exceptions import ConfigurationError, KnowledgeBaseError
+from classifai.utils import write_text_atomic
+
+
+class IssuerMatch(NamedTuple):
+    """Result of a knowledge-base lookup: sector and the issuer name as written in the mapping."""
+
+    sector: str | None
+    canonical_name: str | None
 
 
 def unknown_issuers_path() -> Path:
@@ -30,13 +39,15 @@ def normalize_issuer_name(issuer: str) -> str:
         issuer: The issuer name to normalize
 
     Returns:
-        Normalized issuer name (lowercase, special characters removed)
+        Normalized issuer name (lowercase, accents folded, punctuation replaced by spaces)
     """
     if not issuer:
         return ""
 
-    # Convert to lowercase and remove special characters, keeping only alphanumeric and spaces
-    normalized = re.sub(r"[^a-zA-Z0-9\s]", "", issuer.lower())
+    # Fold accents (é -> e), lowercase, then drop remaining special characters
+    decomposed = unicodedata.normalize("NFKD", issuer)
+    folded = "".join(c for c in decomposed if not unicodedata.combining(c))
+    normalized = re.sub(r"[^a-z0-9\s]", " ", folded.lower())
     # Replace multiple spaces with single space and strip
     return re.sub(r"\s+", " ", normalized).strip()
 
@@ -83,12 +94,10 @@ def record_unknown_issuer(issuer: str) -> None:
             unknown_issuers[normalized_issuer]["count"] += 1
             logger.debug(f"Updated unknown issuer count for: {issuer}")
 
-        # Ensure parent directory exists
-        unknown_issuers_file.parent.mkdir(parents=True, exist_ok=True)
-
-        # Write back to file
-        with open(unknown_issuers_file, "w", encoding="utf-8") as f:
-            yaml.dump(unknown_issuers, f, default_flow_style=False, allow_unicode=True)
+        write_text_atomic(
+            unknown_issuers_file,
+            yaml.dump(unknown_issuers, default_flow_style=False, allow_unicode=True),
+        )
 
     except Exception as e:
         logger.error(f"Failed to record unknown issuer {issuer}: {e}")
@@ -125,10 +134,49 @@ def _contains_words(text: str, words: str) -> bool:
     return re.search(rf"\b{re.escape(words)}\b", text) is not None
 
 
+def lookup_issuer(issuer: str) -> IssuerMatch:
+    """
+    Find the sector and canonical name of an issuer, resolving aliases.
+    Records unknown issuers for manual review.
+
+    Args:
+        issuer: The issuer name as extracted from the document
+
+    Returns:
+        IssuerMatch(sector, canonical_name); both None when the issuer is unknown
+    """
+    no_match = IssuerMatch(None, None)
+    if not issuer or not issuer.strip():
+        return no_match
+
+    try:
+        mapping = load_sector_issuer_mapping()
+    except ConfigurationError as e:
+        logger.warning(f"Could not load sector mapping: {e}")
+        return no_match
+
+    normalized_issuer = _resolve_alias(normalize_issuer_name(issuer), mapping.get("aliases"))
+
+    for sector, issuers in mapping.items():
+        if not isinstance(issuers, list):
+            continue
+        for mapped_issuer in issuers:
+            normalized_mapped = normalize_issuer_name(mapped_issuer)
+            if normalized_mapped and _contains_words(normalized_issuer, normalized_mapped):
+                logger.debug(f"Found sector '{sector}' for issuer '{issuer}' (match with '{mapped_issuer}')")
+                return IssuerMatch(sector, mapped_issuer)
+
+    logger.info(f"No sector found for issuer '{issuer}'. Recording as unknown.")
+    try:
+        record_unknown_issuer(issuer)
+    except KnowledgeBaseError as e:
+        logger.warning(f"Failed to record unknown issuer: {e}")
+    return no_match
+
+
 def get_sector_for_issuer(issuer: str) -> str | None:
     """
     Find the sector for a given issuer with alias support and normalization.
-    Records unknown issuers for manual review.
 
     Args:
         issuer: The issuer name
@@ -136,40 +184,4 @@ def get_sector_for_issuer(issuer: str) -> str | None:
     Returns:
         The sector name if found, None otherwise
     """
-    try:
-        if not issuer or not issuer.strip():
-            return None
-
-        # Load the sector-issuer mapping
-        try:
-            mapping = load_sector_issuer_mapping()
-        except ConfigurationError as e:
-            logger.warning(f"Could not load sector mapping: {e}")
-            return None
-
-        normalized_issuer = _resolve_alias(normalize_issuer_name(issuer), mapping.get("aliases"))
-
-        # Search through all sectors and their issuers with normalization
-        for sector, issuers in mapping.items():
-            if not isinstance(issuers, list):
-                continue
-            for mapped_issuer in issuers:
-                normalized_mapped = normalize_issuer_name(mapped_issuer)
-                if normalized_mapped and _contains_words(normalized_issuer, normalized_mapped):
-                    logger.debug(
-                        f"Found sector '{sector}' for issuer '{issuer}' (match with '{mapped_issuer}')"
-                    )
-                    return sector
-
-        # No match found - record as unknown issuer
-        logger.info(f"No sector found for issuer '{issuer}'. Recording as unknown.")
-        try:
-            record_unknown_issuer(issuer)
-        except KnowledgeBaseError as e:
-            logger.warning(f"Failed to record unknown issuer: {e}")
-
-        return None
-
-    except Exception as e:
-        logger.error(f"Error finding sector for issuer '{issuer}': {e}")
-        return None
+    return lookup_issuer(issuer).sector
