@@ -4,40 +4,10 @@ Validation module for ClassifAI.
 This module provides functions for validating and correcting data.
 """
 
-import difflib
 import sys
 from typing import Any
 
 from loguru import logger
-
-
-def validate_category(category: str, valid_categories: list[str]) -> str:
-    """
-    Validates and corrects a category name by matching it to the closest valid category.
-
-    Args:
-        category: The category name to validate
-        valid_categories: List of valid category names
-
-    Returns:
-        A valid category name from the list
-    """
-    if not category or not valid_categories:
-        return category
-
-    # If the category is already valid, return it
-    if category in valid_categories:
-        return category
-
-    # Find the closest match using difflib
-    matches = difflib.get_close_matches(category, valid_categories, n=1, cutoff=0.6)
-
-    # If we found a close match, return it
-    if matches:
-        return matches[0]
-
-    # If no close match, return the original (will be handled by translation)
-    return category
 
 
 def validate_rules_against_categories(rules: list[dict[str, Any]], categories: list[str]) -> None:

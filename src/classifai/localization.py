@@ -173,16 +173,6 @@ def set_language(language: Language) -> None:
     _current_language.set(language)
 
 
-def get_current_language() -> Language:
-    """
-    Récupère la langue actuelle.
-
-    Returns:
-        La langue actuelle
-    """
-    return _current_language.get()
-
-
 def get_text(key: str, **kwargs) -> str:
     """
     Récupère un texte traduit dans la langue actuelle.

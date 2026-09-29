@@ -295,13 +295,3 @@ def merge_metadata(
             # Otherwise keep existing value
 
     return merged
-
-
-def is_magic_available() -> bool:
-    """Check if python-magic is available."""
-    return _MAGIC_AVAILABLE
-
-
-def is_exiftool_available() -> bool:
-    """Check if ExifTool is available."""
-    return _EXIFTOOL_AVAILABLE

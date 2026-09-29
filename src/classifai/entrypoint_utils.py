@@ -7,11 +7,6 @@ and progress bars).
 
 Functions provided
 ------------------
-build_scan_config(...):
-    Normalise / validate raw parameters coming from any UI and returns a
-    simple `dict` (or `ScanConfig` dataclass) that can be directly fed to
-    `core_logic.run_scan()`.
-
 generate_file_operations(results_df):
     Transform the DataFrame returned by `run_scan()` into an iterable of
     `(source_path, destination_path)` tuples.
@@ -26,7 +21,6 @@ perform_operations(ops, operation, progress_cb=None):
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
@@ -37,73 +31,14 @@ from classifai.exceptions import FileOperationError
 from classifai.infrastructure.file_system import transfer_file
 
 __all__ = [
-    "ScanConfig",
-    "build_scan_config",
     "generate_file_operations",
     "perform_operations",
 ]
 
 
-@dataclass(slots=True)
-class ScanConfig:
-    """Container for arguments passed to :pyfunc:`core_logic.run_scan`."""
-
-    source_dir: Path
-    destination_dir: Path
-    rename_files: bool = False
-    use_vision: bool = False
-    language_subfolders: bool = False
-    recursive: bool = False
-    categories: list[str] | None = None
-
-    def to_tuple(self) -> tuple:
-        """Return the arguments in the order expected by *run_scan*."""
-
-        return (
-            str(self.source_dir),
-            str(self.destination_dir),
-            self.rename_files,
-            self.use_vision,
-            self.language_subfolders,
-            self.recursive,
-            self.categories or [],
-        )
-
-
 # ---------------------------------------------------------------------------
 # Builders
 # ---------------------------------------------------------------------------
-
-
-def build_scan_config(
-    *,
-    source_dir: str | Path,
-    destination_dir: str | Path,
-    rename_files: bool = False,
-    use_vision: bool = False,
-    language_subfolders: bool = False,
-    recursive: bool = False,
-    categories: list[str] | None = None,
-) -> ScanConfig:
-    """Validate & wrap UI parameters into a :class:`ScanConfig`."""
-
-    src = Path(source_dir).expanduser().resolve()
-    dest = Path(destination_dir).expanduser().resolve()
-
-    if not src.exists() or not src.is_dir():
-        raise ValueError(f"source_dir does not exist or is not a directory: {src}")
-
-    # Destination dir may not exist yet – no strict validation.
-
-    return ScanConfig(
-        source_dir=src,
-        destination_dir=dest,
-        rename_files=rename_files,
-        use_vision=use_vision,
-        language_subfolders=language_subfolders,
-        recursive=recursive,
-        categories=categories,
-    )
 
 
 # ---------------------------------------------------------------------------

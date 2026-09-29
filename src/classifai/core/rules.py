@@ -120,20 +120,6 @@ class RulesEngine:
                     return category
         return None
 
-    def match_category(self, file_path: str | Path) -> str | None:
-        """
-        Legacy method: Matches a file path against early rules only.
-
-        For full rule matching with MIME/metadata, use match_category_full().
-
-        Args:
-            file_path: Path to the file
-
-        Returns:
-            Category string if matched, None otherwise
-        """
-        return self.match_category_early(file_path)
-
     def _check_conditions_early(self, rule: dict[str, Any], file_name: str, file_path: str) -> bool:
         """
         Check if a file meets all conditions for an early rule.
@@ -301,19 +287,3 @@ def apply_full_rules(context: FileContext, rules_engine: RulesEngine) -> FileCon
     if category:
         return context.model_copy(update={"rule_match_category": category})
     return context
-
-
-def apply_rules(context: FileContext, rules_engine: RulesEngine) -> FileContext:
-    """
-    Legacy function: Apply early rules only.
-
-    For two-phase matching, use apply_early_rules() and apply_full_rules().
-
-    Args:
-        context: The file context to process
-        rules_engine: The rules engine to use for matching
-
-    Returns:
-        Updated FileContext with rule_match_category set if a rule matched
-    """
-    return apply_early_rules(context, rules_engine)

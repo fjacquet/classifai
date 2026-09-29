@@ -88,42 +88,6 @@ def process_file_pipeline(
         return None
 
 
-def process_single_file(
-    file_path: Path,
-    dest_dir: Path,
-    rename_files: bool = False,
-    use_vision: bool = False,
-    language_subfolders: bool = True,
-) -> FileContext | None:
-    """
-    Process a single file through the classification pipeline.
-
-    This is a convenience function for API/UI that wraps process_file_pipeline
-    with a simpler interface.
-
-    Args:
-        file_path: Path to the file to process
-        dest_dir: Destination directory for classified files
-        rename_files: Whether to rename files based on AI-extracted information
-        use_vision: Whether to use vision model for image classification
-        language_subfolders: Whether to create language subfolders
-
-    Returns:
-        The processed FileContext, or None if processing failed
-    """
-    rules_engine = RulesEngine(app_config.rules)
-
-    scan_config = {
-        "dest_dir_str": str(dest_dir),
-        "rename_files": rename_files,
-        "use_vision": use_vision,
-        "language_subfolders": language_subfolders,
-        "categories": app_config.categories,
-    }
-
-    return process_file_pipeline(file_path, scan_config, rules_engine)
-
-
 def run_scan(
     source_dir_str: str,
     dest_dir_str: str,

@@ -17,27 +17,6 @@ from classifai.exceptions import FileOperationError, ParsingError
 from classifai.infrastructure.history import log_operation
 
 
-def read_file_content(file_path: Path) -> str:
-    """
-    Reads the content of a file as text.
-    This is an impure function that performs file I/O.
-
-    Args:
-        file_path: Path to the file to read
-
-    Returns:
-        The file content as string
-
-    Raises:
-        FileOperationError: If the file cannot be read
-    """
-    try:
-        with open(file_path, encoding="utf-8", errors="replace") as f:
-            return f.read()
-    except Exception as e:
-        raise FileOperationError(f"Failed to read file {file_path.name}: {e}") from e
-
-
 def read_and_parse_file(context: FileContext) -> FileContext:
     """
     Parses the file content and metadata. This is an impure step
@@ -149,74 +128,6 @@ def _perform_operation(source: Path, destination: Path, operation: str) -> None:
             raise ValueError(f"Invalid operation: {operation}")
     except (shutil.Error, OSError) as e:
         raise FileOperationError(f"Failed to {operation} file: {e}") from e
-
-
-def get_supported_files(directory: Path, recursive: bool = False) -> list[Path]:
-    """
-    Returns a list of supported files in the given directory.
-
-    Args:
-        directory: The directory to search in
-        recursive: Whether to search recursively
-
-    Returns:
-        List of file paths with supported extensions
-
-    Raises:
-        FileOperationError: If the directory doesn't exist or cannot be read
-    """
-    from classifai.config import app_config
-
-    try:
-        if not directory.exists():
-            raise FileOperationError(f"Directory does not exist: {directory}")
-        if not directory.is_dir():
-            raise FileOperationError(f"Not a directory: {directory}")
-
-        # Get supported extensions from config
-        supported_extensions = app_config.supported_extensions
-
-        # Find all files with supported extensions
-        files: list[Path] = []
-        if recursive:
-            for ext in supported_extensions:
-                files.extend(directory.glob(f"**/*{ext}"))
-        else:
-            for ext in supported_extensions:
-                files.extend(directory.glob(f"*{ext}"))
-
-        # Filter out directories and .zip files (per functional specification)
-        files = [f for f in files if f.is_file() and f.suffix.lower() != ".zip"]
-
-        # Log if any .zip files were filtered out
-        zip_files = [f for f in directory.glob("*.zip") if f.is_file()]
-        if zip_files:
-            logger.warning(
-                f"Filtered out {len(zip_files)} .zip files - these must be decompressed before processing",
-            )
-
-        return files
-    except FileOperationError:
-        raise
-    except Exception as e:
-        raise FileOperationError(f"Error listing files: {e}") from e
-
-
-def move_file_to_destination(context: FileContext) -> FileContext:
-    """
-    Moves a file to its final destination path.
-    This is a wrapper around transfer_file with operation="move".
-
-    Args:
-        context: The file context with final_destination_path set
-
-    Returns:
-        Updated FileContext with actual destination path
-
-    Raises:
-        FileOperationError: If the move operation fails
-    """
-    return transfer_file(context, "move")
 
 
 def transfer_file(context: FileContext, operation: str) -> FileContext:

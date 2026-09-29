@@ -95,60 +95,6 @@ def record_unknown_issuer(issuer: str) -> None:
         raise KnowledgeBaseError(f"Failed to record unknown issuer: {e}") from e
 
 
-class KnowledgeBase:
-    """
-    Knowledge base for ClassifAI.
-
-    Provides access to sector-issuer mappings and other reference data.
-
-    .. deprecated::
-        This class is deprecated and will be removed in future versions.
-        Use the module-level functions instead.
-    """
-
-    def __init__(self):
-        """
-        Initialize the knowledge base.
-
-        Note: This class is deprecated. Use module-level functions instead.
-        """
-        logger.warning("KnowledgeBase class is deprecated. Use module-level functions instead.")
-
-    def get_sector_for_issuer(self, issuer: str) -> str | None:
-        """
-        Find the sector for a given issuer.
-
-        This method is deprecated. Use the module-level get_sector_for_issuer function instead.
-
-        Args:
-            issuer: The issuer name
-
-        Returns:
-            The sector name or None if not found
-        """
-        logger.warning(
-            "KnowledgeBase.get_sector_for_issuer is deprecated. Use module-level function instead.",
-        )
-        return get_sector_for_issuer(issuer)
-
-
-def load_categories() -> list[str]:
-    """
-    Load categories from the configuration.
-
-    Returns:
-        List of categories from configuration
-
-    Raises:
-        ConfigurationError: If no categories are configured
-    """
-    categories = app_config.categories
-    if not categories:
-        raise ConfigurationError("No categories configured")
-    logger.debug(f"Loaded {len(categories)} categories")
-    return categories
-
-
 def load_sector_issuer_mapping() -> dict[str, list[str]]:
     """
     Load sector-issuer mappings from the configuration file.
@@ -239,35 +185,3 @@ def get_sector_for_issuer(issuer: str) -> str | None:
     except Exception as e:
         logger.error(f"Error finding sector for issuer '{issuer}': {e}")
         return None
-
-
-def get_category_suggestions(text: str, max_suggestions: int = 3) -> list[str]:
-    """
-    Get category suggestions based on document content.
-
-    Matches category names against the document text using simple substring matching.
-
-    Args:
-        text: The document text
-        max_suggestions: Maximum number of suggestions to return
-
-    Returns:
-        List of category suggestions (may be empty if no matches or no categories)
-    """
-    categories = app_config.categories
-    if not categories:
-        return []
-
-    text_lower = text.lower()
-    matches = []
-
-    # Simple matching: check if category name appears in text
-    for category in categories:
-        category_lower = category.lower()
-        count = text_lower.count(category_lower)
-        if count > 0:
-            matches.append((category, count))
-
-    # Sort by match count and take top suggestions
-    matches.sort(key=lambda x: x[1], reverse=True)
-    return [category for category, _ in matches[:max_suggestions]]

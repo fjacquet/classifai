@@ -8,8 +8,6 @@ All filename/path sanitization and date parsing should use these functions.
 import re
 from datetime import datetime
 
-from langdetect import LangDetectException, detect
-
 # Pre-compiled patterns (performance optimization)
 _SANITIZE_PATTERN = re.compile(r"[^\w\s\-_.]")
 _WHITESPACE_PATTERN = re.compile(r"\s+")
@@ -118,22 +116,3 @@ def format_date_for_filename(dt: datetime | None) -> str:
     if dt is None:
         return ""
     return dt.strftime("%Y-%m-%d")
-
-
-def detect_language(text: str) -> str | None:
-    """
-    Detects the language of a given text.
-
-    Args:
-        text: The text to analyze.
-
-    Returns:
-        The two-letter ISO 639-1 language code (e.g., "en", "fr")
-        or None if detection fails.
-    """
-    if not text or not isinstance(text, str) or not text.strip():
-        return None
-    try:
-        return detect(text)
-    except LangDetectException:
-        return None
