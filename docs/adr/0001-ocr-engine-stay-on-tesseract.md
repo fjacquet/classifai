@@ -83,10 +83,16 @@ of engine choice. That gap should be closed before changing engines.
 - **Follow-up:** Open an issue for scanned-PDF OCR fallback (not covered by
   this decision).
 
+> **Update (2026-09-29):** the scanned-PDF gap is closed, still on
+> Tesseract. PDFs with no text layer (after PyMuPDF and `pdftotext`) have
+> their first 3 pages rendered at 200 dpi and OCRed, and OCR now uses
+> `fra+eng+deu` (whichever language packs are installed) instead of
+> Tesseract's English-only default. The decision in this ADR is unchanged.
+
 ## References
 
 - [datalab-to/chandra (GitHub)](https://github.com/datalab-to/chandra)
 - [datalab-to/chandra-ocr-2 (Hugging Face)](https://huggingface.co/datalab-to/chandra-ocr-2)
 - [chandra-ocr (PyPI)](https://pypi.org/project/chandra-ocr/)
-- Current OCR call site: `src/classifai/infrastructure/parsing.py` (line 84,
-  `pytesseract.image_to_string`)
+- Current OCR call site: `src/classifai/infrastructure/parsing.py`
+  (`_ocr`, wrapping `pytesseract.image_to_string`)

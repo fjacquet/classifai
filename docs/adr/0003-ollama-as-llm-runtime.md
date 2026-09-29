@@ -11,7 +11,7 @@ from document text. The model must be swappable (different users have
 different hardware) and selectable via environment variable. Options spanned:
 
 - Local runtimes: Ollama, llama.cpp, vLLM, LM Studio
-- Managed APIs: OpenAI, Anthropic, Google, Mistral (via `litellm`)
+- Managed APIs: OpenAI, Anthropic, Google, Mistral
 
 ## Decision
 
@@ -22,8 +22,9 @@ Model identity is controlled by environment variables:
 - `OLLAMA_VISION_MODEL_NAME` (vision, defaults to `llava`)
 - `OLLAMA_API_URL` (defaults to `http://localhost:11434`)
 
-HTTP transport goes through `litellm`, giving the code a provider-neutral
-call shape that would allow switching backends later with minimal code change.
+The code calls Ollama's HTTP API (`/api/generate`) directly with `httpx` —
+no provider-abstraction layer. Swapping backends would mean changing
+`src/classifai/infrastructure/llm.py`, the single call site.
 
 ## Rationale
 
@@ -37,9 +38,6 @@ call shape that would allow switching backends later with minimal code change.
   rate limits, no quota forms. Lower barrier to entry for first-time users.
 - **Hardware flexibility:** Users on a laptop run `gemma:2b`; users with
   a GPU run larger/better models. Same code path either way.
-- **litellm compatibility layer:** If a user wants OpenAI/Anthropic/etc.,
-  the existing code can already reach them — Ollama is the default, not a
-  lock-in.
 
 ## Alternatives considered
 
@@ -56,7 +54,8 @@ call shape that would allow switching backends later with minimal code change.
 ## Consequences
 
 - **Positive:** Privacy, zero cost, offline, minimal install friction.
-  Via `litellm`, the door remains open to other backends without refactor.
+  All LLM calls live in one module, so another backend stays a contained
+  change.
 - **Negative:**
   - Users must install and run Ollama separately.
   - Quality ceiling is lower than GPT-5 / Claude / Gemini on hard cases.
@@ -64,9 +63,31 @@ call shape that would allow switching backends later with minimal code change.
 - **Retry strategy:** Ollama calls use `tenacity` with exponential backoff
   (`src/classifai/infrastructure/llm.py`) to ride out transient failures.
 
+## Implementation notes (2026-09-29)
+
+An earlier version of this ADR described transport through `litellm`; the
+code calls Ollama directly and the `litellm` dependency has been removed.
+Current behaviour of `src/classifai/infrastructure/llm.py`:
+
+- **Structured outputs:** every call sends a JSON schema as Ollama's
+  `format`. The classification `category` is an enum of
+  `config/categories.yaml` (or `null`); the AI sector fallback is an enum of
+  `config/sectors.yaml` (or `null`), so the model cannot create new
+  folders.
+- **Options:** `temperature: 0`, `num_ctx: 8192`, `keep_alive: 10m`,
+  non-streaming, one shared `httpx` client.
+- **Retries:** network errors and HTTP 5xx (e.g. 503 while a model loads)
+  are retried, 3 attempts with exponential backoff; 4xx fail fast. Timeout
+  120 s per request.
+- **Prompt hygiene:** document text is fenced in `<document>` tags and
+  truncated to 4 000 characters keeping head and tail.
+- **No text, no call:** when nothing was extracted the model is skipped and
+  the file goes to `_UNKNOWN_`.
+- **Vision:** images are sent base64-encoded to `OLLAMA_VISION_MODEL_NAME`
+  when `--use-vision` is on.
+
 ## References
 
 - `src/classifai/infrastructure/llm.py` — Ollama call site
 - `src/classifai/config.py` — env-var wiring
 - [Ollama](https://ollama.ai/)
-- [litellm](https://docs.litellm.ai/)

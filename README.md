@@ -26,9 +26,11 @@ predictable hierarchy:
 Language/Sector/Issuer/Category/Date_Title.ext
 ```
 
-The classification pipeline runs fast YAML rules first, falls back to a
-knowledge-base lookup, and only invokes the LLM for the unknown tail.
-No document content leaves your machine.
+The classification pipeline runs fast YAML rules first and only invokes
+the LLM for files no rule matched; a knowledge-base lookup then maps the
+extracted issuer to its sector. No document content leaves your machine.
+(Reverse-geocoding photo GPS coordinates is the one online feature, and it
+is off unless you enable it.)
 
 ## Documentation
 
@@ -50,10 +52,10 @@ brew install pandoc tesseract libmagic exiftool
 # Python project
 git clone https://github.com/fjacquet/classifai.git
 cd classifai
-uv pip install -e .
+uv sync --all-extras --all-groups   # or: make install
 
-# Local LLM
-ollama pull gemma3n
+# Local LLM (gemma:2b is the default; set OLLAMA_MODEL_NAME to use another)
+ollama pull gemma:2b
 ```
 
 Full instructions: [User Guide → Installation](docs/user-guide/installation.md).
@@ -75,12 +77,13 @@ Full workflow: [User Guide → Quickstart](docs/user-guide/quickstart.md).
 
 ## Design highlights
 
-- **Hybrid classification** — rules + knowledge base + LLM, in that
-  order. The LLM is the fallback, not the default.
+- **Hybrid classification** — YAML rules first, then the LLM for
+  unmatched files, then a knowledge-base lookup of the issuer's sector.
+  The LLM is the fallback, not the default.
   ([ADR-0002](docs/adr/0002-hybrid-rule-plus-llm-classification.md))
 - **Privacy by default** — Ollama runs locally; document content never
   leaves the machine. ([ADR-0003](docs/adr/0003-ollama-as-llm-runtime.md))
-- **Multiple entry points** — CLI, Streamlit UI, FastAPI, file watcher.
+- **Multiple entry points** — CLI, Streamlit UI, file watcher.
   Shared core, aligned defaults.
   ([ADR-0005](docs/adr/0005-three-entry-points-cli-web-api.md))
 - **YAML-editable taxonomy** — categories, sectors, issuers, aliases,
@@ -89,9 +92,10 @@ Full workflow: [User Guide → Quickstart](docs/user-guide/quickstart.md).
 
 ## Contributing
 
-Read [`CLAUDE.md`](CLAUDE.md) before you start. Run `make check` before
-you commit. **Never disable a quality gate** (mypy, ruff, pre-commit,
-tests) to unblock a merge — fix the underlying issue.
+Read [`CLAUDE.md`](CLAUDE.md) before you start. Run `make ci` (lint +
+tests + build) and `pre-commit run --all-files` before you commit.
+**Never disable a quality gate** (mypy, ruff, pre-commit, tests) to
+unblock a merge — fix the underlying issue.
 
 ## License
 

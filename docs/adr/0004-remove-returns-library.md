@@ -57,8 +57,8 @@ A full custom exception hierarchy lives in `src/classifai/exceptions.py`
   Python developer; `.bind(lambda x: f(x).map(lambda y: g(y)))` is not.
 - **Debuggability.** Native exceptions give real stack traces. `returns`
   containers obscured the site of failure behind chained `.alt()` calls.
-- **Ecosystem fit.** Every library the project touches (Pydantic, FastAPI,
-  Typer, loguru, tenacity) uses exceptions natively. `returns` was a
+- **Ecosystem fit.** Every library the project touches (Pydantic, Typer,
+  loguru, tenacity) uses exceptions natively. `returns` was a
   foreign grammar inside an otherwise idiomatic stack.
 - **Dependency weight.** One fewer third-party runtime dependency.
 - **Monkey-patches gone.** The `isinstance(result, Nothing)` workaround and

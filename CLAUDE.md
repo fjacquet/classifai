@@ -20,16 +20,16 @@ Preferred for common tasks — see `make help`:
 
 ```bash
 make dev        # Install dev dependencies
-make check      # Run lint + tests
+make ci         # Run lint + tests + build
 make format     # Auto-format with ruff
 make web        # Launch Streamlit UI
-make watch SRC=/path DEST=/path   # Run watcher
+make watch SRC=/path DEST=/path   # Run watcher (SRC required)
 ```
 
 ### Running the Application
 
 ```bash
-# CLI
+# CLI (other commands: undo, kb-list-unknown)
 uv run classifai run --source-dir /path/to/files --mode dry-run|move|copy
 
 # Streamlit Web UI
@@ -54,20 +54,22 @@ pytest -x                        # Stop on first failure
 ruff check .                     # Lint
 ruff check --fix .               # Lint and auto-fix
 ruff format .                    # Format code
-yamlfix config/                  # Format YAML files
+pre-commit run yamlfmt --all-files   # Format YAML files (yamlfmt, see .yamlfmt.yaml)
 ```
 
 ## Architecture
 
 ### Functional Pipeline Design
 
-The codebase uses functional programming patterns with native Python exceptions for error handling. The main pipeline flows through:
+The codebase uses functional programming patterns with native Python exceptions for error handling. The main pipeline (`pipeline.process_file_pipeline`) flows through:
 
-1. **Rule-based classification** (`core/rules.py`) - Fast pattern matching via YAML rules
-2. **File parsing** (`infrastructure/parsing.py`, `infrastructure/file_system.py`) - Extract text from PDFs, images (OCR), Office docs
-3. **AI enrichment** (`infrastructure/llm.py`) - Ollama API calls with tenacity retry logic
-4. **Knowledge base lookup** (`infrastructure/knowledge_base.py`) - Map issuers to sectors via `config/sector_issuer_mapping.yaml`
-5. **Path determination** (`core/logic.py`) - Build final destination path
+1. **Early rules** (`core/rules.py`) - `filename`/`path` glob conditions, evaluated before parsing
+2. **File parsing** (`infrastructure/file_system.py`, `infrastructure/parser_registry.py`, `infrastructure/parsing.py`, `infrastructure/metadata.py`) - MIME type, text (PDF text layer → pdftotext → OCR, Office, email, images via OCR) and metadata; skipped when an early rule matched
+3. **Full rules** (`core/rules.py`) - `mime_type`/`metadata` conditions, only if no early rule matched
+4. **AI enrichment** (`infrastructure/llm.py`) - Ollama `/api/generate` via httpx with JSON-schema structured outputs and tenacity retries; skipped on a rule match
+5. **Knowledge base lookup** (`infrastructure/knowledge_base.py`) - Map the extracted issuer (aliases resolved) to its sector and canonical name via `config/sector_issuer_mapping.yaml`
+6. **AI sector fallback** (`infrastructure/llm.py`) - Unknown issuers get a sector chosen by the model from `config/sectors.yaml`
+7. **Path determination** (`core/logic.py`) - Build final destination path
 
 ### Key Data Types
 
@@ -79,25 +81,36 @@ The codebase uses functional programming patterns with native Python exceptions 
 
 ```
 src/classifai/
-├── core/                 # Pure business logic (classification, rules, path logic)
-├── infrastructure/       # I/O operations (LLM, file system, knowledge base)
-├── app/                  # FastAPI routes
+├── core/                 # Pure business logic — no I/O, no logging
+│   ├── logic.py          # Destination path and filename decisions
+│   ├── rules.py          # Two-phase rules engine (early / full)
+│   └── types.py          # FileContext, AIResponse
+├── infrastructure/       # I/O operations
+│   ├── file_system.py    # Parse step, move/copy with dedupe and name reservation
+│   ├── parser_registry.py # Extension → parser mapping
+│   ├── parsing.py        # Parsers (PDF, Office, email, images/OCR, Pandoc, archives)
+│   ├── metadata.py       # MIME detection (python-magic) and ExifTool metadata
+│   ├── geocoding.py      # Opt-in Nominatim reverse geocoding for photos
+│   ├── history.py        # logs/history.json for `classifai undo`
+│   ├── knowledge_base.py # Issuer → sector lookup, aliases, unknown issuers
+│   └── llm.py            # Ollama API calls
 ├── classifai_cli.py      # Typer CLI entry point (→ `classifai` console script)
 ├── classifai_app.py      # Streamlit UI entry point
-├── pipeline.py           # Main orchestration
+├── pipeline.py           # Main orchestration (scan + per-file pipeline)
 ├── background_watcher.py # Watchdog-based directory monitor
 ├── entrypoint_utils.py   # Shared CLI/Streamlit helpers
 ├── localization.py       # User-facing string translations (FR/EN)
-├── validation.py         # Input validation helpers
+├── logging_module.py     # Loguru setup
+├── validation.py         # Startup validation of rules (ConfigurationError)
 ├── config.py             # Centralized config loading from YAML + env vars
 ├── defaults.py           # Shared defaults for CLI and Streamlit consistency
 ├── exceptions.py         # Custom exception hierarchy
-└── utils.py              # Shared utilities (sanitize_filename, date parsing)
+└── utils.py              # Shared utilities (sanitize_filename, date parsing, atomic writes)
 ```
 
 ### Configuration
 
-- **YAML configs** in `config/`: categories.yaml, rules.yaml, sectors.yaml, sector_issuer_mapping.yaml
+- **YAML configs** in `config/`: categories.yaml, rules.yaml, sectors.yaml, sector_issuer_mapping.yaml, settings.yaml (plus the generated unknown_issuers.yaml)
 - **Environment variables**: `OLLAMA_MODEL_NAME`, `OLLAMA_API_URL`, `OLLAMA_VISION_MODEL_NAME`
 - Config is loaded once as frozen `AppConfig` dataclass in `config.py`
 
