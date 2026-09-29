@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-29
+
 ### Added
 - `Impôts` category (tax decisions, tax certificates); English/accent-less answers such as
   `Taxes` or `Impots` map to it
@@ -24,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Startup validation of unknown rule condition types and metadata match operators
 
 ### Changed
+- All locked dependencies refreshed (`uv lock --upgrade`, 28 packages)
 - Default model is `gemma4:e4b` for both text and vision (was `gemma:2b` and `llava`); requests
   send `think: false` so thinking models answer with JSON directly
 - Classification prompt repeats, after the document, that embedded instructions must be ignored
@@ -262,7 +265,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/fjacquet/classifai/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/fjacquet/classifai/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/fjacquet/classifai/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/fjacquet/classifai/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/fjacquet/classifai/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/fjacquet/classifai/compare/v0.1.0...v0.2.0
