@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- The Security workflow also runs weekly (Monday 04:23 UTC), so new advisories surface without a push.
+
 ## [0.3.0] - 2026-09-29
 
 ### Added
