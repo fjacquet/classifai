@@ -11,10 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-- Full `uv lock --upgrade` refresh. On Python ≥ 3.11 `pillow` moves to 13.0.0 (41 advisories);
-  `virtualenv`, `certifi`, `setuptools` and `GitPython` move to their patched releases.
-- The Python 3.10 resolution still locks `pillow` 12.3.0 and `filelock` 4.1.0: pillow 13 no longer
-  supports Python 3.10, which `requires-python = ">=3.10"` and CI still target.
+- Full `uv lock --upgrade` refresh: `certifi` → 2026.10.23 for GHSA-6q48-6c7w-9gw2, `setuptools` 84.0.0 → 84.2.1 for GHSA-xmj3-9gf7-h52w, `GitPython` for GHSA-83vg-56qc-22m7,
+  `virtualenv` (15 advisories) and `filelock` on Python ≥ 3.11. On Python ≥ 3.11 `pillow` is 13.0.0.
+- **Still open on Python 3.10:** pillow 13 dropped 3.10, so that resolution keeps `pillow` 12.3.0
+  (41 advisories, reachable through `classifai watch` opening untrusted images) and `filelock` 4.1.0.
+  CI and `requires-python` still target 3.10.
 
 ### Changed
 - The Security workflow also runs weekly (Monday 04:23 UTC), so new advisories surface without a push.
@@ -277,7 +278,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/fjacquet/classifai/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/fjacquet/classifai/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/fjacquet/classifai/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/fjacquet/classifai/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/fjacquet/classifai/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/fjacquet/classifai/compare/v0.2.0...v0.2.1
