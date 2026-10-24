@@ -3,7 +3,7 @@ Script to create a sample .msg file for testing.
 This uses the extract-msg library's ability to create MSG files.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from extract_msg.msg_classes import Message
@@ -26,7 +26,7 @@ def create_sample_msg():
     msg.sender = "test@example.com"
     msg.to = "recipient@example.com"
     msg.cc = "cc@example.com"
-    msg.date = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    msg.date = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
     msg.body = """
     This is a test email for ClassifAI.
 

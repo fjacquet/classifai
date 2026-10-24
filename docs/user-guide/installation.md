@@ -1,6 +1,6 @@
 # Installation
 
-ClassifAI runs on Python 3.10+ and needs a handful of system tools plus a
+ClassifAI runs on Python 3.11+ and needs a handful of system tools plus a
 local Ollama instance.
 
 ## 1. System dependencies
