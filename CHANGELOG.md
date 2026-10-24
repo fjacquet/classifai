@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-24
+
+### Security
+
+- Full `uv lock --upgrade` refresh. On Python ≥ 3.11 `pillow` moves to 13.0.0 (41 advisories);
+  `virtualenv`, `certifi`, `setuptools` and `GitPython` move to their patched releases.
+- The Python 3.10 resolution still locks `pillow` 12.3.0 and `filelock` 4.1.0: pillow 13 no longer
+  supports Python 3.10, which `requires-python = ">=3.10"` and CI still target.
+
 ### Changed
 - The Security workflow also runs weekly (Monday 04:23 UTC), so new advisories surface without a push.
 
