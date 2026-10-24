@@ -68,7 +68,7 @@ build:
 	uv build
 
 vuln:
-	uvx osv-scanner scan --lockfile=uv.lock || true
+	osv-scanner scan source --recursive .
 
 sbom:
 	mkdir -p $(DIST)

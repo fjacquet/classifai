@@ -6,7 +6,7 @@ based on the data collected in the FileContext. It uses functional
 constructs and avoids side effects.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from classifai.core.types import FileContext
@@ -102,9 +102,7 @@ def _calculate_photo_destination(context: FileContext) -> Path:
         # This logic can fail if date is not present or format is wrong
         date_str = context.metadata.get("date")
         if date_str:
-            from datetime import timezone
-
-            date = datetime.strptime(date_str, "%Y:%m:%d %H:%M:%S").replace(tzinfo=timezone.utc)
+            date = datetime.strptime(date_str, "%Y:%m:%d %H:%M:%S").replace(tzinfo=UTC)
             year = date.strftime("%Y")
             month = date.strftime("%m_%B")
             dest = photo_path / year / month

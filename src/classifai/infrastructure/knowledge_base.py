@@ -7,7 +7,7 @@ which includes categories, sector-issuer mappings, and other reference data.
 
 import re
 import unicodedata
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, NamedTuple
 
@@ -76,7 +76,7 @@ def record_unknown_issuer(issuer: str) -> None:
                         unknown_issuers = loaded
 
         # Add new unknown issuer with timestamp
-        timestamp = datetime.now(timezone.utc).isoformat()
+        timestamp = datetime.now(UTC).isoformat()
         normalized_issuer = normalize_issuer_name(issuer)
 
         # Check if already recorded (avoid duplicates)

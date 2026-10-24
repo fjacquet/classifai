@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-24
+
+### Security
+
+- **`make vuln` and the Security workflow now actually scan.** `uvx osv-scanner` never resolved
+  (osv-scanner is a Go binary, not on PyPI) and `|| true` hid the failure, so no CI run had ever
+  scanned `uv.lock`. `make vuln` now runs `osv-scanner scan source --recursive .` and fails on
+  findings; fjacquet/ci v1.6.0 installs a pinned, checksum-verified binary in CI.
+- **Python 3.11+ is now required** (3.10 reached end of life on 2026-10-01). The 3.10 resolution
+  kept `pillow` 12.3.0 (41 advisories) and `filelock` 4.1.0 (6 advisories); both now resolve to
+  13.0.0 and 4.2.4 only. CI, docs and the ruff target move to 3.11, and ruff's UP017 rewrites
+  `timezone.utc` to `datetime.UTC`.
+
 ## [0.3.1] - 2026-10-24
 
 ### Security
@@ -279,6 +292,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 [Unreleased]: https://github.com/fjacquet/classifai/compare/v0.3.1...HEAD
+[0.4.0]: https://github.com/fjacquet/classifai/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/fjacquet/classifai/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/fjacquet/classifai/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/fjacquet/classifai/compare/v0.2.1...v0.2.2

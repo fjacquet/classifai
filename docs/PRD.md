@@ -226,7 +226,7 @@ See ADRs for full detail.
 
 ## 9. Constraints
 
-- Python 3.10+.
+- Python 3.11+.
 - System dependencies: Tesseract, Pandoc, libmagic (recommended),
   ExifTool (recommended).
 - Ollama must be installed and reachable at the configured URL.
