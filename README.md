@@ -1,5 +1,10 @@
 # ClassifAI
 
+> [!IMPORTANT]
+> **Archived — superseded by [para-files](https://github.com/fjacquet/para-files).**
+> para-files files documents into a PARA tree, with verified-ISBN book placement and
+> journaled `undo`. This repository is read-only and no longer maintained.
+
 [![Release](https://img.shields.io/github/v/release/fjacquet/classifai?sort=semver)](https://github.com/fjacquet/classifai/releases/latest)
 
 Automatically organize files using a hybrid of YAML rules and a local LLM
